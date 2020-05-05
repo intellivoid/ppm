@@ -3,6 +3,12 @@
 
     namespace ppm\Utilities;
 
+    use ppm\Objects\Package\Component;
+    use ppm\ppm;
+    use PpmParser\JsonDecoder;
+    use PpmParser\PrettyPrinter\Standard;
+    use ZiProto\ZiProto;
+
     /**
      * Class CLI
      * @package ppm\Utilities
@@ -12,7 +18,7 @@
         /**
          * Returns CLI options
          */
-        public static function cli_options()
+        public static function options()
         {
             $options = "";
             $long_opts = array(
@@ -26,7 +32,7 @@
         /**
          * Prints out the main CLI Intro
          */
-        public static function cli_intro()
+        public static function displayIntro()
         {
             print("\e[34m ________  ________  _____ ______      " . PHP_EOL);
             print("\e[34m|\   __  \|\   __  \|\   _ \  _   \    " . PHP_EOL);
@@ -44,7 +50,7 @@
         /**
          * Displays the help menu
          */
-        public static function cli_help()
+        public static function displayHelpMenu()
         {
             print("\033[37m \033[33m--compile\033[37m=\"<path>\"" . PHP_EOL);
             print("\033[37m     Compiles a PHP library from source to a .ppm file" . PHP_EOL);
@@ -56,7 +62,7 @@
          * @param string $message
          * @param bool $newline
          */
-        public static function log_event(string $message, bool $newline=true)
+        public static function logEvent(string $message, bool $newline=true)
         {
             if($newline)
             {
@@ -71,16 +77,38 @@
         /**
          * Processes the command-line options
          */
-        public static function cli_process()
+        public static function start()
         {
-            self::cli_intro();
+            self::displayIntro();
 
-            if(isset(self::cli_options()['compile']))
+            if(isset(self::options()['compile']))
             {
-                //self::compile_package(CLI::cli_options()['compile']);
+                self::compilePackage(self::options()['compile']);
                 return;
             }
 
-            self::cli_help();
+            self::displayHelpMenu();
+        }
+
+        public static function compilePackage(string $path)
+        {
+            $Source = ppm::loadSource($path);
+            $CompiledComponents = array();
+
+            /** @var Component $component */
+            foreach($Source->Package->Components as $component)
+            {
+                self::logEvent("Processing " . $component->getPath());
+                self::logEvent("Parsing ", false);
+                $ParsedComponent = $component->parse();
+                self::logEvent("Encoding ", false);
+                $Structure = json_encode($ParsedComponent);
+                self::logEvent("Compiling ", false);
+                $Compiled = ZiProto::encode(json_decode($Structure, true));
+                self::logEvent("Success" . PHP_EOL);
+                $CompiledComponents[$component->File] = $Compiled;
+            }
+
+            file_put_contents("out.ppm", ZiProto::encode($CompiledComponents));
         }
     }

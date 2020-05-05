@@ -53,7 +53,7 @@
          * @throws InvalidComponentException
          * @throws MissingPackagePropertyException
          */
-        public function fromArray(array $data, string $base_directory): Package
+        public static function fromArray(array $data, string $base_directory): Package
         {
             $PackageObject = new Package();
 

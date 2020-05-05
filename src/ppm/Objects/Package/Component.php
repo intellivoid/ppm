@@ -4,6 +4,9 @@
     namespace ppm\Objects\Package;
 
     use ppm\Exceptions\InvalidComponentException;
+    use PpmParser\Node\Stmt;
+    use PpmParser\NodeDumper;
+    use PpmParser\ParserFactory;
 
     /**
      * Class Component
@@ -38,6 +41,17 @@
             }
 
             return $base_directory . DIRECTORY_SEPARATOR . str_ireplace('::', DIRECTORY_SEPARATOR, $this->File);
+        }
+
+        /**
+         * @param string|null $base_directory
+         * @return Stmt[]|null
+         */
+        public function parse(string $base_directory=null)
+        {
+            $source_code = file_get_contents($this->getPath($base_directory));
+            $parser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7);
+            return $parser->parse($source_code);
         }
 
         /**
