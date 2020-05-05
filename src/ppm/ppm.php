@@ -17,6 +17,11 @@
     include_once(__DIR__ . DIRECTORY_SEPARATOR . 'Utilities' . DIRECTORY_SEPARATOR . 'CLI.php');
     include_once(__DIR__ . DIRECTORY_SEPARATOR . 'Utilities' . DIRECTORY_SEPARATOR . 'PathFinder.php');
 
+    if(class_exists("PpmParser\Parser") == false)
+    {
+        include_once(__DIR__ . DIRECTORY_SEPARATOR . 'PpmParser' . DIRECTORY_SEPARATOR . 'PpmParser.php');
+    }
+
     define("PPM_VERSION", "1.0.0.0");
     define("PPM_AUTHOR", "Zi Xing Narrakas");
 
