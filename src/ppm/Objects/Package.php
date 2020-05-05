@@ -8,6 +8,7 @@
     use ppm\Exceptions\InvalidPackageException;
     use ppm\Exceptions\MissingPackagePropertyException;
     use ppm\Objects\Package\Component;
+    use ppm\Objects\Package\Dependency;
     use ppm\Objects\Package\Metadata;
 
     /**
@@ -27,6 +28,20 @@
         public $Components;
 
         /**
+         * @var array|Dependency
+         */
+        public $Dependencies;
+
+        /**
+         * Package constructor.
+         */
+        public function __construct()
+        {
+            $this->Components = [];
+            $this->Dependencies = [];
+        }
+
+        /**
          * @return array
          */
         public function toArray(): array
@@ -39,8 +54,17 @@
                 $component_array[] = $component->toArray();
             }
 
+            $dependency_array = array();
+
+            /** @var Dependency $dependency */
+            foreach($this->Dependencies as $dependency)
+            {
+                $dependency_array[] = $dependency->toArray();
+            }
+
             return array(
                 'package' => $this->Metadata->toArray(),
+                'dependencies' => $dependency_array,
                 'components' => $component_array
             );
         }
@@ -76,6 +100,18 @@
             else
             {
                 throw new InvalidPackageException("The package file is missing 'components'");
+            }
+
+            if(isset($data['dependencies']))
+            {
+                foreach($data['dependencies'] as $dependency)
+                {
+                    $PackageObject->Dependencies[] = Dependency::fromArray($dependency);
+                }
+            }
+            else
+            {
+                throw new InvalidPackageException("The package file is missing 'dependencies'");
             }
 
             return $PackageObject;
