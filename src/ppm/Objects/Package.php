@@ -5,9 +5,12 @@
 
 
     use ppm\Exceptions\InvalidComponentException;
+    use ppm\Exceptions\InvalidConfigurationException;
+    use ppm\Exceptions\InvalidDependencyException;
     use ppm\Exceptions\InvalidPackageException;
     use ppm\Exceptions\MissingPackagePropertyException;
     use ppm\Objects\Package\Component;
+    use ppm\Objects\Package\Configuration;
     use ppm\Objects\Package\Dependency;
     use ppm\Objects\Package\Metadata;
 
@@ -33,12 +36,18 @@
         public $Dependencies;
 
         /**
+         * @var Configuration
+         */
+        public $Configuration;
+
+        /**
          * Package constructor.
          */
         public function __construct()
         {
             $this->Components = [];
             $this->Dependencies = [];
+            $this->Configuration = new Configuration();
         }
 
         /**
@@ -62,9 +71,12 @@
                 $dependency_array[] = $dependency->toArray();
             }
 
+            $PackageArray = $this->Metadata->toArray();
+            $PackageArray['dependencies'] = $dependency_array;
+            $PackageArray['configuration'] = $this->Configuration->toArray();
+
             return array(
                 'package' => $this->Metadata->toArray(),
-                'dependencies' => $dependency_array,
                 'components' => $component_array
             );
         }
@@ -73,9 +85,11 @@
          * @param array $data
          * @param string $base_directory
          * @return Package
-         * @throws InvalidPackageException
          * @throws InvalidComponentException
+         * @throws InvalidPackageException
          * @throws MissingPackagePropertyException
+         * @throws InvalidConfigurationException
+         * @throws InvalidDependencyException
          */
         public static function fromArray(array $data, string $base_directory): Package
         {
@@ -102,9 +116,9 @@
                 throw new InvalidPackageException("The package file is missing 'components'");
             }
 
-            if(isset($data['dependencies']))
+            if(isset($data['package']['dependencies']))
             {
-                foreach($data['dependencies'] as $dependency)
+                foreach($data['package']['dependencies'] as $dependency)
                 {
                     $PackageObject->Dependencies[] = Dependency::fromArray($dependency);
                 }
@@ -112,6 +126,15 @@
             else
             {
                 throw new InvalidPackageException("The package file is missing 'dependencies'");
+            }
+
+            if(isset($data['package']['configuration']))
+            {
+                $PackageObject->Configuration = Configuration::fromArray($data['package']['configuration']);
+            }
+            else
+            {
+                throw new InvalidPackageException("The package file is missing 'configuration'");
             }
 
             return $PackageObject;
