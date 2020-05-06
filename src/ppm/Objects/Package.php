@@ -76,7 +76,7 @@
             $PackageArray['configuration'] = $this->Configuration->toArray();
 
             return array(
-                'package' => $this->Metadata->toArray(),
+                'package' => $PackageArray,
                 'components' => $component_array
             );
         }

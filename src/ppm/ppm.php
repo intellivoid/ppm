@@ -48,37 +48,6 @@
      */
     class ppm
     {
-        /**
-         * @param string $path
-         * @return Source
-         * @throws Exceptions\InvalidComponentException
-         * @throws Exceptions\MissingPackagePropertyException
-         * @throws InvalidPackageException
-         * @throws PathNotFoundException
-         */
-        public static function loadSource(string $path): Source
-        {
-            $SourceObject = new Source();
-            $SourceObject->Path = $path;
-
-            if(file_exists($path) == false)
-            {
-                throw new PathNotFoundException("The path '$path' was not found");
-            }
-
-            if(file_exists($SourceObject->getPackageConfigurationPath()) == false)
-            {
-                throw new InvalidPackageException("The file 'package.json' was not found, is this a valid ppm package?");
-            }
-
-            $PackageConfigurationContents = file_get_contents($SourceObject->getPackageConfigurationPath());
-            $SourceObject->Package = Package::fromArray(
-                json_decode($PackageConfigurationContents, true),
-                $SourceObject->Path
-            );
-
-            return $SourceObject;
-        }
     }
 
     if (PHP_SAPI === 'cli')

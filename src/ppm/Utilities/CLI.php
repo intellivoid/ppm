@@ -3,7 +3,15 @@
 
     namespace ppm\Utilities;
 
+    use Exception;
+    use ppm\Exceptions\InvalidComponentException;
+    use ppm\Exceptions\InvalidConfigurationException;
+    use ppm\Exceptions\InvalidDependencyException;
+    use ppm\Exceptions\InvalidPackageException;
+    use ppm\Exceptions\MissingPackagePropertyException;
+    use ppm\Exceptions\PathNotFoundException;
     use ppm\Objects\Package\Component;
+    use ppm\Objects\Source;
     use ppm\ppm;
     use PpmParser\JsonDecoder;
     use PpmParser\PrettyPrinter\Standard;
@@ -75,6 +83,16 @@
         }
 
         /**
+         * @param string $message
+         * @param Exception $exception
+         */
+        public static function logError(string $message, Exception $exception)
+        {
+            print("\e[91m " . $message . "\e[37m" . PHP_EOL);
+            print("\e[91m " . $exception->getMessage() . "\e[37m" . PHP_EOL);
+        }
+
+        /**
          * Processes the command-line options
          */
         public static function start()
@@ -92,23 +110,35 @@
 
         public static function compilePackage(string $path)
         {
-            $Source = ppm::loadSource($path);
-            $CompiledComponents = array();
+            $starting_time = microtime(true);
+            self::logEvent("Loading from source");
 
-            /** @var Component $component */
-            foreach($Source->Package->Components as $component)
+            try
             {
-                self::logEvent("Processing " . $component->getPath());
-                self::logEvent("Parsing ", false);
-                $ParsedComponent = $component->parse();
-                self::logEvent("Encoding ", false);
-                $Structure = json_encode($ParsedComponent);
-                self::logEvent("Compiling ", false);
-                $Compiled = ZiProto::encode(json_decode($Structure, true));
-                self::logEvent("Success" . PHP_EOL);
-                $CompiledComponents[$component->File] = $Compiled;
+                $Source = Source::loadSource($path);
+            }
+            catch (Exception $e)
+            {
+                self::logError("There was an error while trying to load from source", $e);
+                exit(255);
             }
 
-            file_put_contents("out.ppm", ZiProto::encode($CompiledComponents));
+            self::logEvent("Compiling components");
+            $CompiledComponents = $Source->compileComponents(true);
+
+            self::logEvent("Packing package contents");
+            $Contents = array(
+                "type" => "ppm_package",
+                "ppm_version" => PPM_VERSION,
+                "package" => $Source->Package->toArray(),
+                "compiled_components" => $CompiledComponents
+            );
+            $EncodedContents = ZiProto::encode($Contents);
+            file_put_contents($Source->Package->Metadata->PackageName . ".ppm", $EncodedContents);
+
+            $execution_time = (microtime(true) - $starting_time)/60;
+
+            self::logEvent("Completed! Operation took $execution_time seconds");
+            exit(0);
         }
     }

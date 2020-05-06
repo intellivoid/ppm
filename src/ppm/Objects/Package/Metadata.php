@@ -14,6 +14,11 @@
         /**
          * @var string
          */
+        public $PackageName;
+
+        /**
+         * @var string
+         */
         public $Name;
 
         /**
@@ -47,6 +52,7 @@
         public function toArray(): array
         {
             return array(
+                'package_name' => $this->PackageName,
                 'name' => $this->Name,
                 'version' => $this->Version,
                 'author' => $this->Author,
@@ -64,6 +70,15 @@
         public static function fromArray(array $data): Metadata
         {
             $MetadataObject = new Metadata();
+
+            if(isset($data['package_name']))
+            {
+                $MetadataObject->PackageName = $data['package_name'];
+            }
+            else
+            {
+                throw new MissingPackagePropertyException("The property 'package_name' is missing from the package");
+            }
 
             if(isset($data['name']))
             {
