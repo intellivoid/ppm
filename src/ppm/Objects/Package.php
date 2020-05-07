@@ -57,10 +57,13 @@
         {
             $component_array = array();
 
-            /** @var Component $component */
-            foreach($this->Components as $component)
+            if($this->Components !== null)
             {
-                $component_array[] = $component->toArray();
+                /** @var Component $component */
+                foreach($this->Components as $component)
+                {
+                    $component_array[] = $component->toArray();
+                }
             }
 
             $dependency_array = array();
@@ -75,10 +78,20 @@
             $PackageArray['dependencies'] = $dependency_array;
             $PackageArray['configuration'] = $this->Configuration->toArray();
 
-            return array(
-                'package' => $PackageArray,
-                'components' => $component_array
-            );
+            if($this->Components == null)
+            {
+                return array(
+                    'package' => $PackageArray
+                );
+            }
+            else
+            {
+                return array(
+                    'package' => $PackageArray,
+                    'components' => $component_array
+                );
+            }
+
         }
 
         /**
@@ -91,7 +104,7 @@
          * @throws InvalidConfigurationException
          * @throws InvalidDependencyException
          */
-        public static function fromArray(array $data, string $base_directory): Package
+        public static function fromArray(array $data, string $base_directory=null): Package
         {
             $PackageObject = new Package();
 
@@ -104,16 +117,23 @@
                 throw new InvalidPackageException("The package file is missing 'package'");
             }
 
-            if(isset($data['components']))
+            if(is_null($base_directory))
             {
-                foreach($data['components'] as $component)
-                {
-                    $PackageObject->Components[] = Component::fromArray($component, $base_directory);
-                }
+                $PackageObject->Components = null;
             }
             else
             {
-                throw new InvalidPackageException("The package file is missing 'components'");
+                if(isset($data['components']))
+                {
+                    foreach($data['components'] as $component)
+                    {
+                        $PackageObject->Components[] = Component::fromArray($component, $base_directory);
+                    }
+                }
+                else
+                {
+                    throw new InvalidPackageException("The package file is missing 'components'");
+                }
             }
 
             if(isset($data['package']['dependencies']))

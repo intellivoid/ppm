@@ -1,0 +1,17 @@
+{
+  "ppm_version": "1.0.0.0",
+  "packages": {
+    "com.intellivoid.mongodb_driver": {
+      "versions": ["1.6"],
+      "version_configurations": {
+        "1.6": {
+          "dependencies": [
+            {"package": "com.intellivoid.acm", "version": "latest", "required": false}
+          ],
+          "autoload_method": "static",
+          "cli_main": "ppm::cli_example.php"
+        }
+      }
+    }
+  }
+}

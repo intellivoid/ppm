@@ -4,16 +4,19 @@
     namespace ppm\Utilities;
 
     use Exception;
+    use ppm\Abstracts\AutoloadMethod;
     use ppm\Exceptions\InvalidComponentException;
     use ppm\Exceptions\InvalidConfigurationException;
     use ppm\Exceptions\InvalidDependencyException;
     use ppm\Exceptions\InvalidPackageException;
     use ppm\Exceptions\MissingPackagePropertyException;
     use ppm\Exceptions\PathNotFoundException;
+    use ppm\Objects\Package;
     use ppm\Objects\Package\Component;
     use ppm\Objects\Source;
     use ppm\ppm;
-    use PpmParser\JsonDecoder;
+    use PpmParser\JsonDecoder as JsonDecoderAlias;
+    use PpmParser\ParserFactory;
     use PpmParser\PrettyPrinter\Standard;
     use ZiProto\ZiProto;
 
@@ -31,10 +34,28 @@
             $options = "";
             $long_opts = array(
                 "ppm",
-                "compile::"
+                "compile::",
+                "install::",
+                "uninstall::",
+                "version::"
             );
 
             return getopt($options, $long_opts);
+        }
+
+        public static function getBooleanInput(string $message): bool
+        {
+            print($message . " [Y/n] ");
+
+            $handle = fopen ("php://stdin","r");
+            $line = fgets($handle);
+
+            if(trim(strtolower($line)) != 'y')
+            {
+                return false;
+            }
+
+            return true;
         }
 
         /**
@@ -62,6 +83,12 @@
         {
             print("\033[37m \033[33m--compile\033[37m=\"<path>\"" . PHP_EOL);
             print("\033[37m     Compiles a PHP library from source to a .ppm file" . PHP_EOL);
+            print("\033[37m \033[33m--install\033[37m=\"<path>\"" . PHP_EOL);
+            print("\033[37m     Installs a .ppm package to the system" . PHP_EOL);
+            print("\033[37m \033[33m--uninstall\033[37m=\"<package_name>\"" . PHP_EOL);
+            print("\033[37m     Completely uninstalls a installed package from the system" . PHP_EOL);
+            print("\033[37m \033[33m--uninstall\033[37m=\"<package_name>\" \e[33m--version\e[37m=\"<version>\"" . PHP_EOL);
+            print("\033[37m     Uninstalls a specific version of the package from the system" . PHP_EOL);
         }
 
         /**
@@ -86,10 +113,13 @@
          * @param string $message
          * @param Exception $exception
          */
-        public static function logError(string $message, Exception $exception)
+        public static function logError(string $message, Exception $exception=null)
         {
             print("\e[91m " . $message . "\e[37m" . PHP_EOL);
-            print("\e[91m " . $exception->getMessage() . "\e[37m" . PHP_EOL);
+            if(is_null($exception) == false)
+            {
+                print("\e[91m " . $exception->getMessage() . "\e[37m" . PHP_EOL);
+            }
         }
 
         /**
@@ -105,9 +135,149 @@
                 return;
             }
 
+            if(isset(self::options()['install']))
+            {
+                self::installPackage(self::options()['install']);
+                return;
+            }
+
+            if(isset(self::options()['uninstall']))
+            {
+                if(isset(self::options()["version"]))
+                {
+                    self::uninstallPackage(self::options()['uninstall'], self::options()['version']);
+                }
+                else
+                {
+                    self::uninstallPackage(self::options()['uninstall']);
+                }
+
+                return;
+            }
+
             self::displayHelpMenu();
         }
 
+        public static function uninstallPackage(string $path, string $version="all")
+        {
+
+        }
+
+        /**
+         * @param string $path
+         */
+        public static function installPackage(string $path)
+        {
+            if(file_exists($path) == false)
+            {
+                self::logError("The path '$path' does not exist");
+                exit(255);
+            }
+
+            try
+            {
+                $PackageContents = ZiProto::decode(file_get_contents($path));
+            }
+            catch(Exception $e)
+            {
+                self::logError("The package cannot be opened correctly, the file may corrupted");
+                exit(255);
+            }
+
+            if(isset($PackageContents['package']) == false)
+            {
+                self::logError("This package is missing information, is this a ppm package?");
+                exit(255);
+            }
+
+            try
+            {
+                $PackageInformation = Package::fromArray($PackageContents['package']);
+            }
+            catch (Exception $e)
+            {
+                self::logError("There was an error while trying to read the package information", $e);
+                exit(255);
+            }
+
+            print("Installation Details" . PHP_EOL . PHP_EOL);
+            print(" Package       :   \e[32m" . $PackageInformation->Metadata->PackageName . "\e[37m" . PHP_EOL);
+            print(" Name          :   \e[32m" . $PackageInformation->Metadata->Name . "\e[37m" . PHP_EOL);
+            print(" Version       :   \e[32m" . $PackageInformation->Metadata->Version . "\e[37m" . PHP_EOL);
+            print(" Author        :   \e[32m" . $PackageInformation->Metadata->Author . "\e[37m" . PHP_EOL);
+            print(" Organization  :   \e[32m" . $PackageInformation->Metadata->Organization . "\e[37m" . PHP_EOL);
+            print(" URL           :   \e[32m" . $PackageInformation->Metadata->URL . PHP_EOL . "\e[37m" . PHP_EOL);
+            print($PackageInformation->Metadata->Description . PHP_EOL . PHP_EOL);
+
+            if(self::getBooleanInput("Do you want to install this package?") == false)
+            {
+                self::logError("Installation denied, aborting.");
+                exit(255);
+            }
+
+            self::logEvent("Preparing installation");
+            $PackageLock = ppm::getPackageLock();
+
+            if($PackageLock->packageExists($PackageInformation->Metadata->PackageName, $PackageInformation->Metadata->Version))
+            {
+                $package_name = $PackageInformation->Metadata->PackageName;
+                $package_version =  $PackageInformation->Metadata->Version;
+                self::logError("Installation failed, the package " . $package_name . "==" . $package_version . " is already satisfied");
+                exit(255);
+            }
+
+            $PackageLockItem = $PackageLock->addPackage($PackageInformation);
+
+            $InstallationPath = PathFinder::getPackagePath(
+                $PackageInformation->Metadata->PackageName, $PackageInformation->Metadata->Version, true
+            );
+
+            foreach($PackageContents["compiled_components"] as $component_name => $component)
+            {
+                self::logEvent("Installing '" . $component_name . "'");
+                if(stripos($component_name, "::"))
+                {
+                    $pieces = explode("::", $component_name);
+                    $file_path = $InstallationPath . DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, $pieces);
+                    array_pop($pieces);
+                    $path = $InstallationPath . DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, $pieces);
+
+                    if(file_exists($path) == false)
+                    {
+                        mkdir($path, 0777, true);
+                    }
+                }
+                else
+                {
+                    $file_path = $InstallationPath . DIRECTORY_SEPARATOR . $component_name;
+                }
+
+                $DecompiledComponent = json_encode(ZiProto::decode($component));
+                $JsonDecoder = new JsonDecoderAlias();
+                $AST = $JsonDecoder->decode($DecompiledComponent);
+                $prettyPrinter = new Standard;
+                file_put_contents($file_path, $prettyPrinter->prettyPrintFile($AST));
+            }
+
+            self::logEvent("Creating Package Data");
+
+            $PackageDataPath = $InstallationPath . DIRECTORY_SEPARATOR . '.ppm';
+            $PackageInformationPath = $PackageDataPath . DIRECTORY_SEPARATOR . 'PACKAGE';
+            $PackageAutoloaderPath = $PackageDataPath . DIRECTORY_SEPARATOR . 'COMPONENTS';
+
+            mkdir($PackageDataPath);
+            file_put_contents(
+                $PackageInformationPath, ZiProto::encode($PackageInformation->toArray()));
+            file_put_contents(
+                $PackageAutoloaderPath, ZiProto::encode(array_keys($PackageContents["compiled_components"])));
+
+            self::logEvent("Updating Package Lock");
+            ppm::savePackageLock($PackageLock);
+        }
+
+        /**
+         * @param string $path
+         */
         public static function compilePackage(string $path)
         {
             $starting_time = microtime(true);
