@@ -4,19 +4,12 @@
     namespace ppm\Utilities;
 
     use Exception;
-    use ppm\Abstracts\AutoloadMethod;
-    use ppm\Exceptions\InvalidComponentException;
-    use ppm\Exceptions\InvalidConfigurationException;
-    use ppm\Exceptions\InvalidDependencyException;
-    use ppm\Exceptions\InvalidPackageException;
-    use ppm\Exceptions\MissingPackagePropertyException;
-    use ppm\Exceptions\PathNotFoundException;
     use ppm\Objects\Package;
-    use ppm\Objects\Package\Component;
+    use ppm\Objects\PackageLock;
+    use ppm\Objects\PackageLock\PackageLockItem;
     use ppm\Objects\Source;
     use ppm\ppm;
     use PpmParser\JsonDecoder as JsonDecoderAlias;
-    use PpmParser\ParserFactory;
     use PpmParser\PrettyPrinter\Standard;
     use ZiProto\ZiProto;
 
@@ -34,6 +27,8 @@
             $options = "";
             $long_opts = array(
                 "ppm",
+                "no-prompt",
+                "no-intro",
                 "compile::",
                 "install::",
                 "uninstall::",
@@ -45,6 +40,11 @@
 
         public static function getBooleanInput(string $message): bool
         {
+            if(isset(CLI::options()["no-prompt"]))
+            {
+                return true;
+            }
+
             print($message . " [Y/n] ");
 
             $handle = fopen ("php://stdin","r");
@@ -63,6 +63,11 @@
          */
         public static function displayIntro()
         {
+            if(isset(CLI::options()["no-intro"]))
+            {
+                return;
+            }
+
             print("\e[34m ________  ________  _____ ______      " . PHP_EOL);
             print("\e[34m|\   __  \|\   __  \|\   _ \  _   \    " . PHP_EOL);
             print("\e[34m\ \  \|\  \ \  \|\  \ \  \\\__\ \   \   " . PHP_EOL);
@@ -158,9 +163,75 @@
             self::displayHelpMenu();
         }
 
-        public static function uninstallPackage(string $path, string $version="all")
+        public static function uninstallPackage(string $package, string $version="all")
         {
+            $PackageLock = ppm::getPackageLock();
 
+            if($PackageLock->packageExists($package, $version) == false)
+            {
+                if($version == "all" || $version == "latest")
+                {
+                    self::logError("The package $package is not installed");
+                    exit(255);
+                }
+                else
+                {
+                    self::logError("The package $package==$version is not installed");
+                    exit(255);
+                }
+            }
+
+            if($version == "all")
+            {
+                if(self::getBooleanInput("You are about to uninstall all versions of $package, do you want to continue?") == false)
+                {
+                    self::logError("Installation denied, aborting.");
+                    exit(255);
+                }
+            }
+            elseif($version == "latest")
+            {
+                if(self::getBooleanInput("You are about to uninstall the latest version of $package, do you want to continue?") == false)
+                {
+                    self::logError("Installation denied, aborting.");
+                    exit(255);
+                }
+            }
+            else
+            {
+                if(self::getBooleanInput("You are about to uninstall $package==$version, do you want to continue?") == false)
+                {
+                    self::logError("Installation denied, aborting.");
+                    exit(255);
+                }
+            }
+
+            /** @var PackageLockItem $PackageLockItem */
+            $PackageLockItem = $PackageLock->Packages[$package];
+
+            if($version == "all")
+            {
+                foreach($PackageLock->Packages[$package]->Versions as $version)
+                {
+                    self::logEvent("Uninstalling " . $PackageLockItem->PackageName . "==" . $version);
+                    IO::deleteDirectory($PackageLockItem->getPackagePath($version));
+                    $PackageLock->removePackage($package, $version);
+                }
+            }
+            else
+            {
+                if($version == "latest")
+                {
+                    $version = $PackageLockItem->getLatestVersion();
+                }
+
+                self::logEvent("Uninstalling " . $PackageLockItem->PackageName . "==" . $version);
+                IO::deleteDirectory($PackageLockItem->getPackagePath($version));
+                $PackageLock->removePackage($package, $version);
+            }
+
+            self::logEvent("Updating Package Lock");
+            ppm::savePackageLock($PackageLock);
         }
 
         /**
@@ -217,24 +288,22 @@
 
             self::logEvent("Preparing installation");
             $PackageLock = ppm::getPackageLock();
+            $package_name = $PackageInformation->Metadata->PackageName;
+            $package_version =  $PackageInformation->Metadata->Version;
 
             if($PackageLock->packageExists($PackageInformation->Metadata->PackageName, $PackageInformation->Metadata->Version))
             {
-                $package_name = $PackageInformation->Metadata->PackageName;
-                $package_version =  $PackageInformation->Metadata->Version;
                 self::logError("Installation failed, the package " . $package_name . "==" . $package_version . " is already satisfied");
                 exit(255);
             }
 
-            $PackageLockItem = $PackageLock->addPackage($PackageInformation);
-
+            self::logEvent("Installing " . $package_name . "==" . $package_version);
             $InstallationPath = PathFinder::getPackagePath(
                 $PackageInformation->Metadata->PackageName, $PackageInformation->Metadata->Version, true
             );
 
             foreach($PackageContents["compiled_components"] as $component_name => $component)
             {
-                self::logEvent("Installing '" . $component_name . "'");
                 if(stripos($component_name, "::"))
                 {
                     $pieces = explode("::", $component_name);
@@ -254,8 +323,8 @@
 
                 $DecompiledComponent = json_encode(ZiProto::decode($component));
                 $JsonDecoder = new JsonDecoderAlias();
-                $AST = $JsonDecoder->decode($DecompiledComponent);
                 $prettyPrinter = new Standard;
+                $AST = $JsonDecoder->decode($DecompiledComponent);
                 file_put_contents($file_path, $prettyPrinter->prettyPrintFile($AST));
             }
 
@@ -272,6 +341,7 @@
                 $PackageAutoloaderPath, ZiProto::encode(array_keys($PackageContents["compiled_components"])));
 
             self::logEvent("Updating Package Lock");
+            $PackageLock->addPackage($PackageInformation);
             ppm::savePackageLock($PackageLock);
         }
 

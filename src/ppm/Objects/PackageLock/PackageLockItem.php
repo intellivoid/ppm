@@ -63,6 +63,23 @@
         /**
          * @param string $version
          * @return bool
+         */
+        public function removeVersion(string $version): bool
+        {
+            if(in_array($version, $this->Versions) == false)
+            {
+                return false;
+            }
+            
+            $this->Versions = array_diff($this->Versions, array($version));
+            unset($this->VersionConfigurations[$version]);
+
+            return true;
+        }
+
+        /**
+         * @param string $version
+         * @return bool
          * @throws VersionNotFoundException
          */
         public function validateVersion(string $version="latest"): bool

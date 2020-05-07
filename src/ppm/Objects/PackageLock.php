@@ -68,6 +68,39 @@
          * @param string $version
          * @return bool
          */
+        public function removePackage(string $package_name, string $version="all"): bool
+        {
+            if(isset($this->Packages[$package_name]) == false)
+            {
+                return false;
+            }
+
+            if($version == "all")
+            {
+                unset($this->Packages[$package_name]);
+                return true;
+            }
+
+
+            /** @var PackageLockItem $package_lock */
+            $package_lock = $this->Packages[$package_name];
+
+            if($version == "latest")
+            {
+                $version = $package_lock->getLatestVersion();
+            }
+
+            $this->Packages[$package_name]->removeVersion($version);
+            $this->clearUnusable();
+
+            return true;
+        }
+
+        /**
+         * @param string $package_name
+         * @param string $version
+         * @return bool
+         */
         public function packageExists(string $package_name, string $version="latest"): bool
         {
             if(isset($this->Packages[$package_name]) == false)
@@ -79,6 +112,11 @@
             $package_lock = $this->Packages[$package_name];
 
             if($version == "latest")
+            {
+                $version = $package_lock->getLatestVersion();
+            }
+
+            if($version == "all")
             {
                 $version = $package_lock->getLatestVersion();
             }
@@ -97,6 +135,24 @@
 
             return false;
         }
+
+        /**
+         * @return bool
+         */
+        public function clearUnusable(): bool
+        {
+            /** @var PackageLockItem $package_lock_item */
+            foreach($this->Packages as $package => $package_lock_item)
+            {
+                if(count($package_lock_item->Versions) == 0)
+                {
+                    unset($this->Packages[$package]);
+                }
+            }
+
+            return true;
+        }
+
 
         /**
          * @return array

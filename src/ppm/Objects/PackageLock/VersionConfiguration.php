@@ -69,6 +69,7 @@
         public static function fromArray(array $data, string $version): VersionConfiguration
         {
             $VersionConfigurationObject = new VersionConfiguration();
+            $VersionConfigurationObject->Version = $version;
 
             if(isset($data['cli_main']))
             {
@@ -81,7 +82,7 @@
 
             if(isset($data['autoload_method']))
             {
-                $VersionConfigurationObject->CliMain = $data['autoload_method'];
+                $VersionConfigurationObject->AutoloadMethod = $data['autoload_method'];
             }
             else
             {
