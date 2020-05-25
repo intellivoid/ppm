@@ -35,4 +35,43 @@
                 rmdir($dir);
             }
         }
+
+        /**
+         * Determines if the directory can be written to
+         *
+         * @param $path
+         * @return bool
+         */
+        public static function writeTest($path): bool
+        {
+            if(file_exists($path) == false)
+            {
+                return false;
+            }
+
+            if(is_writeable($path) == false)
+            {
+                return false;
+            }
+
+            $write_test_file = $path . DIRECTORY_SEPARATOR . 'write_test';
+
+            if(file_exists($write_test_file))
+            {
+                if(@unlink($write_test_file) !== true)
+                {
+                    return false;
+                }
+            }
+
+            file_put_contents($write_test_file, "0");
+
+            if(file_exists($write_test_file) == false)
+            {
+                return false;
+            }
+
+            unlink($write_test_file);
+            return true;
+        }
     }

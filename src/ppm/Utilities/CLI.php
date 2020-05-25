@@ -4,6 +4,8 @@
     namespace ppm\Utilities;
 
     use Exception;
+    use ppm\Exceptions\InvalidPackageLockException;
+    use ppm\Exceptions\VersionNotFoundException;
     use ppm\Objects\Package;
     use ppm\Objects\PackageLock;
     use ppm\Objects\PackageLock\PackageLockItem;
@@ -168,8 +170,8 @@
          * 
          * @param string $package
          * @param string $version
-         * @throws \ppm\Exceptions\InvalidPackageLockException
-         * @throws \ppm\Exceptions\VersionNotFoundException
+         * @throws InvalidPackageLockException
+         * @throws VersionNotFoundException
          */
         public static function uninstallPackage(string $package, string $version="all")
         {
