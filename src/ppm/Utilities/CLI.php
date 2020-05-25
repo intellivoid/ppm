@@ -410,7 +410,7 @@
                 {
                     if($dependency->Required)
                     {
-                        self:self::logError("This package requires the dependency '\e[37m" . $dependency->Package . "==\e[32m" .  $dependency->Version . "\e[91m' which is not installed");
+                        self:self::logError("Installation failed, This package requires the dependency '\e[37m" . $dependency->Package . "==\e[32m" .  $dependency->Version . "\e[91m' which is not installed");
                         exit(255);
                     }
                     else
