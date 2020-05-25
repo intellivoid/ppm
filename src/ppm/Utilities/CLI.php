@@ -163,6 +163,14 @@
             self::displayHelpMenu();
         }
 
+        /**
+         * Uninstalls an existing package
+         * 
+         * @param string $package
+         * @param string $version
+         * @throws \ppm\Exceptions\InvalidPackageLockException
+         * @throws \ppm\Exceptions\VersionNotFoundException
+         */
         public static function uninstallPackage(string $package, string $version="all")
         {
             $PackageLock = ppm::getPackageLock();

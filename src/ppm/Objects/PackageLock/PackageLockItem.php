@@ -122,6 +122,11 @@
          */
         public function import(string $version="latest"): bool
         {
+            if($version == "latest")
+            {
+                $version = self::getLatestVersion();
+            }
+
             self::validateVersion($version);
 
             /** @var VersionConfiguration $Configuration */

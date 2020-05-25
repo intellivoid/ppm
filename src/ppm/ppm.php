@@ -4,9 +4,12 @@
     namespace ppm;
 
 
+    use ppm\Exceptions\PackageNotFoundException;
+    use ppm\Objects\Package;
     use ppm\Objects\PackageLock;
     use ppm\Utilities\CLI;
     use ppm\Utilities\PathFinder;
+    use ZiProto\ZiProto;
 
     include_once(__DIR__ . DIRECTORY_SEPARATOR . 'Abstracts' . DIRECTORY_SEPARATOR . 'AutoloadMethod.php');
 
@@ -17,6 +20,7 @@
     include_once(__DIR__ . DIRECTORY_SEPARATOR . 'Exceptions' . DIRECTORY_SEPARATOR . 'InvalidPackageException.php');
     include_once(__DIR__ . DIRECTORY_SEPARATOR . 'Exceptions' . DIRECTORY_SEPARATOR . 'InvalidPackageLockException.php');
     include_once(__DIR__ . DIRECTORY_SEPARATOR . 'Exceptions' . DIRECTORY_SEPARATOR . 'MissingPackagePropertyException.php');
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . 'Exceptions' . DIRECTORY_SEPARATOR . 'PackageNotFoundException.php');
     include_once(__DIR__ . DIRECTORY_SEPARATOR . 'Exceptions' . DIRECTORY_SEPARATOR . 'PathNotFoundException.php');
     include_once(__DIR__ . DIRECTORY_SEPARATOR . 'Exceptions' . DIRECTORY_SEPARATOR . 'VersionNotFoundException.php');
 
@@ -34,6 +38,8 @@
     include_once(__DIR__ . DIRECTORY_SEPARATOR . 'Utilities' . DIRECTORY_SEPARATOR . 'CLI.php');
     include_once(__DIR__ . DIRECTORY_SEPARATOR . 'Utilities' . DIRECTORY_SEPARATOR . 'IO.php');
     include_once(__DIR__ . DIRECTORY_SEPARATOR . 'Utilities' . DIRECTORY_SEPARATOR . 'PathFinder.php');
+
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . 'functions.php');
 
     if(class_exists("PpmParser\Parser") == false)
     {
@@ -54,6 +60,15 @@
      */
     class ppm
     {
+        /**
+         * @var array
+         */
+        private static $importedPackages;
+
+        /**
+         * @return PackageLock
+         * @throws Exceptions\InvalidPackageLockException
+         */
         public static function getPackageLock(): PackageLock
         {
             $path = PathFinder::getPackageLockPath(true);
@@ -68,6 +83,10 @@
             return PackageLock::fromArray(json_decode(file_get_contents($path), true));
         }
 
+        /**
+         * @param PackageLock $packageLock
+         * @return bool
+         */
         public static function savePackageLock(PackageLock $packageLock): bool
         {
             $path = PathFinder::getPackageLockPath(true);
@@ -75,6 +94,26 @@
             $contents = json_encode($packageLock->toArray(), JSON_PRETTY_PRINT);
             file_put_contents($path, $contents);
 
+            return true;
+        }
+
+        public static function import(string $package, string $version="latest"): bool
+        {
+            if(isset(self::$importedPackages[$package]))
+            {
+                return true;
+            }
+
+            $PackageLock = self::getPackageLock();
+
+            if($PackageLock->packageExists($package, $version) == false)
+            {
+                throw new PackageNotFoundException("The package $package==$version is not installed");
+            }
+
+            $PackageLock->getPackage($package)->import($version);
+
+            self::$importedPackages[$package] = $version;
             return true;
         }
     }

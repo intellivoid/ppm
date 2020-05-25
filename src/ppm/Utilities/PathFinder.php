@@ -65,6 +65,17 @@
             return $path;
         }
 
+        /**
+         * @param string $package
+         * @param string $version
+         * @param bool $create
+         * @return string
+         */
+        public static function getPackageDataPath(string $package, string $version, bool $create=false): string
+        {
+            return self::getPackagePath($package, $version, $create) . DIRECTORY_SEPARATOR . '.ppm';
+        }
+
         public static function getPackageLockPath(bool $create=false): string
         {
             return self::getMainPath($create) . DIRECTORY_SEPARATOR . "ppm.lock";

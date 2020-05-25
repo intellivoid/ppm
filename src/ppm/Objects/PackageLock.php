@@ -5,9 +5,11 @@
 
 
     use ppm\Exceptions\InvalidPackageLockException;
+    use ppm\Exceptions\PackageNotFoundException;
     use ppm\Objects\Package\Dependency;
     use ppm\Objects\PackageLock\PackageLockItem;
     use ppm\Objects\PackageLock\VersionConfiguration;
+    use PpmParser\Node\Expr\Cast\Bool_;
 
     /**
      * Class PackageLock
@@ -32,6 +34,21 @@
         {
             $this->PpmVersion = PPM_VERSION;
             $this->Packages = array();
+        }
+
+        /**
+         * @param string $package
+         * @return PackageLockItem
+         * @throws PackageNotFoundException
+         */
+        public function getPackage(string $package): PackageLockItem
+        {
+            if(isset($this->Packages[$package]) == false)
+            {
+                throw new PackageNotFoundException("The package $package was not found in the package lock");
+            }
+
+            return $this->Packages[$package];
         }
 
         /**

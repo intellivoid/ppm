@@ -20,13 +20,12 @@
          * @param string $package_path
          * @return bool
          * @throws AutoloaderException
-         * @throws InvalidComponentException
          */
         public static function loadStaticLoader(string $package_path): bool
         {
-            $autoloader = $package_path . DIRECTORY_SEPARATOR . 'autoload.static.ppm';
+            $autoloader = $package_path . DIRECTORY_SEPARATOR . '.ppm' . DIRECTORY_SEPARATOR . 'COMPONENTS';
 
-            if(file_exists($package_path . $autoloader) == false)
+            if(file_exists($autoloader) == false)
             {
                 throw new AutoloaderException("The file '$autoloader' was not found");
             }
@@ -42,19 +41,16 @@
 
             foreach($Autoloader as $component)
             {
-                $component = Component::fromArray($component, $package_path);
+                $path = $package_path . DIRECTORY_SEPARATOR . str_ireplace("::", DIRECTORY_SEPARATOR, $component);
 
-                if(file_exists($component->getPath()) == false)
+                if(file_exists($path) == false)
                 {
-                    if($component->Required)
-                    {
-                        throw new AutoloaderException("A required component '" . $component->File . "' was not found in '" . $component->getPath() . "'");
-                    }
+                    throw new AutoloaderException("A required component '" . $component . "' was not found in '" . $package_path . "'");
                 }
                 else
                 {
-                    // TODO: Check if the package was already imported to speed up the process
-                    include_once($component->getPath());
+                    /** @noinspection PhpIncludeInspection */
+                    include_once($path);
                 }
             }
 
