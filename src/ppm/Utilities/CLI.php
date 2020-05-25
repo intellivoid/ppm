@@ -191,6 +191,18 @@
                 }
             }
 
+            if(System::isRoot() == false)
+            {
+                self::logError("This operation requires root privileges, please run ppm with 'sudo -H'");
+                exit(255);
+            }
+
+            if(IO::writeTest(PathFinder::getMainPath(true)) == false)
+            {
+                self::logError("Write test failed, cannot write to the PPM installation directory");
+                exit(255);
+            }
+
             if($version == "all")
             {
                 if(self::getBooleanInput("You are about to uninstall all versions of $package, do you want to continue?") == false)
@@ -281,6 +293,18 @@
                 exit(255);
             }
 
+            if(System::isRoot() == false)
+            {
+                self::logError("This operation requires root privileges, please run ppm with 'sudo -H'");
+                exit(255);
+            }
+
+            if(IO::writeTest(PathFinder::getMainPath(true)) == false)
+            {
+                self::logError("Write test failed, cannot write to the PPM installation directory");
+                exit(255);
+            }
+
             print("Installation Details" . PHP_EOL . PHP_EOL);
             print(" Package       :   \e[32m" . $PackageInformation->Metadata->PackageName . "\e[37m" . PHP_EOL);
             print(" Name          :   \e[32m" . $PackageInformation->Metadata->Name . "\e[37m" . PHP_EOL);
@@ -323,7 +347,7 @@
 
                     if(file_exists($path) == false)
                     {
-                        mkdir($path, 0777, true);
+                        mkdir($path, 200, true);
                     }
                 }
                 else
@@ -336,6 +360,7 @@
                 $prettyPrinter = new Standard;
                 $AST = $JsonDecoder->decode($DecompiledComponent);
                 file_put_contents($file_path, $prettyPrinter->prettyPrintFile($AST));
+                System::setPermissions($file_path, 200);
             }
 
             self::logEvent("Creating Package Data");

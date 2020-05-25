@@ -26,4 +26,22 @@
 
             return false;
         }
+
+        /**
+         * Sets permissions to the given path
+         *
+         * @param string $path
+         * @param int $permissions
+         * @return bool
+         */
+        public static function setPermissions(string $path, int $permissions): bool
+        {
+            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN')
+            {
+                return false;
+            }
+
+            chmod($path, $permissions);
+            return true;
+        }
     }
