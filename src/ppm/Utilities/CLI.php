@@ -223,6 +223,12 @@
         {
             $PackageLock = ppm::getPackageLock();
 
+            if(count($PackageLock->Packages) == 0)
+            {
+                self::logError("There are no installed PPM packages");
+                exit(255);
+            }
+
             /** @var PackageLockItem $packageLockItem */
             foreach($PackageLock->Packages as $packageLockItem)
             {
