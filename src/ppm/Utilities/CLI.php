@@ -7,7 +7,6 @@
     use ppm\Exceptions\InvalidPackageLockException;
     use ppm\Exceptions\VersionNotFoundException;
     use ppm\Objects\Package;
-    use ppm\Objects\PackageLock;
     use ppm\Objects\PackageLock\PackageLockItem;
     use ppm\Objects\Source;
     use ppm\ppm;
@@ -31,6 +30,7 @@
                 "ppm",
                 "no-prompt",
                 "no-intro",
+                "installed",
                 "compile::",
                 "install::",
                 "uninstall::",
@@ -96,6 +96,8 @@
             print("\033[37m     Completely uninstalls a installed package from the system" . PHP_EOL);
             print("\033[37m \033[33m--uninstall\033[37m=\"<package_name>\" \e[33m--version\e[37m=\"<version>\"" . PHP_EOL);
             print("\033[37m     Uninstalls a specific version of the package from the system" . PHP_EOL);
+            print("\033[37m \033[33m--installed" . PHP_EOL);
+            print("\033[37m     Lists all the installed packages on the system" . PHP_EOL);
         }
 
         /**
@@ -142,27 +144,86 @@
                 return;
             }
 
+
             if(isset(self::options()['install']))
             {
-                self::installPackage(self::options()['install']);
+                try
+                {
+                    self::installPackage(self::options()['install']);
+                }
+                catch (InvalidPackageLockException $e)
+                {
+                    self::logError("There was an error while installing the package", $e);
+                    exit(255);
+                }
+
                 return;
             }
 
             if(isset(self::options()['uninstall']))
             {
-                if(isset(self::options()["version"]))
+                try
                 {
-                    self::uninstallPackage(self::options()['uninstall'], self::options()['version']);
+                    if(isset(self::options()["version"]))
+                    {
+
+                        self::uninstallPackage(self::options()['uninstall'], self::options()['version']);
+
+                    }
+                    else
+                    {
+                        self::uninstallPackage(self::options()['uninstall']);
+                    }
                 }
-                else
+                catch (InvalidPackageLockException $e)
                 {
-                    self::uninstallPackage(self::options()['uninstall']);
+                    self::logError("Failed to uninstall package, Invalid Package Lock Error", $e);
+                    exit(255);
+                }
+                catch (VersionNotFoundException $e)
+                {
+                    self::logError("Failed to uninstall package, Version not found", $e);
+                    exit(255);
                 }
 
                 return;
             }
 
+            if(isset(self::options()['installed']))
+            {
+                try
+                {
+                    self::getInstalledPackages();
+                }
+                catch (InvalidPackageLockException $e)
+                {
+                    self::logError("Failed to list installed packages, Invalid Package Lock Error", $e);
+                    exit(255);
+                }
+                
+                return;
+            }
+
             self::displayHelpMenu();
+        }
+
+        /**
+         * @throws InvalidPackageLockException
+         */
+        public static function getInstalledPackages()
+        {
+            $PackageLock = ppm::getPackageLock();
+
+            /** @var PackageLockItem $packageLockItem */
+            foreach($PackageLock->Packages as $packageLockItem)
+            {
+                foreach($packageLockItem->Versions as $version)
+                {
+                    print("\e[37m" . $packageLockItem->PackageName . "==\e[32m" . $version . "\e[37m" . PHP_EOL);
+                }
+            }
+
+            exit(0);
         }
 
         /**
@@ -258,6 +319,7 @@
 
         /**
          * @param string $path
+         * @throws InvalidPackageLockException
          */
         public static function installPackage(string $path)
         {
