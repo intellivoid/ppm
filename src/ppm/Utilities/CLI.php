@@ -132,6 +132,15 @@
         }
 
         /**
+         * @param string $message
+         */
+        public static function logWarning(string $message)
+        {
+            print("\e[33m WARNING: \e[37m " . $message . "\e[37m" . PHP_EOL);
+
+        }
+
+        /**
          * Processes the command-line options
          */
         public static function start()
@@ -200,7 +209,7 @@
                     self::logError("Failed to list installed packages, Invalid Package Lock Error", $e);
                     exit(255);
                 }
-                
+
                 return;
             }
 
@@ -392,6 +401,25 @@
                 self::logError("Installation failed, the package " . $package_name . "==" . $package_version . " is already satisfied");
                 exit(255);
             }
+
+            // Check dependencies
+            /** @var Package\Dependency $dependency */
+            foreach($PackageInformation->Dependencies as $dependency)
+            {
+                if($PackageLock->packageExists($dependency->Package, $dependency->Version) == false)
+                {
+                    if($dependency->Required)
+                    {
+                        self:self::logError("This package requires the dependency '\e[37m" . $dependency->Package . "==\e[32m" .  $dependency->Version . "\e[91m' which is not installed");
+                        exit(255);
+                    }
+                    else
+                    {
+                        self::logWarning("This package uses a non-required dependency '" . $dependency->Package . "==\e[32m" .  $dependency->Version . "\e[37m' which is not installed");
+                    }
+                }
+            }
+
 
             self::logEvent("Installing " . $package_name . "==" . $package_version);
             $InstallationPath = PathFinder::getPackagePath(
