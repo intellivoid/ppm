@@ -399,4 +399,16 @@
             }
             return $classes;
         }
+
+        /**
+         * Sets auto-refresh mode.
+         *
+         * @param bool $on
+         * @return $this
+         */
+        public function setAutoRefresh(bool $on=true): self
+        {
+            $this->autoRebuild = $on;
+            return $this;
+        }
     }
