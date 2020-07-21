@@ -156,4 +156,22 @@
             }
             return $best;
         }
+
+        /**
+         * @param ReflectionClass $rc
+         * @param string $pattern
+         * @return array
+         */
+        private static function parseFullDoc(ReflectionClass $rc, string $pattern): array
+        {
+            do {
+                $doc[] = $rc->getDocComment();
+                $traits = $rc->getTraits();
+                while ($trait = array_pop($traits)) {
+                    $doc[] = $trait->getDocComment();
+                    $traits += $trait->getTraits();
+                }
+            } while ($rc = $rc->getParentClass());
+            return preg_match_all($pattern, implode($doc), $m) ? $m[1] : [];
+        }
     }
