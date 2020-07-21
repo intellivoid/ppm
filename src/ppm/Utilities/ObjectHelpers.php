@@ -174,4 +174,28 @@
             } while ($rc = $rc->getParentClass());
             return preg_match_all($pattern, implode($doc), $m) ? $m[1] : [];
         }
+
+        /**
+         * Checks if the public non-static property exists.
+         *
+         * @param string $class
+         * @param string $name
+         * @return bool|mixed|string
+         */
+        public static function hasProperty(string $class, string $name)
+        {
+            static $cache;
+            $prop = &$cache[$class][$name];
+            if ($prop === null) {
+                $prop = false;
+                try {
+                    $rp = new ReflectionProperty($class, $name);
+                    if ($rp->isPublic() && !$rp->isStatic()) {
+                        $prop = $name >= 'onA' && $name < 'on_' ? 'event' : true;
+                    }
+                } catch (ReflectionException $e) {
+                }
+            }
+            return $prop;
+        }
     }
