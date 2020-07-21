@@ -117,4 +117,22 @@
                     require $file; })($info['file']);
             }
         }
+
+        /**
+         * Add path or paths to list.
+         *
+         * @param mixed ...$paths
+         * @return $this
+         */
+        public function addDirectory(...$paths): self
+        {
+            if (is_array($paths[0] ?? null)) {
+                trigger_error(__METHOD__ . '() use var
+                Add path or paths to list.
+                iadics ...$paths to add an array of paths.', E_USER_WARNING);
+                $paths = $paths[0];
+            }
+            $this->scanPaths = array_merge($this->scanPaths, $paths);
+            return $this;
+        }
     }
