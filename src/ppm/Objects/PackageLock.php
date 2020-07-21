@@ -4,12 +4,11 @@
     namespace ppm\Objects;
 
 
+    use Exception;
     use ppm\Exceptions\InvalidPackageLockException;
     use ppm\Exceptions\PackageNotFoundException;
-    use ppm\Objects\Package\Dependency;
     use ppm\Objects\PackageLock\PackageLockItem;
     use ppm\Objects\PackageLock\VersionConfiguration;
-    use PpmParser\Node\Expr\Cast\Bool_;
 
     /**
      * Class PackageLock
@@ -23,7 +22,7 @@
         public $PpmVersion;
 
         /**
-         * @var array|PackageLockItem
+         * @var PackageLockItem[]
          */
         public $Packages;
 
@@ -145,7 +144,7 @@
                     return true;
                 }
             }
-            catch(\Exception $e)
+            catch(Exception $e)
             {
                 unset($e);
             }
