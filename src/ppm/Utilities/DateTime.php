@@ -114,4 +114,30 @@
             $date = parent::createFromFormat($format, $time, $timezone);
             return $date ? static::from($date) : false;
         }
+
+        /**
+         * @return string
+         */
+        public function jsonSerialize(): string
+        {
+            return $this->format('c');
+        }
+
+        /**
+         * @return string
+         */
+        public function __toString(): string
+        {
+            return $this->format('Y-m-d H:i:s');
+        }
+
+        /**
+         * @param string $modify
+         * @return DateTime
+         */
+        public function modifyClone(string $modify = '')
+        {
+            $dolly = clone $this;
+            return $modify ? $dolly->modify($modify) : $dolly;
+        }
     }
