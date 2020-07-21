@@ -57,4 +57,29 @@
         {
             ObjectHelpers::strictStaticCall(static::class, $name);
         }
+
+        /**
+         * @param string $name
+         * @return mixed
+         * @throws ReflectionException
+         */
+        public function &__get(string $name)
+        {
+            $class = get_class($this);
+
+            if ($prop = ObjectHelpers::getMagicProperties($class)[$name] ?? null) { // property getter
+                if (!($prop & 0b0001)) {
+                    throw new MemberAccessException("Cannot read a write-only property $class::\$$name.");
+                }
+                $m = ($prop & 0b0010 ? 'get' : 'is') . $name;
+                if ($prop & 0b0100) { // return by reference
+                    return $this->$m();
+                } else {
+                    $val = $this->$m();
+                    return $val;
+                }
+            } else {
+                ObjectHelpers::strictGet($class, $name);
+            }
+        }
     }
