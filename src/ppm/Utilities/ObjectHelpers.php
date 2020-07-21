@@ -70,4 +70,18 @@
             throw new MemberAccessException("Call to undefined method $class::$method()" . ($hint ? ", did you mean $hint()?" : '.'));
         }
 
+        /**
+         * @param string $class
+         * @param string $method
+         * @throws ReflectionException
+         * @noinspection PhpUnused
+         */
+        public static function strictStaticCall(string $class, string $method): void
+        {
+            $hint = self::getSuggestion(
+                array_filter((new ReflectionClass($class))->getMethods(ReflectionMethod::IS_PUBLIC), function ($m) { return $m->isStatic(); }),
+                $method
+            );
+            throw new MemberAccessException("Call to undefined static method $class::$method()" . ($hint ? ", did you mean $hint()?" : '.'));
+        }
     }
