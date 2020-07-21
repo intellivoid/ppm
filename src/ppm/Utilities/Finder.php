@@ -1,15 +1,30 @@
-<?php
+<?php /** @noinspection PhpUnused */
 
-    declare(strict_types=1);
+declare(strict_types=1);
 
     namespace ppm\Utilities;
 
+    use AppendIterator;
+    use CallbackFilterIterator;
+    use Countable;
+    use DateTimeInterface;
+    use Exception;
+    use Iterator;
+    use IteratorAggregate;
+    use OuterIterator;
     use ppm\Exceptions\InvalidArgumentException;
+    use ppm\Exceptions\InvalidStateException;
+    use RecursiveCallbackFilterIterator;
     use RecursiveDirectoryIterator;
     use RecursiveIteratorIterator;
+    use ReflectionException;
 
 
-    class Finder implements \IteratorAggregate, \Countable
+    /**
+     * Class Finder
+     * @package ppm\Utilities
+     */
+    class Finder implements IteratorAggregate, Countable
     {
 
         /** @var callable  extension methods */
@@ -72,13 +87,16 @@
 
         /**
          * Creates filtering group by mask & type selector.
+         * @param array $masks
+         * @param string $type
          * @return static
          */
         private function select(array $masks, string $type): self
         {
             $this->cursor = &$this->groups[];
             $pattern = self::buildPattern($masks);
-            $this->filter(function (RecursiveDirectoryIterator $file) use ($type, $pattern): bool {
+            $this->filter(function (RecursiveDirectoryIterator $file) use ($type, $pattern): bool
+            {
                 return !$file->isDot()
                     && $file->$type()
                     && (!$pattern || preg_match($pattern, '/' . strtr($file->getSubPathName(), '\\', '/')));
@@ -106,8 +124,9 @@
          */
         public function from(...$paths): self
         {
-            if ($this->paths) {
-                throw new Nette\InvalidStateException('Directory to search has already been specified.');
+            if ($this->paths)
+            {
+                throw new InvalidStateException('Directory to search has already been specified.');
             }
             $this->paths = is_array($paths[0]) ? $paths[0] : $paths;
             $this->cursor = &$this->exclude;
@@ -128,20 +147,28 @@
 
         /**
          * Converts Finder pattern to regular expression.
+         * @param array $masks
+         * @return string|null
          */
         private static function buildPattern(array $masks): ?string
         {
             $pattern = [];
-            foreach ($masks as $mask) {
+            foreach ($masks as $mask)
+            {
                 $mask = rtrim(strtr($mask, '\\', '/'), '/');
                 $prefix = '';
-                if ($mask === '') {
+                if ($mask === '')
+                {
                     continue;
 
-                } elseif ($mask === '*') {
+                }
+                elseif ($mask === '*')
+                {
                     return null;
 
-                } elseif ($mask[0] === '/') { // absolute fixing
+                }
+                elseif ($mask[0] === '/')
+                { // absolute fixing
                     $mask = ltrim($mask, '/');
                     $prefix = '(?<=^/)';
                 }
@@ -150,9 +177,6 @@
             }
             return $pattern ? '#/(' . implode('|', $pattern) . ')$#Di' : null;
         }
-
-
-        /********************* iterator generator ****************d*g**/
 
 
         /**
@@ -167,17 +191,23 @@
         /**
          * Returns iterator.
          */
-        public function getIterator(): \Iterator
+        public function getIterator(): Iterator
         {
-            if (!$this->paths) {
-                throw new Nette\InvalidStateException('Call in() or from() to specify directory to search.');
+            if (!$this->paths)
+            {
+                throw new InvalidStateException('Call in() or from() to specify directory to search.');
 
-            } elseif (count($this->paths) === 1) {
+            }
+            elseif (count($this->paths) === 1)
+            {
                 return $this->buildIterator((string) $this->paths[0]);
 
-            } else {
-                $iterator = new \AppendIterator();
-                foreach ($this->paths as $path) {
+            }
+            else
+            {
+                $iterator = new AppendIterator();
+                foreach ($this->paths as $path)
+                {
                     $iterator->append($this->buildIterator((string) $path));
                 }
                 return $iterator;
@@ -187,16 +217,22 @@
 
         /**
          * Returns per-path iterator.
+         * @noinspection PhpUnusedParameterInspection
+         * @param string $path
+         * @return Iterator
          */
-        private function buildIterator(string $path): \Iterator
+        private function buildIterator(string $path): Iterator
         {
             $iterator = new RecursiveDirectoryIterator($path, RecursiveDirectoryIterator::FOLLOW_SYMLINKS);
 
             if ($this->exclude) {
-                $iterator = new \RecursiveCallbackFilterIterator($iterator, function ($foo, $bar, RecursiveDirectoryIterator $file): bool {
-                    if (!$file->isDot() && !$file->isFile()) {
-                        foreach ($this->exclude as $filter) {
-                            if (!$filter($file)) {
+                $iterator = new RecursiveCallbackFilterIterator($iterator, function ($foo, $bar, RecursiveDirectoryIterator $file): bool {
+                    if (!$file->isDot() && !$file->isFile())
+                    {
+                        foreach ($this->exclude as $filter)
+                        {
+                            if (!$filter($file))
+                            {
                                 return false;
                             }
                         }
@@ -205,19 +241,25 @@
                 });
             }
 
-            if ($this->maxDepth !== 0) {
+            if ($this->maxDepth !== 0)
+            {
                 $iterator = new RecursiveIteratorIterator($iterator, $this->order);
                 $iterator->setMaxDepth($this->maxDepth);
             }
 
-            $iterator = new \CallbackFilterIterator($iterator, function ($foo, $bar, \Iterator $file): bool {
-                while ($file instanceof \OuterIterator) {
+            $iterator = new CallbackFilterIterator($iterator, function ($foo, $bar, Iterator $file): bool
+            {
+                while ($file instanceof OuterIterator)
+                {
                     $file = $file->getInnerIterator();
                 }
 
-                foreach ($this->groups as $filters) {
-                    foreach ($filters as $filter) {
-                        if (!$filter($file)) {
+                foreach ($this->groups as $filters)
+                {
+                    foreach ($filters as $filter)
+                    {
+                        if (!$filter($file))
+                        {
                             continue 2;
                         }
                     }
@@ -243,8 +285,10 @@
         {
             $masks = $masks && is_array($masks[0]) ? $masks[0] : $masks;
             $pattern = self::buildPattern($masks);
-            if ($pattern) {
-                $this->filter(function (RecursiveDirectoryIterator $file) use ($pattern): bool {
+            if ($pattern)
+            {
+                $this->filter(function (RecursiveDirectoryIterator $file) use ($pattern): bool
+                {
                     return !preg_match($pattern, '/' . strtr($file->getSubPathName(), '\\', '/'));
                 });
             }
@@ -266,6 +310,7 @@
 
         /**
          * Limits recursion level.
+         * @param int $depth
          * @return static
          */
         public function limitDepth(int $depth): self
@@ -277,21 +322,24 @@
 
         /**
          * Restricts the search by size.
-         * @param  string  $operator  "[operator] [size] [unit]" example: >=10kB
+         * @param string $operator "[operator] [size] [unit]" example: >=10kB
+         * @param int|null $size
          * @return static
          */
         public function size(string $operator, int $size = null): self
         {
             if (func_num_args() === 1) { // in $operator is predicate
-                if (!preg_match('#^(?:([=<>!]=?|<>)\s*)?((?:\d*\.)?\d+)\s*(K|M|G|)B?$#Di', $operator, $matches)) {
-                    throw new Nette\InvalidArgumentException('Invalid size predicate format.');
+                if (!preg_match('#^(?:([=<>!]=?|<>)\s*)?((?:\d*\.)?\d+)\s*(K|M|G|)B?$#Di', $operator, $matches))
+                {
+                    throw new InvalidArgumentException('Invalid size predicate format.');
                 }
                 [, $operator, $size, $unit] = $matches;
                 static $units = ['' => 1, 'k' => 1e3, 'm' => 1e6, 'g' => 1e9];
                 $size *= $units[strtolower($unit)];
                 $operator = $operator ?: '=';
             }
-            return $this->filter(function (RecursiveDirectoryIterator $file) use ($operator, $size): bool {
+            return $this->filter(function (RecursiveDirectoryIterator $file) use ($operator, $size): bool
+            {
                 return self::compare($file->getSize(), $operator, $size);
             });
         }
@@ -299,21 +347,24 @@
 
         /**
          * Restricts the search by modified time.
-         * @param  string  $operator  "[operator] [date]" example: >1978-01-23
-         * @param  string|int|\DateTimeInterface  $date
+         * @param string $operator "[operator] [date]" example: >1978-01-23
+         * @param string|int|DateTimeInterface $date
          * @return static
+         * @throws Exception
          */
         public function date(string $operator, $date = null): self
         {
             if (func_num_args() === 1) { // in $operator is predicate
-                if (!preg_match('#^(?:([=<>!]=?|<>)\s*)?(.+)$#Di', $operator, $matches)) {
-                    throw new Nette\InvalidArgumentException('Invalid date predicate format.');
+                if (!preg_match('#^(?:([=<>!]=?|<>)\s*)?(.+)$#Di', $operator, $matches))
+                {
+                    throw new InvalidArgumentException('Invalid date predicate format.');
                 }
                 [, $operator, $date] = $matches;
                 $operator = $operator ?: '=';
             }
             $date = DateTime::from($date)->format('U');
-            return $this->filter(function (RecursiveDirectoryIterator $file) use ($operator, $date): bool {
+            return $this->filter(function (RecursiveDirectoryIterator $file) use ($operator, $date): bool
+            {
                 return self::compare($file->getMTime(), $operator, $date);
             });
         }
@@ -321,10 +372,15 @@
 
         /**
          * Compares two values.
+         * @param $l
+         * @param string $operator
+         * @param $r
+         * @return bool
          */
         public static function compare($l, string $operator, $r): bool
         {
-            switch ($operator) {
+            switch ($operator)
+            {
                 case '>':
                     return $l > $r;
                 case '>=':
@@ -345,14 +401,30 @@
             }
         }
 
+        /**
+         * @param string $name
+         * @param array $args
+         * @return null
+         * @throws ReflectionException
+         */
         public function __call(string $name, array $args)
         {
-            return isset(self::$extMethods[$name])
-                ? (self::$extMethods[$name])($this, ...$args)
-                : ObjectHelpers::strictCall(get_class($this), $name, array_keys(self::$extMethods));
+            if (isset(self::$extMethods[$name]))
+            {
+                return (self::$extMethods[$name])($this, ...$args);
+            }
+            else
+            {
+                ObjectHelpers::strictCall(get_class($this), $name, array_keys(self::$extMethods));
+            }
+
+            return null;
         }
 
-
+        /**
+         * @param string $name
+         * @param callable $callback
+         */
         public static function extensionMethod(string $name, callable $callback): void
         {
             self::$extMethods[$name] = $callback;
