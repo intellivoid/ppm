@@ -174,4 +174,17 @@
             }
             return $res;
         }
+
+        /**
+         * Rebuilds class list cache.
+         */
+        public function rebuild(): void
+        {
+            $this->cacheLoaded = true;
+            $this->classes = $this->missing = [];
+            $this->refreshClasses();
+            if ($this->tempDirectory) {
+                $this->saveCache();
+            }
+        }
     }
