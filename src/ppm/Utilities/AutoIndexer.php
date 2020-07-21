@@ -236,4 +236,48 @@
                 }
             }
         }
+
+        private function createFileIterator(string $dir): Nette\Utils\Finder
+        {
+            if (!is_dir($dir)) {
+                throw new Nette\IOException("File or directory '$dir' not found.");
+            }
+
+            if (is_string($ignoreDirs = $this->ignoreDirs)) {
+                trigger_error(__CLASS__ . ': $ignoreDirs must be an array.', E_USER_WARNING);
+                $ignoreDirs = preg_split('#[,\s]+#', $ignoreDirs);
+            }
+            $disallow = [];
+            foreach (array_merge($ignoreDirs, $this->excludeDirs) as $item) {
+                if ($item = realpath($item)) {
+                    $disallow[str_replace('\\', '/', $item)] = true;
+                }
+            }
+
+            if (is_string($acceptFiles = $this->acceptFiles)) {
+                trigger_error(__CLASS__ . ': $acceptFiles must be an array.', E_USER_WARNING);
+                $acceptFiles = preg_split('#[,\s]+#', $acceptFiles);
+            }
+
+            $iterator = Finder::findFiles($acceptFiles)
+                ->filter(function (SplFileInfo $file) use (&$disallow) {
+                    return !isset($disallow[str_replace('\\', '/', $file->getRealPath())]);
+                })
+                ->from($dir)
+                ->exclude($ignoreDirs)
+                ->filter($filter = function (SplFileInfo $dir) use (&$disallow) {
+                    $path = str_replace('\\', '/', $dir->getRealPath());
+                    if (is_file("$path/netterobots.txt")) {
+                        foreach (file("$path/netterobots.txt") as $s) {
+                            if (preg_match('#^(?:disallow\\s*:)?\\s*(\\S+)#i', $s, $matches)) {
+                                $disallow[$path . rtrim('/' . ltrim($matches[1], '/'), '/')] = true;
+                            }
+                        }
+                    }
+                    return !isset($disallow[$path]);
+                });
+
+            $filter(new SplFileInfo($dir));
+            return $iterator;
+        }
     }
