@@ -4,6 +4,8 @@
 
     namespace ppm\Utilities;
 
+    use ppm\Exceptions\NotSupportedException;
+
     /**
      * Class AutoIndexer
      * @package ppm\Utilities
@@ -44,4 +46,15 @@
 
         /** @var string|null */
         private $tempDirectory;
+
+        /**
+         * AutoIndexer constructor.
+         */
+        public function __construct()
+        {
+            if (!extension_loaded('tokenizer'))
+            {
+                throw new NotSupportedException('PHP extension Tokenizer is not loaded.');
+            }
+        }
     }
