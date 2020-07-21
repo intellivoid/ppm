@@ -187,4 +187,16 @@
                 $this->saveCache();
             }
         }
+
+        /**
+         * Refreshes class list cache.
+         */
+        public function refresh(): void
+        {
+            $this->loadCache();
+            if (!$this->refreshed) {
+                $this->refreshClasses();
+                $this->saveCache();
+            }
+        }
     }
