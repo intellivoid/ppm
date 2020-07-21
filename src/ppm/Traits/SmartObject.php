@@ -118,4 +118,14 @@
                 throw new MemberAccessException("Cannot unset the property $class::\$$name.");
             }
         }
+
+        /**
+         * @param string $name
+         * @return bool
+         * @throws ReflectionException
+         */
+        public function __isset(string $name): bool
+        {
+            return isset(ObjectHelpers::getMagicProperties(get_class($this))[$name]);
+        }
     }
