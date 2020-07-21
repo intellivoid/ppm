@@ -84,4 +84,51 @@
             );
             throw new MemberAccessException("Call to undefined static method $class::$method()" . ($hint ? ", did you mean $hint()?" : '.'));
         }
+
+        /**
+         * Returns array of magic properties defined by annotation @param string $class
+         * @return array
+         * @throws ReflectionException
+         * @noinspection PhpUnused*@property.
+         * @noinspection PhpUnused
+         */
+        public static function getMagicProperties(string $class): array
+        {
+            static $cache;
+            $props = &$cache[$class];
+            if ($props !== null) {
+                return $props;
+            }
+
+            $rc = new ReflectionClass($class);
+            preg_match_all(
+                '~^  [ \t*]*  @property(|-read|-write)  [ \t]+  [^\s$]+  [ \t]+  \$  (\w+)  ()~mx',
+                (string) $rc->getDocComment(), $matches, PREG_SET_ORDER
+            );
+
+            $props = [];
+            foreach ($matches as [, $type, $name]) {
+                $uname = ucfirst($name);
+                $write = $type !== '-read'
+                    && $rc->hasMethod($nm = 'set' . $uname)
+                    && ($rm = $rc->getMethod($nm))->name === $nm && !$rm->isPrivate() && !$rm->isStatic();
+                $read = $type !== '-write'
+                    && ($rc->hasMethod($nm = 'get' . $uname) || $rc->hasMethod($nm = 'is' . $uname))
+                    && ($rm = $rc->getMethod($nm))->name === $nm && !$rm->isPrivate() && !$rm->isStatic();
+
+                if ($read || $write) {
+                    /** @noinspection PhpUndefinedVariableInspection */
+                    $props[$name] = $read << 0 | ($nm[0] === 'g') << 1 | $rm->returnsReference() << 2 | $write << 3;
+                }
+            }
+
+            foreach ($rc->getTraits() as $trait) {
+                $props += self::getMagicProperties($trait->name);
+            }
+
+            if ($parent = get_parent_class($class)) {
+                $props += self::getMagicProperties($parent);
+            }
+            return $props;
+        }
     }
