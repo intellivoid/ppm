@@ -4,6 +4,7 @@
 
     namespace ppm\Utilities;
 
+    use ppm\Exceptions\IOException;
     use ppm\Exceptions\NotSupportedException;
     use SplFileInfo;
 
@@ -237,15 +238,22 @@
             }
         }
 
-        private function createFileIterator(string $dir): Nette\Utils\Finder
+        /**
+         * Creates an iterator scanning directory for PHP files, subdirectories and 'netterobots.txt' files.
+         *
+         * @param string $dir
+         * @return Finder
+         */
+        private function createFileIterator(string $dir): Finder
         {
             if (!is_dir($dir)) {
-                throw new Nette\IOException("File or directory '$dir' not found.");
+                throw new IOException("File or directory '$dir' not found.");
             }
 
-            if (is_string($ignoreDirs = $this->ignoreDirs)) {
+            if (is_string($ignoreDirs = $this->ignoreDirs))
+            {
                 trigger_error(__CLASS__ . ': $ignoreDirs must be an array.', E_USER_WARNING);
-                $ignoreDirs = preg_split('#[,\s]+#', $ignoreDirs);
+                $ignoreDirs = preg_split('#[,\s]+#', (string)$ignoreDirs);
             }
             $disallow = [];
             foreach (array_merge($ignoreDirs, $this->excludeDirs) as $item) {
@@ -256,7 +264,7 @@
 
             if (is_string($acceptFiles = $this->acceptFiles)) {
                 trigger_error(__CLASS__ . ': $acceptFiles must be an array.', E_USER_WARNING);
-                $acceptFiles = preg_split('#[,\s]+#', $acceptFiles);
+                $acceptFiles = preg_split('#[,\s]+#', (string)$acceptFiles);
             }
 
             $iterator = Finder::findFiles($acceptFiles)
