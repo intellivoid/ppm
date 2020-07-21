@@ -145,4 +145,20 @@
             $this->reportParseErrors = $on;
             return $this;
         }
+
+        /**
+         * Excludes path or paths from list.
+         *
+         * @param mixed ...$paths
+         * @return $this
+         */
+        public function excludeDirectory(...$paths): self
+        {
+            if (is_array($paths[0] ?? null)) {
+                trigger_error(__METHOD__ . '() use variadics ...$paths to add an array of paths.', E_USER_WARNING);
+                $paths = $paths[0];
+            }
+            $this->excludeDirs = array_merge($this->excludeDirs, $paths);
+            return $this;
+        }
     }
