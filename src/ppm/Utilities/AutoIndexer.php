@@ -69,4 +69,52 @@
             spl_autoload_register([$this, 'tryLoad'], true, $prepend);
             return $this;
         }
+
+        /**
+         * Handles autoloading of classes, interfaces or traits.
+         *
+         * @param string $type
+         */
+        public function tryLoad(string $type): void
+        {
+            $this->loadCache();
+            $type = ltrim($type, '\\'); // PHP namespace bug #49143
+            $info = $this->classes[$type] ?? null;
+
+            if ($this->autoRebuild) {
+                if (!$info || !is_file($info['file']))
+                {
+                    $missing = &$this->missing[$type];
+                    $missing++;
+                    if (!$this->refreshed && $missing <= self::RETRY_LIMIT)
+                    {
+                        $this->refreshClasses();
+                        $this->saveCache();
+                    }
+                    elseif ($info)
+                    {
+                        unset($this->classes[$type]);
+                        $this->saveCache();
+                    }
+
+                }
+                elseif (!$this->refreshed && filemtime($info['file']) !== $info['time'])
+                {
+                    $this->updateFile($info['file']);
+                    if (empty($this->classes[$type]))
+                    {
+                        $this->missing[$type] = 0;
+                    }
+                    $this->saveCache();
+                }
+                $info = $this->classes[$type] ?? null;
+            }
+
+            if ($info)
+            {
+                (static function ($file) {
+                    /** @noinspection PhpIncludeInspection */
+                    require $file; })($info['file']);
+            }
+        }
     }
