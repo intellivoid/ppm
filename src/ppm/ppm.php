@@ -5,11 +5,9 @@
 
 
     use ppm\Exceptions\PackageNotFoundException;
-    use ppm\Objects\Package;
     use ppm\Objects\PackageLock;
     use ppm\Utilities\CLI;
     use ppm\Utilities\PathFinder;
-    use ZiProto\ZiProto;
 
     include_once(__DIR__ . DIRECTORY_SEPARATOR . 'Abstracts' . DIRECTORY_SEPARATOR . 'AutoloadMethod.php');
 
