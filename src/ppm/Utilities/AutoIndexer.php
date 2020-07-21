@@ -135,4 +135,14 @@
             $this->scanPaths = array_merge($this->scanPaths, $paths);
             return $this;
         }
+
+        /**
+         * @param bool $on
+         * @return $this
+         */
+        public function reportParseErrors(bool $on = true): self
+        {
+            $this->reportParseErrors = $on;
+            return $this;
+        }
     }
