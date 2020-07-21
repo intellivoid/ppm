@@ -64,7 +64,8 @@
                 $additionalMethods
             ), $method);
 
-            if (method_exists($class, $method)) { // called parent::$method()
+            if (method_exists($class, $method))
+            { // called parent::$method()
                 $class = 'parent';
             }
             throw new MemberAccessException("Call to undefined method $class::$method()" . ($hint ? ", did you mean $hint()?" : '.'));
@@ -96,7 +97,8 @@
         {
             static $cache;
             $props = &$cache[$class];
-            if ($props !== null) {
+            if ($props !== null)
+            {
                 return $props;
             }
 
@@ -107,7 +109,8 @@
             );
 
             $props = [];
-            foreach ($matches as [, $type, $name]) {
+            foreach ($matches as [, $type, $name])
+            {
                 $uname = ucfirst($name);
                 $write = $type !== '-read'
                     && $rc->hasMethod($nm = 'set' . $uname)
@@ -116,17 +119,20 @@
                     && ($rc->hasMethod($nm = 'get' . $uname) || $rc->hasMethod($nm = 'is' . $uname))
                     && ($rm = $rc->getMethod($nm))->name === $nm && !$rm->isPrivate() && !$rm->isStatic();
 
-                if ($read || $write) {
+                if ($read || $write)
+                {
                     /** @noinspection PhpUndefinedVariableInspection */
                     $props[$name] = $read << 0 | ($nm[0] === 'g') << 1 | $rm->returnsReference() << 2 | $write << 3;
                 }
             }
 
-            foreach ($rc->getTraits() as $trait) {
+            foreach ($rc->getTraits() as $trait)
+            {
                 $props += self::getMagicProperties($trait->name);
             }
 
-            if ($parent = get_parent_class($class)) {
+            if ($parent = get_parent_class($class))
+            {
                 $props += self::getMagicProperties($parent);
             }
             return $props;
@@ -144,7 +150,8 @@
             $norm = preg_replace($re = '#^(get|set|has|is|add)(?=[A-Z])#', '+', $value);
             $best = null;
             $min = (strlen($value) / 4 + 1) * 10 + .1;
-            foreach (array_unique($possibilities, SORT_REGULAR) as $item) {
+            foreach (array_unique($possibilities, SORT_REGULAR) as $item)
+            {
                 $item = $item instanceof Reflector ? $item->name : $item;
                 if ($item !== $value && (
                         ($len = levenshtein($item, $value, 10, 11, 10)) < $min
@@ -164,10 +171,12 @@
          */
         private static function parseFullDoc(ReflectionClass $rc, string $pattern): array
         {
-            do {
+            do
+            {
                 $doc[] = $rc->getDocComment();
                 $traits = $rc->getTraits();
-                while ($trait = array_pop($traits)) {
+                while ($trait = array_pop($traits))
+                {
                     $doc[] = $trait->getDocComment();
                     $traits += $trait->getTraits();
                 }
@@ -186,14 +195,20 @@
         {
             static $cache;
             $prop = &$cache[$class][$name];
-            if ($prop === null) {
+            if ($prop === null)
+            {
                 $prop = false;
-                try {
+                try
+                {
                     $rp = new ReflectionProperty($class, $name);
-                    if ($rp->isPublic() && !$rp->isStatic()) {
+                    if ($rp->isPublic() && !$rp->isStatic())
+                    {
                         $prop = $name >= 'onA' && $name < 'on_' ? 'event' : true;
                     }
-                } catch (ReflectionException $e) {
+                }
+                catch (ReflectionException $e)
+                {
+                    unset($e);
                 }
             }
             return $prop;

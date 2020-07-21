@@ -5,6 +5,7 @@
 
 
     use Error;
+    use ppm\Utilities\ObjectHelpers;
 
     /**
      * Trait StaticClass
@@ -27,6 +28,6 @@
          */
         public static function __callStatic(string $name, array $args)
         {
-            //Utils\ObjectHelpers::strictStaticCall(static::class, $name);
+            ObjectHelpers::strictStaticCall(static::class, $name);
         }
     }

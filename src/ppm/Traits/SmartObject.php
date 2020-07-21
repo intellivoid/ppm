@@ -67,14 +67,19 @@
         {
             $class = get_class($this);
 
-            if ($prop = ObjectHelpers::getMagicProperties($class)[$name] ?? null) { // property getter
-                if (!($prop & 0b0001)) {
+            if ($prop = ObjectHelpers::getMagicProperties($class)[$name] ?? null)
+            { // property getter
+                if (!($prop & 0b0001))
+                {
                     throw new MemberAccessException("Cannot read a write-only property $class::\$$name.");
                 }
                 $m = ($prop & 0b0010 ? 'get' : 'is') . $name;
-                if ($prop & 0b0100) { // return by reference
+                if ($prop & 0b0100)
+                { // return by reference
                     return $this->$m();
-                } else {
+                }
+                else
+                {
                     $val = $this->$m();
                     return $val;
                 }
@@ -94,16 +99,22 @@
         {
             $class = get_class($this);
 
-            if (ObjectHelpers::hasProperty($class, $name)) { // unsetted property
+            if (ObjectHelpers::hasProperty($class, $name))
+            { // unsetted property
                 $this->$name = $value;
 
-            } elseif ($prop = ObjectHelpers::getMagicProperties($class)[$name] ?? null) { // property setter
-                if (!($prop & 0b1000)) {
+            }
+            elseif ($prop = ObjectHelpers::getMagicProperties($class)[$name] ?? null)
+            { // property setter
+                if (!($prop & 0b1000))
+                {
                     throw new MemberAccessException("Cannot write to a read-only property $class::\$$name.");
                 }
                 $this->{'set' . $name}($value);
 
-            } else {
+            }
+            else
+            {
                 ObjectHelpers::strictSet($class, $name);
             }
         }
@@ -114,7 +125,8 @@
         public function __unset(string $name)
         {
             $class = get_class($this);
-            if (!ObjectHelpers::hasProperty($class, $name)) {
+            if (!ObjectHelpers::hasProperty($class, $name))
+            {
                 throw new MemberAccessException("Cannot unset the property $class::\$$name.");
             }
         }
