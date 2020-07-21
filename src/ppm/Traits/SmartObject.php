@@ -107,4 +107,15 @@
                 ObjectHelpers::strictSet($class, $name);
             }
         }
+
+        /**
+         * @param string $name
+         */
+        public function __unset(string $name)
+        {
+            $class = get_class($this);
+            if (!ObjectHelpers::hasProperty($class, $name)) {
+                throw new MemberAccessException("Cannot unset the property $class::\$$name.");
+            }
+        }
     }
