@@ -4,11 +4,16 @@
 
     namespace ppm\Utilities;
 
+    use DateTimeInterface;
+    use DateTimeZone;
+    use Exception;
+    use JsonSerializable;
+
     /**
      * Class DateTime
      * @package ppm\Utilities
      */
-    class DateTime extends \DateTime implements \JsonSerializable
+    class DateTime extends \DateTime implements JsonSerializable
     {
         /** minute in seconds */
         public const MINUTE = 60;
@@ -28,5 +33,32 @@
         /** average year in seconds */
         public const YEAR = 31557600;
 
-        
+        /**
+         * DateTime object factory.
+         *
+         * @param $time
+         * @return DateTime|static
+         * @throws Exception
+         */
+        public static function from($time)
+        {
+            if ($time instanceof DateTimeInterface)
+            {
+                return new static($time->format('Y-m-d H:i:s.u'), $time->getTimezone());
+
+            }
+            elseif (is_numeric($time))
+            {
+                if ($time <= self::YEAR)
+                {
+                    $time += time();
+                }
+                return (new static('@' . $time))->setTimezone(new DateTimeZone(date_default_timezone_get()));
+
+            }
+            else
+            {
+                return new static((string) $time);
+            }
+        }
     }
