@@ -83,4 +83,35 @@
             }
             return new static($s);
         }
+
+        /**
+         * Returns new DateTime object formatted according to the specified format.
+         *
+         * @param string $format
+         * @param string $time
+         * @param null $timezone
+         * @return bool|\DateTime|false|DateTime|static
+         * @throws Exception
+         * @noinspection PhpSignatureMismatchDuringInheritanceInspection
+         */
+        public static function createFromFormat($format, $time, $timezone=null)
+        {
+            if ($timezone === null)
+            {
+                $timezone = new DateTimeZone(date_default_timezone_get());
+
+            }
+            elseif (is_string($timezone))
+            {
+                $timezone = new DateTimeZone($timezone);
+
+            }
+            elseif (!$timezone instanceof DateTimeZone)
+            {
+                throw new InvalidArgumentException('Invalid timezone given');
+            }
+
+            $date = parent::createFromFormat($format, $time, $timezone);
+            return $date ? static::from($date) : false;
+        }
     }
