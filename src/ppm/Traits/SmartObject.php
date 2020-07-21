@@ -78,8 +78,33 @@
                     $val = $this->$m();
                     return $val;
                 }
-            } else {
+            }
+            else
+            {
                 ObjectHelpers::strictGet($class, $name);
+            }
+        }
+
+        /**
+         * @param string $name
+         * @param $value
+         * @throws ReflectionException
+         */
+        public function __set(string $name, $value)
+        {
+            $class = get_class($this);
+
+            if (ObjectHelpers::hasProperty($class, $name)) { // unsetted property
+                $this->$name = $value;
+
+            } elseif ($prop = ObjectHelpers::getMagicProperties($class)[$name] ?? null) { // property setter
+                if (!($prop & 0b1000)) {
+                    throw new MemberAccessException("Cannot write to a read-only property $class::\$$name.");
+                }
+                $this->{'set' . $name}($value);
+
+            } else {
+                ObjectHelpers::strictSet($class, $name);
             }
         }
     }
