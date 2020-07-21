@@ -57,4 +57,16 @@
                 throw new NotSupportedException('PHP extension Tokenizer is not loaded.');
             }
         }
+
+        /**
+         * Register autoloader.
+         *
+         * @param bool $prepend
+         * @return $this
+         */
+        public function register(bool $prepend = false): self
+        {
+            spl_autoload_register([$this, 'tryLoad'], true, $prepend);
+            return $this;
+        }
     }
