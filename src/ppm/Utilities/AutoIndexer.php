@@ -4,6 +4,7 @@
 
     namespace ppm\Utilities;
 
+    use ppm\Exceptions\InvalidStateException;
     use ppm\Exceptions\IOException;
     use ppm\Exceptions\NotSupportedException;
     use SplFileInfo;
@@ -287,5 +288,30 @@
 
             $filter(new SplFileInfo($dir));
             return $iterator;
+        }
+
+        /**
+         * @param string $file
+         */
+        private function updateFile(string $file): void
+        {
+            foreach ($this->classes as $class => $info) {
+                if (isset($info['file']) && $info['file'] === $file) {
+                    unset($this->classes[$class]);
+                }
+            }
+
+            $classes = is_file($file) ? $this->scanPhp($file) : [];
+            foreach ($classes as $class) {
+                $info = &$this->classes[$class];
+                if (isset($info['file']) && @filemtime($info['file']) !== $info['time']) { // @ file may not exists
+                    $this->updateFile($info['file']);
+                    $info = &$this->classes[$class];
+                }
+                if (isset($info['file'])) {
+                    throw new InvalidStateException("Ambiguous class $class resolution; defined in {$info['file']} and in $file.");
+                }
+                $info = ['file' => $file, 'time' => filemtime($file)];
+            }
         }
     }
