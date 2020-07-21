@@ -48,4 +48,13 @@
             }
         }
 
+        /**
+         * @param string $name
+         * @param array $args
+         * @throws ReflectionException
+         */
+        public static function __callStatic(string $name, array $args)
+        {
+            ObjectHelpers::strictStaticCall(static::class, $name);
+        }
     }
