@@ -4,9 +4,12 @@
 
     namespace ppm\Utilities;
 
+    use ParseError;
     use ppm\Exceptions\InvalidStateException;
     use ppm\Exceptions\IOException;
     use ppm\Exceptions\NotSupportedException;
+    use ReflectionException;
+    use ReflectionProperty;
     use SplFileInfo;
 
     /**
@@ -313,5 +316,87 @@
                 }
                 $info = ['file' => $file, 'time' => filemtime($file)];
             }
+        }
+
+        /**
+         * Searches classes, interfaces and traits in PHP file.
+         *
+         * @param string $file
+         * @return array
+         * @throws ReflectionException
+         */
+        private function scanPhp(string $file): array
+        {
+            $code = file_get_contents($file);
+            $expected = false;
+            $namespace = $name = '';
+            $level = $minLevel = 0;
+            $classes = [];
+
+            try {
+                $tokens = token_get_all($code, TOKEN_PARSE);
+            } catch (ParseError $e) {
+                if ($this->reportParseErrors) {
+                    $rp = new ReflectionProperty($e, 'file');
+                    $rp->setAccessible(true);
+                    $rp->setValue($e, $file);
+                    throw $e;
+                }
+                $tokens = [];
+            }
+
+            foreach ($tokens as $token) {
+                if (is_array($token)) {
+                    switch ($token[0]) {
+                        case T_COMMENT:
+                        case T_DOC_COMMENT:
+                        case T_WHITESPACE:
+                            continue 2;
+
+                        case T_NS_SEPARATOR:
+                        case T_STRING:
+                            if ($expected) {
+                                $name .= $token[1];
+                            }
+                            continue 2;
+
+                        case T_NAMESPACE:
+                        case T_CLASS:
+                        case T_INTERFACE:
+                        case T_TRAIT:
+                            $expected = $token[0];
+                            $name = '';
+                            continue 2;
+                        case T_CURLY_OPEN:
+                        case T_DOLLAR_OPEN_CURLY_BRACES:
+                            $level++;
+                    }
+                }
+
+                if ($expected) {
+                    switch ($expected) {
+                        case T_CLASS:
+                        case T_INTERFACE:
+                        case T_TRAIT:
+                            if ($name && $level === $minLevel) {
+                                $classes[] = $namespace . $name;
+                            }
+                            break;
+
+                        case T_NAMESPACE:
+                            $namespace = $name ? $name . '\\' : '';
+                            $minLevel = $token === '{' ? 1 : 0;
+                    }
+
+                    $expected = null;
+                }
+
+                if ($token === '{') {
+                    $level++;
+                } elseif ($token === '}') {
+                    $level--;
+                }
+            }
+            return $classes;
         }
     }
