@@ -315,10 +315,12 @@
         {
             return mb_strtolower($s, 'UTF-8');
         }
-    
-    
+
+
         /**
          * Converts first character to lower case.
+         * @param string $s
+         * @return string
          */
         public static function firstLower(string $s): string
         {
