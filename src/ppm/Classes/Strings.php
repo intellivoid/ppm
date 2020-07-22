@@ -348,10 +348,12 @@
         {
             return self::upper(self::substring($s, 0, 1)) . self::substring($s, 1);
         }
-    
-    
+
+
         /**
          * Capitalizes UTF-8 string.
+         * @param string $s
+         * @return string
          */
         public static function capitalize(string $s): string
         {
