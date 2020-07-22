@@ -4,12 +4,18 @@
     namespace ppm\Classes;
 
     use ppm\Exceptions\IOException;
+    use ppm\Utilities\Helpers;
 
+    /**
+     * Class FileSystem
+     * @package ppm\Classes
+     */
     final class FileSystem
     {
         /**
          * Creates a directory.
-         * @throws IOException
+         * @param string $dir
+         * @param int $mode
          */
         public static function createDir(string $dir, int $mode = 0777): void
         {
