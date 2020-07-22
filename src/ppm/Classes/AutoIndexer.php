@@ -532,4 +532,12 @@
             }
             return $this->tempDirectory . '/' . md5(serialize($this->getCacheKey())) . '.php';
         }
+
+        /**
+         * @return array
+         */
+        protected function getCacheKey(): array
+        {
+            return [$this->ignoreDirs, $this->acceptFiles, $this->scanPaths, $this->excludeDirs];
+        }
     }
