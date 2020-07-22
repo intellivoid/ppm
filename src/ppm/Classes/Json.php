@@ -15,4 +15,6 @@
         public const PRETTY = 0b0010;
 
         public const ESCAPE_UNICODE = 0b0100;
+
+
     }
