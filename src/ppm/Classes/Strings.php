@@ -390,19 +390,24 @@
             }
             return self::lower($left) === self::lower($right);
         }
-    
-    
+
+
         /**
          * Finds the length of common prefix of strings.
-         * @param  string[]  $strings
+         * @param string[] $strings
+         * @return string
          */
         public static function findPrefix(array $strings): string
         {
             $first = array_shift($strings);
-            for ($i = 0; $i < strlen($first); $i++) {
-                foreach ($strings as $s) {
-                    if (!isset($s[$i]) || $first[$i] !== $s[$i]) {
-                        while ($i && $first[$i - 1] >= "\x80" && $first[$i] >= "\x80" && $first[$i] < "\xC0") {
+            for ($i = 0; $i < strlen($first); $i++)
+            {
+                foreach ($strings as $s)
+                {
+                    if (!isset($s[$i]) || $first[$i] !== $s[$i])
+                    {
+                        while ($i && $first[$i - 1] >= "\x80" && $first[$i] >= "\x80" && $first[$i] < "\xC0")
+                        {
                             $i--;
                         }
                         return substr($first, 0, $i);
