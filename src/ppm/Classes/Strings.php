@@ -6,6 +6,7 @@
 
     use Normalizer;
     use ppm\Exceptions\InvalidArgumentException;
+    use ppm\Exceptions\InvalidStateException;
     use ppm\Exceptions\NotSupportedException;
     use ppm\Utilities\Helpers;
     use Transliterator;
@@ -633,22 +634,29 @@
             ]);
             return $m;
         }
-    
-    
+
+
         /**
          * Perform a regular expression search and replace.
-         * @param  string|array  $pattern
-         * @param  string|callable  $replacement
+         * @param string $subject
+         * @param string|array $pattern
+         * @param string|callable $replacement
+         * @param int $limit
+         * @return string
          */
         public static function replace(string $subject, $pattern, $replacement = null, int $limit = -1): string
         {
-            if (is_object($replacement) || is_array($replacement)) {
-                if (!is_callable($replacement, false, $textual)) {
-                    throw new Nette\InvalidStateException("Callback '$textual' is not callable.");
+            if (is_object($replacement) || is_array($replacement))
+            {
+                if (!is_callable($replacement, false, $textual))
+                {
+                    throw new InvalidStateException("Callback '$textual' is not callable.");
                 }
                 return self::pcre('preg_replace_callback', [$pattern, $replacement, $subject, $limit]);
     
-            } elseif ($replacement === null && is_array($pattern)) {
+            }
+            elseif ($replacement === null && is_array($pattern))
+            {
                 $replacement = array_values($pattern);
                 $pattern = array_keys($pattern);
             }
