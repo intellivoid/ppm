@@ -7,6 +7,7 @@
     use Normalizer;
     use ppm\Exceptions\InvalidArgumentException;
     use ppm\Exceptions\NotSupportedException;
+    use ppm\Utilities\Helpers;
     use Transliterator;
     use function is_array, is_object, strlen;
 
@@ -560,13 +561,17 @@
                 {
                     $pos++;
                 }
-            } else {
+            }
+            else
+            {
                 $len = strlen($haystack);
-                if ($needle === '') {
+                if ($needle === '')
+                {
                     return $len;
                 }
                 $pos = $len - 1;
-                while (($pos = strrpos($haystack, $needle, $pos - $len)) !== false && ++$nth) {
+                while (($pos = strrpos($haystack, $needle, $pos - $len)) !== false && ++$nth)
+                {
                     $pos--;
                 }
             }
