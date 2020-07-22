@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpUnused */
 
     declare(strict_types=1);
 
@@ -19,6 +19,7 @@
          * @param callable $func
          * @return string
          * @throws Throwable
+         * @noinspection PhpUnused
          */
         public static function capture(callable $func): string
         {
