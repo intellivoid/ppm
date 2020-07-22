@@ -1,15 +1,21 @@
-<?php
+<?php /** @noinspection PhpUnused */
 
 
     namespace ppm\Classes;
 
+    use ArrayAccess;
+    use ArrayIterator;
+    use Countable;
+    use IteratorAggregate;
+    use ppm\Exceptions\RegexpException;
     use ppm\Interfaces\HtmlString;
+    use Throwable;
 
     /**
      * Class Html
      * @package ppm\Classes
      */
-    class Html implements \ArrayAccess, \Countable, \IteratorAggregate, HtmlString
+    class Html implements ArrayAccess, Countable, IteratorAggregate, HtmlString
     {
         /** @var array<string, mixed>  element's attributes */
         public $attrs = [];
@@ -35,8 +41,10 @@
 
         /**
          * Constructs new HTML element.
-         * @param  array|string $attrs element's attributes or plain text content
+         * @param string|null $name
+         * @param array|string $attrs element's attributes or plain text content
          * @return static
+         * @throws RegexpException
          */
         public static function el(string $name = null, $attrs = null)
         {
@@ -44,15 +52,20 @@
             $parts = explode(' ', (string) $name, 2);
             $el->setName($parts[0]);
 
-            if (is_array($attrs)) {
+            if (is_array($attrs))
+            {
                 $el->attrs = $attrs;
 
-            } elseif ($attrs !== null) {
+            }
+            elseif ($attrs !== null)
+            {
                 $el->setText($attrs);
             }
 
-            if (isset($parts[1])) {
-                foreach (Strings::matchAll($parts[1] . ' ', '#([a-z0-9:-]+)(?:=(["\'])?(.*?)(?(2)\2|\s))?#i') as $m) {
+            if (isset($parts[1]))
+            {
+                foreach (Strings::matchAll($parts[1] . ' ', '#([a-z0-9:-]+)(?:=(["\'])?(.*?)(?(2)\2|\s))?#i') as $m)
+                {
                     $el->attrs[$m[1]] = $m[3] ?? true;
                 }
             }
@@ -63,6 +76,8 @@
 
         /**
          * Returns an object representing HTML text.
+         * @param string $html
+         * @return Html
          */
         public static function fromHtml(string $html): self
         {
@@ -72,6 +87,8 @@
 
         /**
          * Returns an object representing plain text.
+         * @param string $text
+         * @return Html
          */
         public static function fromText(string $text): self
         {
@@ -99,6 +116,8 @@
 
         /**
          * Converts given HTML code to plain text.
+         * @param string $html
+         * @return string
          */
         public static function htmlToText(string $html): string
         {
@@ -108,6 +127,8 @@
 
         /**
          * Changes element's name.
+         * @param string $name
+         * @param bool|null $isEmpty
          * @return static
          */
         final public function setName(string $name, bool $isEmpty = null)
@@ -138,6 +159,7 @@
 
         /**
          * Sets multiple attributes.
+         * @param array $attrs
          * @return static
          */
         public function addAttributes(array $attrs)
@@ -149,23 +171,31 @@
 
         /**
          * Appends value to element's attribute.
-         * @param  mixed  $value
-         * @param  mixed  $option
+         * @param string $name
+         * @param mixed $value
+         * @param mixed $option
          * @return static
          */
         public function appendAttribute(string $name, $value, $option = true)
         {
-            if (is_array($value)) {
+            if (is_array($value))
+            {
                 $prev = isset($this->attrs[$name]) ? (array) $this->attrs[$name] : [];
                 $this->attrs[$name] = $value + $prev;
 
-            } elseif ((string) $value === '') {
+            }
+            elseif ((string) $value === '')
+            {
+                /** @noinspection PhpUnusedLocalVariableInspection */
                 $tmp = &$this->attrs[$name]; // appending empty value? -> ignore, but ensure it exists
-
-            } elseif (!isset($this->attrs[$name]) || is_array($this->attrs[$name])) { // needs array
+            }
+            elseif (!isset($this->attrs[$name]) || is_array($this->attrs[$name]))
+            { // needs array
                 $this->attrs[$name][$value] = $option;
 
-            } else {
+            }
+            else
+            {
                 $this->attrs[$name] = [$this->attrs[$name] => true, $value => $option];
             }
             return $this;
@@ -174,7 +204,8 @@
 
         /**
          * Sets element's attribute.
-         * @param  mixed  $value
+         * @param string $name
+         * @param mixed $value
          * @return static
          */
         public function setAttribute(string $name, $value)
@@ -186,6 +217,7 @@
 
         /**
          * Returns element's attribute.
+         * @param string $name
          * @return mixed
          */
         public function getAttribute(string $name)
@@ -196,6 +228,7 @@
 
         /**
          * Unsets element's attribute.
+         * @param string $name
          * @return static
          */
         public function removeAttribute(string $name)
@@ -207,11 +240,13 @@
 
         /**
          * Unsets element's attributes.
+         * @param array $attributes
          * @return static
          */
         public function removeAttributes(array $attributes)
         {
-            foreach ($attributes as $name) {
+            foreach ($attributes as $name)
+            {
                 unset($this->attrs[$name]);
             }
             return $this;
@@ -220,7 +255,8 @@
 
         /**
          * Overloaded setter for element's attribute.
-         * @param  mixed  $value
+         * @param string $name
+         * @param mixed $value
          */
         final public function __set(string $name, $value): void
         {
@@ -230,6 +266,7 @@
 
         /**
          * Overloaded getter for element's attribute.
+         * @param string $name
          * @return mixed
          */
         final public function &__get(string $name)
@@ -240,6 +277,8 @@
 
         /**
          * Overloaded tester for element's attribute.
+         * @param string $name
+         * @return bool
          */
         final public function __isset(string $name): bool
         {
@@ -249,6 +288,7 @@
 
         /**
          * Overloaded unsetter for element's attribute.
+         * @param string $name
          */
         final public function __unset(string $name): void
         {
@@ -258,28 +298,38 @@
 
         /**
          * Overloaded setter for element's attribute.
+         * @param string $m
+         * @param array $args
          * @return mixed
          */
         final public function __call(string $m, array $args)
         {
             $p = substr($m, 0, 3);
-            if ($p === 'get' || $p === 'set' || $p === 'add') {
+            if ($p === 'get' || $p === 'set' || $p === 'add')
+            {
                 $m = substr($m, 3);
                 $m[0] = $m[0] | "\x20";
-                if ($p === 'get') {
+                if ($p === 'get')
+                {
                     return $this->attrs[$m] ?? null;
 
-                } elseif ($p === 'add') {
+                }
+                elseif ($p === 'add')
+                {
                     $args[] = true;
                 }
             }
 
-            if (count($args) === 0) { // invalid
-
-            } elseif (count($args) === 1) { // set
+            if (count($args) === 0)
+            {
+                return $this;
+            }
+            elseif (count($args) === 1)
+            {
                 $this->attrs[$m] = $args[0];
-
-            } else { // add
+            }
+            else
+            {
                 $this->appendAttribute($m, $args[0], $args[1]);
             }
 
@@ -289,13 +339,17 @@
 
         /**
          * Special setter for element's attribute.
+         * @param string $path
+         * @param array|null $query
          * @return static
          */
         final public function href(string $path, array $query = null)
         {
-            if ($query) {
+            if ($query)
+            {
                 $query = http_build_query($query, '', '&');
-                if ($query !== '') {
+                if ($query !== '')
+                {
                     $path .= '?' . $query;
                 }
             }
@@ -306,14 +360,18 @@
 
         /**
          * Setter for data-* attributes. Booleans are converted to 'true' resp. 'false'.
-         * @param  mixed  $value
+         * @param string $name
+         * @param mixed $value
          * @return static
          */
         public function data(string $name, $value = null)
         {
-            if (func_num_args() === 1) {
+            if (func_num_args() === 1)
+            {
                 $this->attrs['data'] = $name;
-            } else {
+            }
+            else
+            {
                 $this->attrs["data-$name"] = is_bool($value) ? json_encode($value) : $value;
             }
             return $this;
@@ -322,7 +380,7 @@
 
         /**
          * Sets element's HTML content.
-         * @param  HtmlStringable|string  $html
+         * @param  HtmlString|string  $html
          * @return static
          */
         final public function setHtml($html)
@@ -343,12 +401,13 @@
 
         /**
          * Sets element's textual content.
-         * @param  HtmlStringable|string|int|float  $text
+         * @param  HtmlString|string|int|float  $text
          * @return static
          */
         final public function setText($text)
         {
-            if (!$text instanceof HtmlStringable) {
+            if (!$text instanceof HtmlString)
+            {
                 $text = htmlspecialchars((string) $text, ENT_NOQUOTES, 'UTF-8');
             }
             $this->children = [(string) $text];
@@ -367,7 +426,7 @@
 
         /**
          * Adds new element's child.
-         * @param  HtmlStringable|string  $child  Html node or raw HTML string
+         * @param  HtmlString|string  $child  Html node or raw HTML string
          * @return static
          */
         final public function addHtml($child)
@@ -378,12 +437,13 @@
 
         /**
          * Appends plain-text string to element content.
-         * @param  HtmlStringable|string|int|float  $text
+         * @param  HtmlString|string|int|float  $text
          * @return static
          */
         public function addText($text)
         {
-            if (!$text instanceof HtmlStringable) {
+            if (!$text instanceof HtmlString)
+            {
                 $text = htmlspecialchars((string) $text, ENT_NOQUOTES, 'UTF-8');
             }
             return $this->insert(null, $text);
@@ -392,8 +452,10 @@
 
         /**
          * Creates and adds a new Html child.
-         * @param  array|string $attrs  element's attributes or raw HTML string
+         * @param string $name
+         * @param array|string $attrs element's attributes or raw HTML string
          * @return static  created element
+         * @throws RegexpException
          */
         final public function create(string $name, $attrs = null)
         {
@@ -404,16 +466,21 @@
 
         /**
          * Inserts child node.
-         * @param  HtmlStringable|string $child Html node or raw HTML string
+         * @param int|null $index
+         * @param HtmlString|string $child Html node or raw HTML string
+         * @param bool $replace
          * @return static
          */
         public function insert(?int $index, $child, bool $replace = false)
         {
             $child = $child instanceof self ? $child : (string) $child;
-            if ($index === null) { // append
+            if ($index === null)
+            { // append
                 $this->children[] = $child;
 
-            } else { // insert or replace
+            }
+            else
+            { // insert or replace
                 array_splice($this->children, $index, $replace ? 1 : 0, [$child]);
             }
 
@@ -445,7 +512,9 @@
 
         /**
          * Exists child node? (\ArrayAccess implementation).
-         * @param  int  $index
+         * @param int $index
+         * @return bool
+         * @return bool
          */
         final public function offsetExists($index): bool
         {
@@ -459,7 +528,8 @@
          */
         public function offsetUnset($index): void
         {
-            if (isset($this->children[$index])) {
+            if (isset($this->children[$index]))
+            {
                 array_splice($this->children, $index, 1);
             }
         }
@@ -486,9 +556,9 @@
         /**
          * Iterates over elements.
          */
-        final public function getIterator(): \ArrayIterator
+        final public function getIterator(): ArrayIterator
         {
-            return new \ArrayIterator($this->children);
+            return new ArrayIterator($this->children);
         }
 
 
@@ -503,20 +573,28 @@
 
         /**
          * Renders element's start tag, content and end tag.
+         * @param int|null $indent
+         * @return string
          */
         final public function render(int $indent = null): string
         {
             $s = $this->startTag();
 
-            if (!$this->isEmpty) {
+            if (!$this->isEmpty)
+            {
                 // add content
-                if ($indent !== null) {
+                if ($indent !== null)
+                {
                     $indent++;
                 }
-                foreach ($this->children as $child) {
-                    if ($child instanceof self) {
+                foreach ($this->children as $child)
+                {
+                    if ($child instanceof self)
+                    {
                         $s .= $child->render($indent);
-                    } else {
+                    }
+                    else
+                    {
                         $s .= $child;
                     }
                 }
@@ -525,23 +603,30 @@
                 $s .= $this->endTag();
             }
 
-            if ($indent !== null) {
+            if ($indent !== null)
+            {
                 return "\n" . str_repeat("\t", $indent - 1) . $s . "\n" . str_repeat("\t", max(0, $indent - 2));
             }
             return $s;
         }
 
-
+        /**
+         * @return string
+         * @throws Throwable
+         */
         final public function __toString(): string
         {
-            try {
+            try
+            {
                 return $this->render();
-            } catch (\Throwable $e) {
-                if (PHP_VERSION_ID >= 70400) {
-                    throw $e;
-                }
+            }
+            catch (Throwable $e)
+            {
+                //if (PHP_VERSION_ID >= 70400)
+                //{
+                //    throw $e;
+                //}
                 trigger_error('Exception in ' . __METHOD__ . "(): {$e->getMessage()} in {$e->getFile()}:{$e->getLine()}", E_USER_ERROR);
-                return '';
             }
         }
 
@@ -572,47 +657,66 @@
          */
         final public function attributes(): string
         {
-            if (!is_array($this->attrs)) {
+            if (!is_array($this->attrs))
+            {
                 return '';
             }
 
             $s = '';
             $attrs = $this->attrs;
-            foreach ($attrs as $key => $value) {
-                if ($value === null || $value === false) {
+            foreach ($attrs as $key => $value)
+            {
+                if ($value === null || $value === false)
+                {
                     continue;
 
-                } elseif ($value === true) {
-                    if (static::$xhtml) {
+                }
+                elseif ($value === true)
+                {
+                    if (static::$xhtml)
+                    {
                         $s .= ' ' . $key . '="' . $key . '"';
-                    } else {
+                    }
+                    else
+                    {
                         $s .= ' ' . $key;
                     }
                     continue;
 
-                } elseif (is_array($value)) {
-                    if (strncmp($key, 'data-', 5) === 0) {
+                }
+                elseif (is_array($value))
+                {
+                    if (strncmp($key, 'data-', 5) === 0)
+                    {
                         $value = Json::encode($value);
-
-                    } else {
+                    }
+                    else
+                    {
                         $tmp = null;
-                        foreach ($value as $k => $v) {
-                            if ($v != null) { // intentionally ==, skip nulls & empty string
+                        foreach ($value as $k => $v)
+                        {
+                            if ($v != null)
+                            { // intentionally ==, skip nulls & empty string
                                 // composite 'style' vs. 'others'
                                 $tmp[] = $v === true ? $k : (is_string($k) ? $k . ':' . $v : $v);
                             }
                         }
-                        if ($tmp === null) {
+                        if ($tmp === null)
+                        {
                             continue;
                         }
 
                         $value = implode($key === 'style' || !strncmp($key, 'on', 2) ? ';' : ' ', $tmp);
                     }
 
-                } elseif (is_float($value)) {
+                }
+                elseif (is_float($value))
+                {
                     $value = rtrim(rtrim(number_format($value, 10, '.', ''), '0'), '.');
 
-                } else {
+                }
+                else
+                {
                     $value = (string) $value;
                 }
 
@@ -637,8 +741,10 @@
          */
         public function __clone()
         {
-            foreach ($this->children as $key => $value) {
-                if (is_object($value)) {
+            foreach ($this->children as $key => $value)
+            {
+                if (is_object($value))
+                {
                     $this->children[$key] = clone $value;
                 }
             }
