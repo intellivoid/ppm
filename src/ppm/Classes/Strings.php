@@ -54,16 +54,19 @@
             {
                 throw new InvalidArgumentException('Code point must be in range 0x0 to 0xD7FF or 0xE000 to 0x10FFFF.');
             }
-            elseif (!extension_loaded('iconv')) 
+            elseif (!extension_loaded('iconv'))
             {
                 throw new NotSupportedException(__METHOD__ . '() requires ICONV extension that is not loaded.');
             }
             return iconv('UTF-32BE', 'UTF-8//IGNORE', pack('N', $code));
         }
-    
-    
+
+
         /**
          * Starts the $haystack string with the prefix $needle?
+         * @param string $haystack
+         * @param string $needle
+         * @return bool
          */
         public static function startsWith(string $haystack, string $needle): bool
         {
