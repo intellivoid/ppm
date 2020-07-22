@@ -216,26 +216,34 @@
         {
             $this->refreshed = true; // prevents calling refreshClasses() or updateFile() in tryLoad()
             $files = [];
-            foreach ($this->classes as $class => $info) {
+            foreach ($this->classes as $class => $info)
+            {
                 $files[$info['file']]['time'] = $info['time'];
                 $files[$info['file']]['classes'][] = $class;
             }
 
             $this->classes = [];
-            foreach ($this->scanPaths as $path) {
+            foreach ($this->scanPaths as $path)
+            {
                 $iterator = is_file($path) ? [new SplFileInfo($path)] : $this->createFileIterator($path);
-                foreach ($iterator as $file) {
+                foreach ($iterator as $file)
+                {
                     $file = $file->getPathname();
-                    if (isset($files[$file]) && $files[$file]['time'] == filemtime($file)) {
+                    if (isset($files[$file]) && $files[$file]['time'] == filemtime($file))
+                    {
                         $classes = $files[$file]['classes'];
-                    } else {
+                    }
+                    else
+                    {
                         $classes = $this->scanPhp($file);
                     }
                     $files[$file] = ['classes' => [], 'time' => filemtime($file)];
 
-                    foreach ($classes as $class) {
+                    foreach ($classes as $class)
+                    {
                         $info = &$this->classes[$class];
-                        if (isset($info['file'])) {
+                        if (isset($info['file']))
+                        {
                             throw new InvalidStateException("Ambiguous class $class resolution; defined in {$info['file']} and in $file.");
                         }
                         $info = ['file' => $file, 'time' => filemtime($file)];
