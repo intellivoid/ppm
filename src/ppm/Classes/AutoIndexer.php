@@ -192,7 +192,8 @@
             $this->cacheLoaded = true;
             $this->classes = $this->missing = [];
             $this->refreshClasses();
-            if ($this->tempDirectory) {
+            if ($this->tempDirectory)
+            {
                 $this->saveCache();
             }
         }
