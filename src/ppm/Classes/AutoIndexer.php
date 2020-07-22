@@ -2,7 +2,7 @@
 
     declare(strict_types=1);
 
-    namespace ppm\Utilities;
+    namespace ppm\Classes;
 
     use ParseError;
     use ppm\Exceptions\InvalidStateException;
@@ -233,7 +233,7 @@
                     foreach ($classes as $class) {
                         $info = &$this->classes[$class];
                         if (isset($info['file'])) {
-                            throw new Nette\InvalidStateException("Ambiguous class $class resolution; defined in {$info['file']} and in $file.");
+                            throw new InvalidStateException("Ambiguous class $class resolution; defined in {$info['file']} and in $file.");
                         }
                         $info = ['file' => $file, 'time' => filemtime($file)];
                         unset($this->missing[$class]);
@@ -409,6 +409,19 @@
         public function setAutoRefresh(bool $on=true): self
         {
             $this->autoRebuild = $on;
+            return $this;
+        }
+
+        /**
+         * Sets path to temporary directory.
+         *
+         * @param string $dir
+         * @return $this
+         */
+        public function setTempDirectory(string $dir): self
+        {
+            FileSystem::createDir($dir);
+            $this->tempDirectory = $dir;
             return $this;
         }
     }
