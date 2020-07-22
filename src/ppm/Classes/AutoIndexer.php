@@ -424,4 +424,52 @@
             $this->tempDirectory = $dir;
             return $this;
         }
+
+        /**
+         * Loads class list from cache.
+         */
+        private function loadCache(): void
+        {
+            if ($this->cacheLoaded) {
+                return;
+            }
+            $this->cacheLoaded = true;
+
+            $file = $this->getCacheFile();
+
+            // Solving atomicity to work everywhere is really pain in the ass.
+            // 1) We want to do as little as possible IO calls on production and also directory and file can be not writable (#19)
+            // so on Linux we include the file directly without shared lock, therefore, the file must be created atomically by renaming.
+            // 2) On Windows file cannot be renamed-to while is open (ie by include() #11), so we have to acquire a lock.
+            $lock = defined('PHP_WINDOWS_VERSION_BUILD')
+                ? $this->acquireLock("$file.lock", LOCK_SH)
+                : null;
+
+            $data = @include $file; // @ file may not exist
+            if (is_array($data))
+            {
+                [$this->classes, $this->missing] = $data;
+                return;
+            }
+
+            if ($lock)
+            {
+                flock($lock, LOCK_UN); // release shared lock so we can get exclusive
+            }
+            $lock = $this->acquireLock("$file.lock", LOCK_EX);
+
+            // while waiting for exclusive lock, someone might have already created the cache
+            $data = @include $file; // @ file may not exist
+            if (is_array($data))
+            {
+                [$this->classes, $this->missing] = $data;
+                return;
+            }
+
+            $this->classes = $this->missing = [];
+            $this->refreshClasses();
+            $this->saveCache($lock);
+            // On Windows concurrent creation and deletion of a file can cause a error 'permission denied',
+            // therefore, we will not delete the lock file. Windows is peace of shit.
+        }
     }
