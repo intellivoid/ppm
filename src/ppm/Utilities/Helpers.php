@@ -4,6 +4,7 @@
 
     namespace ppm\Utilities;
 
+    use ppm\Classes\Html;
     use Throwable;
 
     /**
@@ -13,6 +14,8 @@
     class Helpers
     {
         /**
+         * Captures PHP output into a string.
+         *
          * @param callable $func
          * @return string
          * @throws Throwable
@@ -32,5 +35,16 @@
             }
         }
 
-
+        /**
+         * Returns the last PHP error as plain string.
+         *
+         * @return string
+         */
+        public static function getLastError(): string
+        {
+            $message = error_get_last()['message'] ?? '';
+            $message = ini_get('html_errors') ? Html::htmlToText($message) : $message;
+            $message = preg_replace('#^\w+\(.*?\): #', '', $message);
+            return $message;
+        }
     }

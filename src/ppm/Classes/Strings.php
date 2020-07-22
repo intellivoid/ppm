@@ -534,22 +534,30 @@
                 ? null
                 : self::length(substr($haystack, 0, $pos));
         }
-    
-    
+
+
         /**
          * Returns position of $nth occurence of $needle in $haystack.
+         * @param string $haystack
+         * @param string $needle
+         * @param int $nth
          * @return int|null  offset in bytes or null if the needle was not found
          */
         private static function pos(string $haystack, string $needle, int $nth = 1): ?int
         {
-            if (!$nth) {
+            if (!$nth)
+            {
                 return null;
-            } elseif ($nth > 0) {
-                if ($needle === '') {
+            }
+            elseif ($nth > 0)
+            {
+                if ($needle === '')
+                {
                     return 0;
                 }
                 $pos = 0;
-                while (($pos = strpos($haystack, $needle, $pos)) !== false && --$nth) {
+                while (($pos = strpos($haystack, $needle, $pos)) !== false && --$nth)
+                {
                     $pos++;
                 }
             } else {
