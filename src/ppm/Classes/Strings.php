@@ -4,6 +4,8 @@
 
     namespace ppm\Classes;
 
+    use ppm\Exceptions\InvalidArgumentException;
+    use ppm\Exceptions\NotSupportedException;
     use function is_array, is_object, strlen;
 
     /**
@@ -12,11 +14,16 @@
      */
     class Strings
     {
+        /**
+         * @var string
+         */
         public const TRIM_CHARACTERS = " \t\n\r\0\x0B\u{A0}";
-    
-    
+
+
         /**
          * Checks if the string is valid for UTF-8 encoding.
+         * @param string $s
+         * @return bool
          */
         public static function checkEncoding(string $s): bool
         {
@@ -36,14 +43,14 @@
     
         /**
          * Returns a specific character in UTF-8 from code point (0x0 to 0xD7FF or 0xE000 to 0x10FFFF).
-         * @throws Nette\InvalidArgumentException if code point is not in valid range
+         * @throws InvalidArgumentException if code point is not in valid range
          */
         public static function chr(int $code): string
         {
             if ($code < 0 || ($code >= 0xD800 && $code <= 0xDFFF) || $code > 0x10FFFF) {
-                throw new Nette\InvalidArgumentException('Code point must be in range 0x0 to 0xD7FF or 0xE000 to 0x10FFFF.');
+                throw new InvalidArgumentException('Code point must be in range 0x0 to 0xD7FF or 0xE000 to 0x10FFFF.');
             } elseif (!extension_loaded('iconv')) {
-                throw new Nette\NotSupportedException(__METHOD__ . '() requires ICONV extension that is not loaded.');
+                throw new NotSupportedException(__METHOD__ . '() requires ICONV extension that is not loaded.');
             }
             return iconv('UTF-32BE', 'UTF-8//IGNORE', pack('N', $code));
         }
