@@ -471,15 +471,18 @@
             $padLen = self::length($pad);
             return $s . str_repeat($pad, (int) ($length / $padLen)) . self::substring($pad, 0, $length % $padLen);
         }
-    
-    
+
+
         /**
          * Reverse string.
+         * @param string $s
+         * @return string
          */
         public static function reverse(string $s): string
         {
-            if (!extension_loaded('iconv')) {
-                throw new Nette\NotSupportedException(__METHOD__ . '() requires ICONV extension that is not loaded.');
+            if (!extension_loaded('iconv'))
+            {
+                throw new NotSupportedException(__METHOD__ . '() requires ICONV extension that is not loaded.');
             }
             return iconv('UTF-32LE', 'UTF-8', strrev(iconv('UTF-8', 'UTF-32BE', $s)));
         }
