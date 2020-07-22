@@ -326,10 +326,12 @@
         {
             return self::lower(self::substring($s, 0, 1)) . self::substring($s, 1);
         }
-    
-    
+
+
         /**
          * Converts UTF-8 string to upper case.
+         * @param string $s
+         * @return string
          */
         public static function upper(string $s): string
         {
