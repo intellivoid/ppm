@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpUnused */
 
     declare(strict_types=1);
 
@@ -83,6 +83,8 @@
          * Handles autoloading of classes, interfaces or traits.
          *
          * @param string $type
+         * @throws ReflectionException
+         * @throws ReflectionException
          */
         public function tryLoad(string $type): void
         {
@@ -135,7 +137,8 @@
          */
         public function addDirectory(...$paths): self
         {
-            if (is_array($paths[0] ?? null)) {
+            if (is_array($paths[0] ?? null))
+            {
                 trigger_error(__METHOD__ . '() use var
                 Add path or paths to list.
                 iadics ...$paths to add an array of paths.', E_USER_WARNING);
@@ -174,6 +177,8 @@
 
         /**
          * @return array
+         * @throws ReflectionException
+         * @throws ReflectionException
          */
         public function getIndexedClasses(): array
         {
@@ -188,6 +193,7 @@
 
         /**
          * Rebuilds class list cache.
+         * @throws ReflectionException
          */
         public function rebuild(): void
         {
@@ -202,6 +208,7 @@
 
         /**
          * Refreshes class list cache.
+         * @throws ReflectionException
          */
         public function refresh(): void
         {
@@ -215,6 +222,7 @@
 
         /**
          * Refreshes $classes.
+         * @throws ReflectionException
          */
         private function refreshClasses(): void
         {
@@ -318,6 +326,8 @@
 
         /**
          * @param string $file
+         * @throws ReflectionException
+         * @throws ReflectionException
          */
         private function updateFile(string $file): void
         {
@@ -450,6 +460,7 @@
 
         /**
          * Loads class list from cache.
+         * @throws ReflectionException
          */
         private function loadCache(): void
         {
@@ -468,6 +479,7 @@
                 ? $this->acquireLock("$file.lock", LOCK_SH)
                 : null;
 
+            /** @noinspection PhpIncludeInspection */
             $data = @include $file; // @ file may not exist
             if (is_array($data))
             {
@@ -482,6 +494,7 @@
             $lock = $this->acquireLock("$file.lock", LOCK_EX);
 
             // while waiting for exclusive lock, someone might have already created the cache
+            /** @noinspection PhpIncludeInspection */
             $data = @include $file; // @ file may not exist
             if (is_array($data))
             {
@@ -507,6 +520,7 @@
             // on Linux: that another thread does not rename the same named file earlier
             // on Windows: that the file is not read by another thread
             $file = $this->getCacheFile();
+            /** @noinspection PhpUnusedLocalVariableInspection */
             $lock = $lock ?: $this->acquireLock("$file.lock", LOCK_EX);
             $code = "<?php\nreturn " . var_export([$this->classes, $this->missing], true) . ";\n";
 
