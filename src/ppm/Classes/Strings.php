@@ -29,10 +29,12 @@
         {
             return $s === self::fixEncoding($s);
         }
-    
-    
+
+
         /**
          * Removes invalid code unit sequences from UTF-8 string.
+         * @param string $s
+         * @return string
          */
         public static function fixEncoding(string $s): string
         {
