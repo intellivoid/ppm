@@ -428,10 +428,13 @@
         {
             return function_exists('mb_strlen') ? mb_strlen($s, 'UTF-8') : strlen(utf8_decode($s));
         }
-    
-    
+
+
         /**
          * Strips whitespace from UTF-8 string.
+         * @param string $s
+         * @param string $charlist
+         * @return string
          */
         public static function trim(string $s, string $charlist = self::TRIM_CHARACTERS): string
         {
