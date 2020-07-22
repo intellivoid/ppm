@@ -518,10 +518,13 @@
                 ? null
                 : substr($haystack, $pos + strlen($needle));
         }
-    
-    
+
+
         /**
          * Returns position of $nth occurence of $needle in $haystack (negative value means searching from the end).
+         * @param string $haystack
+         * @param string $needle
+         * @param int $nth
          * @return int|null  offset in characters or null if the needle was not found
          */
         public static function indexOf(string $haystack, string $needle, int $nth = 1): ?int
