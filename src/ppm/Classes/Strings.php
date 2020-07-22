@@ -304,10 +304,12 @@
             }
             return $s;
         }
-    
-    
+
+
         /**
          * Converts UTF-8 string to lower case.
+         * @param string $s
+         * @return string
          */
         public static function lower(string $s): string
         {
