@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpUnused */
 
     declare(strict_types=1);
 
@@ -136,6 +136,8 @@
          * Removes special controls characters and normalizes line endings, spaces and normal form to NFC in UTF-8 string.
          * @param string $s
          * @return string
+         * @throws RegexpException
+         * @throws RegexpException
          */
         public static function normalize(string $s): string
         {
@@ -175,6 +177,8 @@
          * Converts UTF-8 string to ASCII.
          * @param string $s
          * @return string
+         * @throws RegexpException
+         * @throws RegexpException
          */
         public static function toAscii(string $s): string
         {
@@ -249,6 +253,8 @@
          * @param string|null $charlist
          * @param bool $lower
          * @return string
+         * @throws RegexpException
+         * @throws RegexpException
          */
         public static function webalize(string $s, string $charlist = null, bool $lower = true): string
         {
@@ -269,6 +275,8 @@
          * @param int $maxLen
          * @param string $append
          * @return string
+         * @throws RegexpException
+         * @throws RegexpException
          */
         public static function truncate(string $s, int $maxLen, string $append = "\u{2026}"): string
         {
@@ -300,6 +308,8 @@
          * @param int $level
          * @param string $chars
          * @return string
+         * @throws RegexpException
+         * @throws RegexpException
          */
         public static function indent(string $s, int $level = 1, string $chars = "\t"): string
         {
@@ -438,6 +448,8 @@
          * @param string $s
          * @param string $charlist
          * @return string
+         * @throws RegexpException
+         * @throws RegexpException
          */
         public static function trim(string $s, string $charlist = self::TRIM_CHARACTERS): string
         {
@@ -587,6 +599,8 @@
          * @param string $pattern
          * @param int $flags
          * @return array
+         * @throws RegexpException
+         * @throws RegexpException
          */
         public static function split(string $subject, string $pattern, int $flags = 0): array
         {
@@ -601,6 +615,8 @@
          * @param int $flags
          * @param int $offset
          * @return array|null
+         * @throws RegexpException
+         * @throws RegexpException
          */
         public static function match(string $subject, string $pattern, int $flags = 0, int $offset = 0): ?array
         {
@@ -621,6 +637,8 @@
          * @param int $flags
          * @param int $offset
          * @return array
+         * @throws RegexpException
+         * @throws RegexpException
          */
         public static function matchAll(string $subject, string $pattern, int $flags = 0, int $offset = 0): array
         {
@@ -644,6 +662,8 @@
          * @param string|callable $replacement
          * @param int $limit
          * @return string
+         * @throws RegexpException
+         * @throws RegexpException
          */
         public static function replace(string $subject, $pattern, $replacement = null, int $limit = -1): string
         {
