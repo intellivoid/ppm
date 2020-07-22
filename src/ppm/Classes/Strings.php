@@ -441,10 +441,14 @@
             $charlist = preg_quote($charlist, '#');
             return self::replace($s, '#^[' . $charlist . ']+|[' . $charlist . ']+$#Du', '');
         }
-    
-    
+
+
         /**
          * Pad a UTF-8 string to a certain length with another string.
+         * @param string $s
+         * @param int $length
+         * @param string $pad
+         * @return string
          */
         public static function padLeft(string $s, int $length, string $pad = ' '): string
         {
