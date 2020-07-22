@@ -4,7 +4,7 @@
 
     namespace ppm\Classes;
 
-    use function is_array, is_object, is_string;
+    use function is_array, is_object, strlen;
 
     /**
      * Class Strings
