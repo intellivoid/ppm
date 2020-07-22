@@ -41,17 +41,21 @@
             // removes xD800-xDFFF, x110000 and higher
             return htmlspecialchars_decode(htmlspecialchars($s, ENT_NOQUOTES | ENT_IGNORE, 'UTF-8'), ENT_NOQUOTES);
         }
-    
-    
+
+
         /**
          * Returns a specific character in UTF-8 from code point (0x0 to 0xD7FF or 0xE000 to 0x10FFFF).
-         * @throws InvalidArgumentException if code point is not in valid range
+         * @param int $code
+         * @return string
          */
         public static function chr(int $code): string
         {
-            if ($code < 0 || ($code >= 0xD800 && $code <= 0xDFFF) || $code > 0x10FFFF) {
+            if ($code < 0 || ($code >= 0xD800 && $code <= 0xDFFF) || $code > 0x10FFFF)
+            {
                 throw new InvalidArgumentException('Code point must be in range 0x0 to 0xD7FF or 0xE000 to 0x10FFFF.');
-            } elseif (!extension_loaded('iconv')) {
+            }
+            elseif (!extension_loaded('iconv')) 
+            {
                 throw new NotSupportedException(__METHOD__ . '() requires ICONV extension that is not loaded.');
             }
             return iconv('UTF-32BE', 'UTF-8//IGNORE', pack('N', $code));
