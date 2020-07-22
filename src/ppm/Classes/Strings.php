@@ -229,22 +229,27 @@
                 // restore temporarily hidden characters
                 $s = strtr($s, "\x01\x02\x03\x04\x05\x06", '`\'"^~?');
             }
-            else 
+            else
             {
                 $s = self::pcre('preg_replace', ['#[^\x00-\x7F]++#', '', $s]); // remove non-ascii chars
             }
     
             return $s;
         }
-    
-    
+
+
         /**
          * Converts UTF-8 string to web safe characters [a-z0-9-] text.
+         * @param string $s
+         * @param string|null $charlist
+         * @param bool $lower
+         * @return string
          */
         public static function webalize(string $s, string $charlist = null, bool $lower = true): string
         {
             $s = self::toAscii($s);
-            if ($lower) {
+            if ($lower)
+            {
                 $s = strtolower($s);
             }
             $s = self::pcre('preg_replace', ['#[^a-z0-9' . ($charlist !== null ? preg_quote($charlist, '#') : '') . ']+#i', '-', $s]);
