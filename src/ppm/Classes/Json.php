@@ -40,4 +40,21 @@
             }
             return $json;
         }
+
+        /**
+         * Decodes a JSON string. Accepts flag Json::FORCE_ARRAY.
+         * @param string $json
+         * @param int $flags
+         * @return mixed
+         * @throws JsonException
+         */
+        public static function decode(string $json, int $flags = 0)
+        {
+            $forceArray = (bool) ($flags & self::FORCE_ARRAY);
+            $value = json_decode($json, $forceArray, 512, JSON_BIGINT_AS_STRING);
+            if ($error = json_last_error()) {
+                throw new JsonException(json_last_error_msg(), $error);
+            }
+            return $value;
+        }
     }
