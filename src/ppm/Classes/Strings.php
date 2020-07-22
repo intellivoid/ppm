@@ -135,7 +135,8 @@
         public static function normalize(string $s): string
         {
             // convert to compressed normal form (NFC)
-            if (class_exists('Normalizer', false) && ($n = \Normalizer::normalize($s, \Normalizer::FORM_C)) !== false) {
+            if (class_exists('Normalizer', false) && ($n = \Normalizer::normalize($s, \Normalizer::FORM_C)) !== false)
+            {
                 $s = $n;
             }
     
