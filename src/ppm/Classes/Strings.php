@@ -610,14 +610,20 @@
                 ? $m
                 : null;
         }
-    
-    
+
+
         /**
          * Performs a global regular expression match. Accepts flag PREG_OFFSET_CAPTURE (returned in bytes), PREG_SET_ORDER is default.
+         * @param string $subject
+         * @param string $pattern
+         * @param int $flags
+         * @param int $offset
+         * @return array
          */
         public static function matchAll(string $subject, string $pattern, int $flags = 0, int $offset = 0): array
         {
-            if ($offset > strlen($subject)) {
+            if ($offset > strlen($subject))
+            {
                 return [];
             }
             self::pcre('preg_match_all', [
