@@ -84,29 +84,43 @@
         {
             return $needle === '' || substr($haystack, -strlen($needle)) === $needle;
         }
-    
-    
+
+
         /**
          * Does $haystack contain $needle?
+         * @param string $haystack
+         * @param string $needle
+         * @return bool
          */
         public static function contains(string $haystack, string $needle): bool
         {
             return strpos($haystack, $needle) !== false;
         }
-    
-    
+
+
         /**
          * Returns a part of UTF-8 string.
+         * @param string $s
+         * @param int $start
+         * @param int|null $length
+         * @return string
          */
         public static function substring(string $s, int $start, int $length = null): string
         {
-            if (function_exists('mb_substr')) {
+            if (function_exists('mb_substr'))
+            {
                 return mb_substr($s, $start, $length, 'UTF-8'); // MB is much faster
-            } elseif (!extension_loaded('iconv')) {
-                throw new Nette\NotSupportedException(__METHOD__ . '() requires extension ICONV or MBSTRING, neither is loaded.');
-            } elseif ($length === null) {
+            }
+            elseif (!extension_loaded('iconv'))
+            {
+                throw new NotSupportedException(__METHOD__ . '() requires extension ICONV or MBSTRING, neither is loaded.');
+            }
+            elseif ($length === null)
+            {
                 $length = self::length($s);
-            } elseif ($start < 0 && $length < 0) {
+            }
+            elseif ($start < 0 && $length < 0)
+            {
                 $start += self::length($s); // unifies iconv_substr behavior with mb_substr
             }
             return iconv_substr($s, $start, $length, 'UTF-8');
