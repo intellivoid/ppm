@@ -577,10 +577,14 @@
             }
             return Helpers::falseToNull($pos);
         }
-    
-    
+
+
         /**
          * Splits string by a regular expression.
+         * @param string $subject
+         * @param string $pattern
+         * @param int $flags
+         * @return array
          */
         public static function split(string $subject, string $pattern, int $flags = 0): array
         {
