@@ -256,22 +256,32 @@
             $s = trim($s, '-');
             return $s;
         }
-    
-    
+
+
         /**
          * Truncates UTF-8 string to maximal length.
+         * @param string $s
+         * @param int $maxLen
+         * @param string $append
+         * @return string
          */
         public static function truncate(string $s, int $maxLen, string $append = "\u{2026}"): string
         {
-            if (self::length($s) > $maxLen) {
+            if (self::length($s) > $maxLen)
+            {
                 $maxLen -= self::length($append);
-                if ($maxLen < 1) {
+                if ($maxLen < 1)
+                {
                     return $append;
     
-                } elseif ($matches = self::match($s, '#^.{1,' . $maxLen . '}(?=[\s\x00-/:-@\[-`{-~])#us')) {
+                }
+                elseif ($matches = self::match($s, '#^.{1,' . $maxLen . '}(?=[\s\x00-/:-@\[-`{-~])#us'))
+                {
                     return $matches[0] . $append;
     
-                } else {
+                }
+                else
+                {
                     return self::substring($s, 0, $maxLen) . $append;
                 }
             }
