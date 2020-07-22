@@ -590,14 +590,20 @@
         {
             return self::pcre('preg_split', [$pattern, $subject, -1, $flags | PREG_SPLIT_DELIM_CAPTURE]);
         }
-    
-    
+
+
         /**
          * Performs a regular expression match. Accepts flag PREG_OFFSET_CAPTURE (returned in bytes).
+         * @param string $subject
+         * @param string $pattern
+         * @param int $flags
+         * @param int $offset
+         * @return array|null
          */
         public static function match(string $subject, string $pattern, int $flags = 0, int $offset = 0): ?array
         {
-            if ($offset > strlen($subject)) {
+            if ($offset > strlen($subject))
+            {
                 return null;
             }
             return self::pcre('preg_match', [$pattern, $subject, &$m, $flags, $offset])
