@@ -456,10 +456,14 @@
             $padLen = self::length($pad);
             return str_repeat($pad, (int) ($length / $padLen)) . self::substring($pad, 0, $length % $padLen) . $s;
         }
-    
-    
+
+
         /**
          * Pad a UTF-8 string to a certain length with another string.
+         * @param string $s
+         * @param int $length
+         * @param string $pad
+         * @return string
          */
         public static function padRight(string $s, int $length, string $pad = ' '): string
         {
