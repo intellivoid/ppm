@@ -72,10 +72,13 @@
         {
             return strncmp($haystack, $needle, strlen($needle)) === 0;
         }
-    
-    
+
+
         /**
          * Ends the $haystack string with the suffix $needle?
+         * @param string $haystack
+         * @param string $needle
+         * @return bool
          */
         public static function endsWith(string $haystack, string $needle): bool
         {
