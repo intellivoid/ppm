@@ -178,7 +178,8 @@
         {
             $this->loadCache();
             $res = [];
-            foreach ($this->classes as $class => $info) {
+            foreach ($this->classes as $class => $info)
+            {
                 $res[$class] = $info['file'];
             }
             return $res;
