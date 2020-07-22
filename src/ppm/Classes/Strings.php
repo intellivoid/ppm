@@ -337,10 +337,12 @@
         {
             return mb_strtoupper($s, 'UTF-8');
         }
-    
-    
+
+
         /**
          * Converts first character to upper case.
+         * @param string $s
+         * @return string
          */
         public static function firstUpper(string $s): string
         {
