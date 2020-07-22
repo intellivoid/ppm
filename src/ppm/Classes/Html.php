@@ -7,6 +7,7 @@
     use ArrayIterator;
     use Countable;
     use IteratorAggregate;
+    use ppm\Exceptions\JsonException;
     use ppm\Exceptions\RegexpException;
     use ppm\Interfaces\HtmlString;
     use Throwable;
@@ -98,6 +99,7 @@
 
         /**
          * Converts to HTML.
+         * @throws JsonException
          */
         final public function toHtml(): string
         {
@@ -575,6 +577,8 @@
          * Renders element's start tag, content and end tag.
          * @param int|null $indent
          * @return string
+         * @throws JsonException
+         * @throws JsonException
          */
         final public function render(int $indent = null): string
         {
@@ -633,6 +637,7 @@
 
         /**
          * Returns element's start tag.
+         * @throws JsonException
          */
         final public function startTag(): string
         {
@@ -653,6 +658,7 @@
 
         /**
          * Returns element's attributes.
+         * @throws JsonException
          * @internal
          */
         final public function attributes(): string
