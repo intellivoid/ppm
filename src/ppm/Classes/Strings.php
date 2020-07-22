@@ -287,14 +287,19 @@
             }
             return $s;
         }
-    
-    
+
+
         /**
          * Indents UTF-8 string from the left.
+         * @param string $s
+         * @param int $level
+         * @param string $chars
+         * @return string
          */
         public static function indent(string $s, int $level = 1, string $chars = "\t"): string
         {
-            if ($level > 0) {
+            if ($level > 0)
+            {
                 $s = self::replace($s, '#(?:^|[\r\n]+)(?=[^\r\n])#', '$0' . str_repeat($chars, $level));
             }
             return $s;
