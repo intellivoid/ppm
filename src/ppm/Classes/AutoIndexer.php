@@ -472,4 +472,29 @@
             // On Windows concurrent creation and deletion of a file can cause a error 'permission denied',
             // therefore, we will not delete the lock file. Windows is peace of shit.
         }
+
+        /**
+         * Writes class list to cache.
+         *
+         * @param null $lock
+         */
+        private function saveCache($lock = null): void
+        {
+            // we have to acquire a lock to be able safely rename file
+            // on Linux: that another thread does not rename the same named file earlier
+            // on Windows: that the file is not read by another thread
+            $file = $this->getCacheFile();
+            $lock = $lock ?: $this->acquireLock("$file.lock", LOCK_EX);
+            $code = "<?php\nreturn " . var_export([$this->classes, $this->missing], true) . ";\n";
+
+            if (file_put_contents("$file.tmp", $code) !== strlen($code) || !rename("$file.tmp", $file))
+            {
+                @unlink("$file.tmp"); // @ file may not exist
+                throw new \RuntimeException("Unable to create '$file'.");
+            }
+            if (function_exists('opcache_invalidate'))
+            {
+                @opcache_invalidate($file, true); // @ can be restricted
+            }
+        }
     }
