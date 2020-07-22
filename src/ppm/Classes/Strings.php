@@ -4,8 +4,10 @@
 
     namespace ppm\Classes;
 
+    use Normalizer;
     use ppm\Exceptions\InvalidArgumentException;
     use ppm\Exceptions\NotSupportedException;
+    use Transliterator;
     use function is_array, is_object, strlen;
 
     /**
@@ -135,7 +137,7 @@
         public static function normalize(string $s): string
         {
             // convert to compressed normal form (NFC)
-            if (class_exists('Normalizer', false) && ($n = \Normalizer::normalize($s, \Normalizer::FORM_C)) !== false)
+            if (class_exists('Normalizer', false) && ($n = Normalizer::normalize($s, Normalizer::FORM_C)) !== false)
             {
                 $s = $n;
             }
@@ -177,7 +179,7 @@
             static $transliterator = null;
             if ($transliterator === null && class_exists('Transliterator', false))
             {
-                $transliterator = \Transliterator::create('Any-Latin; Latin-ASCII');
+                $transliterator = Transliterator::create('Any-Latin; Latin-ASCII');
             }
     
             // remove control characters and check UTF-8 validity
@@ -359,22 +361,30 @@
         {
             return mb_convert_case($s, MB_CASE_TITLE, 'UTF-8');
         }
-    
-    
+
+
         /**
          * Case-insensitive compares UTF-8 strings.
+         * @param string $left
+         * @param string $right
+         * @param int|null $len
+         * @return bool
          */
         public static function compare(string $left, string $right, int $len = null): bool
         {
-            if (class_exists('Normalizer', false)) {
-                $left = \Normalizer::normalize($left, \Normalizer::FORM_D); // form NFD is faster
-                $right = \Normalizer::normalize($right, \Normalizer::FORM_D); // form NFD is faster
+            if (class_exists('Normalizer', false))
+            {
+                $left = Normalizer::normalize($left, Normalizer::FORM_D); // form NFD is faster
+                $right = Normalizer::normalize($right, Normalizer::FORM_D); // form NFD is faster
             }
     
-            if ($len < 0) {
+            if ($len < 0)
+            {
                 $left = self::substring($left, $len, -$len);
                 $right = self::substring($right, $len, -$len);
-            } elseif ($len !== null) {
+            }
+            elseif ($len !== null)
+            {
                 $left = self::substring($left, 0, $len);
                 $right = self::substring($right, 0, $len);
             }
