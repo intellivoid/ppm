@@ -203,7 +203,8 @@
         public function refresh(): void
         {
             $this->loadCache();
-            if (!$this->refreshed) {
+            if (!$this->refreshed)
+            {
                 $this->refreshClasses();
                 $this->saveCache();
             }
