@@ -4,6 +4,7 @@
 
     namespace ppm\Classes;
 
+    use LogicException;
     use ParseError;
     use ppm\Exceptions\InvalidStateException;
     use ppm\Exceptions\IOException;
@@ -518,5 +519,17 @@
                 throw new RuntimeException('Unable to acquire ' . ($mode & LOCK_EX ? 'exclusive' : 'shared') . " lock on file '$file'. " . error_get_last()['message']);
             }
             return $handle;
+        }
+
+        /**
+         * @return string
+         */
+        private function getCacheFile(): string
+        {
+            if (!$this->tempDirectory)
+            {
+                throw new LogicException('Set path to temporary directory using setTempDirectory().');
+            }
+            return $this->tempDirectory . '/' . md5(serialize($this->getCacheKey())) . '.php';
         }
     }
