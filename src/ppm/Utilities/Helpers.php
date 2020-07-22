@@ -47,4 +47,15 @@
             $message = preg_replace('#^\w+\(.*?\): #', '', $message);
             return $message;
         }
+
+        /**
+         * Converts false to null.
+         *
+         * @param $val
+         * @return null
+         */
+        public static function falseToNull($val)
+        {
+            return $val === false ? null : $val;
+        }
     }
