@@ -10,5 +10,9 @@
      */
     final class Json
     {
+        public const FORCE_ARRAY = 0b0001;
 
+        public const PRETTY = 0b0010;
+
+        public const ESCAPE_UNICODE = 0b0100;
     }
