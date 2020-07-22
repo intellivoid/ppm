@@ -416,11 +416,13 @@
             }
             return $first;
         }
-    
-    
+
+
         /**
          * Returns number of characters (not bytes) in UTF-8 string.
          * That is the number of Unicode code points which may differ from the number of graphemes.
+         * @param string $s
+         * @return int
          */
         public static function length(string $s): int
         {
