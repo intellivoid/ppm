@@ -125,10 +125,12 @@
             }
             return iconv_substr($s, $start, $length, 'UTF-8');
         }
-    
-    
+
+
         /**
          * Removes special controls characters and normalizes line endings, spaces and normal form to NFC in UTF-8 string.
+         * @param string $s
+         * @return string
          */
         public static function normalize(string $s): string
         {
@@ -150,19 +152,23 @@
     
             return $s;
         }
-    
-    
+
+
         /**
          * Standardize line endings to unix-like.
+         * @param string $s
+         * @return string
          */
         public static function normalizeNewLines(string $s): string
         {
             return str_replace(["\r\n", "\r"], "\n", $s);
         }
-    
-    
+
+
         /**
          * Converts UTF-8 string to ASCII.
+         * @param string $s
+         * @return string
          */
         public static function toAscii(string $s): string
         {
