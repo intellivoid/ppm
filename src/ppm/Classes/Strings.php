@@ -502,10 +502,13 @@
                 ? null
                 : substr($haystack, 0, $pos);
         }
-    
-    
+
+
         /**
          * Returns part of $haystack after $nth occurence of $needle (negative value means searching from the end).
+         * @param string $haystack
+         * @param string $needle
+         * @param int $nth
          * @return string|null  returns null if the needle was not found
          */
         public static function after(string $haystack, string $needle, int $nth = 1): ?string
