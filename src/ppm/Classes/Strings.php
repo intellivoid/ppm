@@ -486,10 +486,13 @@
             }
             return iconv('UTF-32LE', 'UTF-8', strrev(iconv('UTF-8', 'UTF-32BE', $s)));
         }
-    
-    
+
+
         /**
          * Returns part of $haystack before $nth occurence of $needle (negative value means searching from the end).
+         * @param string $haystack
+         * @param string $needle
+         * @param int $nth
          * @return string|null  returns null if the needle was not found
          */
         public static function before(string $haystack, string $needle, int $nth = 1): ?string
