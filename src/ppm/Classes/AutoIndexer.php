@@ -10,6 +10,7 @@
     use ppm\Exceptions\NotSupportedException;
     use ReflectionException;
     use ReflectionProperty;
+    use RuntimeException;
     use SplFileInfo;
 
     /**
@@ -490,11 +491,32 @@
             if (file_put_contents("$file.tmp", $code) !== strlen($code) || !rename("$file.tmp", $file))
             {
                 @unlink("$file.tmp"); // @ file may not exist
-                throw new \RuntimeException("Unable to create '$file'.");
+                throw new RuntimeException("Unable to create '$file'.");
             }
             if (function_exists('opcache_invalidate'))
             {
                 @opcache_invalidate($file, true); // @ can be restricted
             }
+        }
+
+        /**
+         * Acquires the lock
+         *
+         * @param string $file
+         * @param int $mode
+         * @return false|resource
+         */
+        private function acquireLock(string $file, int $mode)
+        {
+            $handle = @fopen($file, 'w'); // @ is escalated to exception
+            if (!$handle)
+            {
+                throw new RuntimeException("Unable to create file '$file'. " . error_get_last()['message']);
+            }
+            elseif (!@flock($handle, $mode))
+            {
+                throw new RuntimeException('Unable to acquire ' . ($mode & LOCK_EX ? 'exclusive' : 'shared') . " lock on file '$file'. " . error_get_last()['message']);
+            }
+            return $handle;
         }
     }
