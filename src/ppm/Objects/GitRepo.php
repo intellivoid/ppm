@@ -4,6 +4,7 @@
     namespace ppm\Objects;
 
     use Exception;
+    use ppm\Classes\GitManager;
 
     /**
      * Class GitRepo
@@ -212,9 +213,11 @@
                 2 => array('pipe', 'w'),
             );
             $pipes = array();
-            $resource = proc_open(Git::get_bin(), $descriptorspec, $pipes);
+            $resource = proc_open(GitManager::get_bin(), $descriptorspec, $pipes);
 
+            /** @noinspection PhpUnusedLocalVariableInspection */
             $stdout = stream_get_contents($pipes[1]);
+            /** @noinspection PhpUnusedLocalVariableInspection */
             $stderr = stream_get_contents($pipes[2]);
             foreach ($pipes as $pipe)
             {
@@ -292,7 +295,7 @@
          */
         public function run($command)
         {
-            return $this->run_command(Git::get_bin()." ".$command);
+            return $this->run_command(GitManager::get_bin()." ".$command);
         }
 
         /**
