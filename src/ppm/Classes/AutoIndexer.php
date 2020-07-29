@@ -366,10 +366,14 @@
             $level = $minLevel = 0;
             $classes = [];
 
-            try {
+            try
+            {
                 $tokens = token_get_all($code, TOKEN_PARSE);
-            } catch (ParseError $e) {
-                if ($this->reportParseErrors) {
+            }
+            catch (ParseError $e)
+            {
+                if ($this->reportParseErrors)
+                {
                     $rp = new ReflectionProperty($e, 'file');
                     $rp->setAccessible(true);
                     $rp->setValue($e, $file);
@@ -378,9 +382,12 @@
                 $tokens = [];
             }
 
-            foreach ($tokens as $token) {
-                if (is_array($token)) {
-                    switch ($token[0]) {
+            foreach ($tokens as $token)
+            {
+                if (is_array($token))
+                {
+                    switch ($token[0])
+                    {
                         case T_COMMENT:
                         case T_DOC_COMMENT:
                         case T_WHITESPACE:
@@ -388,7 +395,8 @@
 
                         case T_NS_SEPARATOR:
                         case T_STRING:
-                            if ($expected) {
+                            if ($expected)
+                            {
                                 $name .= $token[1];
                             }
                             continue 2;
@@ -407,11 +415,13 @@
                 }
 
                 if ($expected) {
-                    switch ($expected) {
+                    switch ($expected)
+                    {
                         case T_CLASS:
                         case T_INTERFACE:
                         case T_TRAIT:
-                            if ($name && $level === $minLevel) {
+                            if ($name && $level === $minLevel)
+                            {
                                 $classes[] = $namespace . $name;
                             }
                             break;
@@ -424,9 +434,12 @@
                     $expected = null;
                 }
 
-                if ($token === '{') {
+                if ($token === '{')
+                {
                     $level++;
-                } elseif ($token === '}') {
+                }
+                elseif ($token === '}')
+                {
                     $level--;
                 }
             }
@@ -464,7 +477,8 @@
          */
         private function loadCache(): void
         {
-            if ($this->cacheLoaded) {
+            if ($this->cacheLoaded)
+            {
                 return;
             }
             $this->cacheLoaded = true;
