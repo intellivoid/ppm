@@ -73,4 +73,16 @@
             $this->AccessTokens[$personalAccessToken->Alias] = $personalAccessToken;
             return true;
         }
+
+        /**
+         * Removes an existing personal access token from the vault
+         *
+         * @param PersonalAccessToken $personalAccessToken
+         * @return bool
+         */
+        public function delete(PersonalAccessToken $personalAccessToken): bool
+        {
+            unset($this->AccessTokens[$personalAccessToken->Alias]);
+            return true;
+        }
     }
