@@ -15,7 +15,7 @@
     class GithubVault
     {
         /**
-         * @var PersonalAccessToken[]
+         * @var array
          */
         public $AccessTokens;
 
@@ -28,22 +28,12 @@
          */
         public function get(string $alias): PersonalAccessToken
         {
-            $selected_access_token = null;
-
-            foreach($this->AccessTokens as $personalAccessToken)
-            {
-                if($personalAccessToken->Alias == $alias)
-                {
-                    $selected_access_token = $personalAccessToken;
-                }
-            }
-
-            if($selected_access_token == null)
+            if(isset($this->AccessTokens[$alias]) == false)
             {
                 throw new GithubPersonalAccessTokenNotFoundException();
             }
 
-            return $selected_access_token;
+            return $this->AccessTokens[$alias];
         }
 
         /**
@@ -56,14 +46,9 @@
          */
         public function add(string $alias, string $personal_access_token): PersonalAccessToken
         {
-            try
+            if(isset($this->AccessTokens[$alias]))
             {
-                $this->get($alias);
                 throw new GithubPersonalAccessTokenAlreadyExistsException();
-            }
-            catch (GithubPersonalAccessTokenNotFoundException $e)
-            {
-                unset($e);
             }
 
             $PersonalAccessToken = new PersonalAccessToken();
@@ -72,8 +57,19 @@
             $PersonalAccessToken->AddedTimestamp = (int)time();
             $PersonalAccessToken->LastUsedTimestamp = 0;
 
-            $this->AccessTokens[] = $PersonalAccessToken;
+            $this->AccessTokens[$alias] = $PersonalAccessToken;
 
             return $PersonalAccessToken;
+        }
+
+        /**
+         * Updates an existing personal access token in the vault
+         *
+         * @param PersonalAccessToken $personalAccessToken
+         * @return bool
+         */
+        public function update(PersonalAccessToken $personalAccessToken): bool
+        {
+            $this->AccessTokens[$personalAccessToken->Alias] = $personalAccessToken;
         }
     }
