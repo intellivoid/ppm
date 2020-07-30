@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpUnused */
 
 
     namespace ppm\Objects;
@@ -69,6 +69,7 @@
          *
          * @param PersonalAccessToken $personalAccessToken
          * @return bool
+         * @noinspection PhpUnused
          */
         public function update(PersonalAccessToken $personalAccessToken): bool
         {
@@ -81,6 +82,7 @@
          *
          * @param PersonalAccessToken $personalAccessToken
          * @return bool
+         * @noinspection PhpUnused
          */
         public function delete(PersonalAccessToken $personalAccessToken): bool
         {
@@ -92,6 +94,7 @@
          * Saves the Github Vault to disk
          *
          * @return bool
+         * @noinspection PhpUnused
          */
         public function save(): bool
         {
@@ -105,6 +108,33 @@
             }
 
             file_put_contents($path, ZiProto::encode($data));
+            return true;
+        }
+
+        /**
+         * Loads the Github Vault from disk if the file exists
+         *
+         * @return bool
+         * @noinspection PhpUnused
+         */
+        public function load(): bool
+        {
+            $path = PathFinder::getGithubVaultPath(true);
+
+            if(file_exists($path) == false)
+            {
+                return false;
+            }
+
+            $loaded_data = ZiProto::decode(file_get_contents($path));
+            $this->AccessTokens = array();
+
+            foreach($loaded_data as $datum)
+            {
+                $personal_access_token = PersonalAccessToken::fromArray($datum);
+                $this->AccessTokens[$personal_access_token->Alias] = $personal_access_token;
+            }
+
             return true;
         }
     }

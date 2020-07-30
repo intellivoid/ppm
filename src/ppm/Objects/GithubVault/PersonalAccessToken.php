@@ -74,7 +74,7 @@
 
             if(isset($data["last_used_timestamp"]))
             {
-                $PersonalAccessTokenObject->PersonalAccessToken = (int)$data["last_used_timestamp"];
+                $PersonalAccessTokenObject->LastUsedTimestamp = (int)$data["last_used_timestamp"];
             }
 
             if(isset($data["added_timestamp"]))

@@ -4,8 +4,11 @@
     namespace ppm\Utilities;
 
     use Exception;
+    use ppm\Exceptions\GithubPersonalAccessTokenAlreadyExistsException;
+    use ppm\Exceptions\GithubPersonalAccessTokenNotFoundException;
     use ppm\Exceptions\InvalidPackageLockException;
     use ppm\Exceptions\VersionNotFoundException;
+    use ppm\Objects\GithubVault;
     use ppm\Objects\Package;
     use ppm\Objects\PackageLock\PackageLockItem;
     use ppm\Objects\Source;
@@ -30,14 +33,36 @@
                 "ppm",
                 "no-prompt",
                 "no-intro",
+                "github-add-pak",
+                "github-remove-pak",
                 "installed",
                 "compile::",
+                "alias::",
+                "token::",
                 "install::",
                 "uninstall::",
                 "version::"
             );
 
             return getopt($options, $long_opts);
+        }
+
+        public static function getParameter(string $name, string $text, bool $require_parameter): string
+        {
+            if(isset(CLI::options()[$name]))
+            {
+                return CLI::options()[$name];
+            }
+            else
+            {
+                if($require_parameter)
+                {
+                    self::logError("The required parameter '$name' is missing");
+                    exit(255);
+                }
+            }
+
+            return self::getInput($text . ": ");
         }
 
         public static function getBooleanInput(string $message): bool
@@ -58,6 +83,13 @@
             }
 
             return true;
+        }
+
+        public static function getInput(string $message): string
+        {
+            print($message);
+            $handle = fopen ("php://stdin","r");
+            return trim(preg_replace('/\s\s+/', ' ', fgets($handle)));
         }
 
         /**
@@ -99,8 +131,10 @@
             print("\033[37m \033[33m--installed" . PHP_EOL);
             print("\033[37m     Lists all the installed packages on the system" . PHP_EOL . PHP_EOL);
 
-            print("\033[37m \033[33m--github-add-pak" . PHP_EOL);
+            print("\033[37m \033[33m--github-add-pak \e[33m--alias\e[37m=\"<alias>\" \e[33m--token\e[37m=\"<personal_access_token>\"" . PHP_EOL);
             print("\033[37m     Adds a GitHub personal access key to be used with the GitHub API (Secured)" . PHP_EOL);
+            print("\033[37m \033[33m--github-remove-pak \e[33m--alias\e[37m=\"<alias>\"" . PHP_EOL);
+            print("\033[37m     Removes a GitHub personal access key" . PHP_EOL);
         }
 
         /**
@@ -216,7 +250,91 @@
                 return;
             }
 
+            if(isset(self::options()["github-add-pak"]))
+            {
+                self::githubAddPersonalAccessKey();
+                return;
+            }
+
+            if(isset(self::options()["github-remove-pak"]))
+            {
+                self::githubRemovePersonalAccessKey();
+                return;
+            }
+
             self::displayHelpMenu();
+        }
+
+        /**
+         * Removes a personal access key from the Github vault
+         */
+        public static function githubRemovePersonalAccessKey()
+        {
+            if(System::isRoot() == false)
+            {
+                self::logError("This operation requires root privileges, please run ppm with 'sudo -H'");
+                exit(255);
+            }
+
+            if(IO::writeTest(PathFinder::getMainPath(true)) == false)
+            {
+                self::logError("Write test failed, cannot write to the PPM installation directory");
+                exit(255);
+            }
+
+            $github_vault = new GithubVault();
+            $github_vault->load();
+
+            try
+            {
+                $personal_access_token = $github_vault->get(self::getParameter("alias", "Alias", false));
+                $github_vault->delete($personal_access_token);
+            }
+            catch (GithubPersonalAccessTokenNotFoundException $e)
+            {
+                self::logError("Alias not registered in vault, aborting.");
+                exit(255);
+            }
+
+            $github_vault->save();
+            print("Personal Access Token removed." . PHP_EOL);
+        }
+
+        /**
+         * Adds a personal access token to the Github vault
+         */
+        public static function githubAddPersonalAccessKey()
+        {
+            if(System::isRoot() == false)
+            {
+                self::logError("This operation requires root privileges, please run ppm with 'sudo -H'");
+                exit(255);
+            }
+
+            if(IO::writeTest(PathFinder::getMainPath(true)) == false)
+            {
+                self::logError("Write test failed, cannot write to the PPM installation directory");
+                exit(255);
+            }
+
+            $github_vault = new GithubVault();
+            $github_vault->load();
+
+            $alias = self::getParameter("alias", "Alias", false);
+            $personal_access_token = self::getParameter("token", "Personal Access Token", false);
+
+            try
+            {
+                $github_vault->add($alias, $personal_access_token);
+            }
+            catch (GithubPersonalAccessTokenAlreadyExistsException $e)
+            {
+                self::logError("Personal Access Token already defined in the Github vault, aborting.");
+                exit(255);
+            }
+
+            $github_vault->save();
+            print("Personal Access Token added." . PHP_EOL);
         }
 
         /**
