@@ -7,6 +7,8 @@
     use ppm\Exceptions\GithubPersonalAccessTokenAlreadyExistsException;
     use ppm\Exceptions\GithubPersonalAccessTokenNotFoundException;
     use ppm\Objects\GithubVault\PersonalAccessToken;
+    use ppm\Utilities\PathFinder;
+    use ZiProto\ZiProto;
 
     /**
      * Class GithubVault
@@ -83,6 +85,26 @@
         public function delete(PersonalAccessToken $personalAccessToken): bool
         {
             unset($this->AccessTokens[$personalAccessToken->Alias]);
+            return true;
+        }
+
+        /**
+         * Saves the Github Vault to disk
+         *
+         * @return bool
+         */
+        public function save(): bool
+        {
+            $path = PathFinder::getGithubVaultPath(true);
+            $data = array();
+
+            /** @var PersonalAccessToken $accessToken */
+            foreach($this->AccessTokens as $accessToken)
+            {
+                $data[$accessToken->Alias] = $accessToken->toArray();
+            }
+
+            file_put_contents($path, ZiProto::encode($data));
             return true;
         }
     }

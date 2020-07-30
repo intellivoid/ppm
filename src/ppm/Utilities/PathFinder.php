@@ -80,4 +80,9 @@
             return self::getMainPath($create) . DIRECTORY_SEPARATOR . "ppm.lock";
         }
 
+        public static function getGithubVaultPath(bool $create=false): string
+        {
+            return self::getMainPath($create) . DIRECTORY_SEPARATOR . "github.vault";
+        }
+
     }
