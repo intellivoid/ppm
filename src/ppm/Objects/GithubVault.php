@@ -17,4 +17,16 @@
          */
         public $AccessTokens;
 
+        public function get(string $alias): PersonalAccessToken
+        {
+            $selected_access_token = null;
+
+            foreach($this->AccessTokens as $personalAccessToken)
+            {
+                if($personalAccessToken->Alias == $alias)
+                {
+                    $selected_access_token = $personalAccessToken;
+                }
+            }
+        }
     }
