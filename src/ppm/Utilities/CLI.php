@@ -33,8 +33,8 @@
                 "ppm",
                 "no-prompt",
                 "no-intro",
-                "github-add-pak",
-                "github-remove-pak",
+                "github-add-pat",
+                "github-remove-pat",
                 "installed",
                 "compile::",
                 "alias::",
@@ -124,6 +124,8 @@
             print("\033[37m     Compiles a PHP library from source to a .ppm file" . PHP_EOL);
             print("\033[37m \033[33m--install\033[37m=\"<path>\"" . PHP_EOL);
             print("\033[37m     Installs a .ppm package to the system" . PHP_EOL);
+            print("\033[37m \033[33m--install\033[37m=\"github@<alias>/<organization>/<repo>\" \e[33m--branch\e[37m=\"<optional_branch>\"" . PHP_EOL);
+            print("\033[37m     Compiles and installs from a GitHub repo" . PHP_EOL);
             print("\033[37m \033[33m--uninstall\033[37m=\"<package_name>\"" . PHP_EOL);
             print("\033[37m     Completely uninstalls a installed package from the system" . PHP_EOL);
             print("\033[37m \033[33m--uninstall\033[37m=\"<package_name>\" \e[33m--version\e[37m=\"<version>\"" . PHP_EOL);
@@ -131,9 +133,9 @@
             print("\033[37m \033[33m--installed" . PHP_EOL);
             print("\033[37m     Lists all the installed packages on the system" . PHP_EOL . PHP_EOL);
 
-            print("\033[37m \033[33m--github-add-pak \e[33m--alias\e[37m=\"<alias>\" \e[33m--token\e[37m=\"<personal_access_token>\"" . PHP_EOL);
+            print("\033[37m \033[33m--github-add-pat \e[33m--alias\e[37m=\"<alias>\" \e[33m--token\e[37m=\"<personal_access_token>\"" . PHP_EOL);
             print("\033[37m     Adds a GitHub personal access key to be used with the GitHub API (Secured)" . PHP_EOL);
-            print("\033[37m \033[33m--github-remove-pak \e[33m--alias\e[37m=\"<alias>\"" . PHP_EOL);
+            print("\033[37m \033[33m--github-remove-pat \e[33m--alias\e[37m=\"<alias>\"" . PHP_EOL);
             print("\033[37m     Removes a GitHub personal access key" . PHP_EOL);
         }
 
@@ -250,13 +252,13 @@
                 return;
             }
 
-            if(isset(self::options()["github-add-pak"]))
+            if(isset(self::options()["github-add-pat"]))
             {
                 self::githubAddPersonalAccessKey();
                 return;
             }
 
-            if(isset(self::options()["github-remove-pak"]))
+            if(isset(self::options()["github-remove-pat"]))
             {
                 self::githubRemovePersonalAccessKey();
                 return;
