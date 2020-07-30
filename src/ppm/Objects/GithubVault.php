@@ -71,5 +71,6 @@
         public function update(PersonalAccessToken $personalAccessToken): bool
         {
             $this->AccessTokens[$personalAccessToken->Alias] = $personalAccessToken;
+            return true;
         }
     }
