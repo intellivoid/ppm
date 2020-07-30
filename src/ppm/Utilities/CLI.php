@@ -97,7 +97,10 @@
             print("\033[37m \033[33m--uninstall\033[37m=\"<package_name>\" \e[33m--version\e[37m=\"<version>\"" . PHP_EOL);
             print("\033[37m     Uninstalls a specific version of the package from the system" . PHP_EOL);
             print("\033[37m \033[33m--installed" . PHP_EOL);
-            print("\033[37m     Lists all the installed packages on the system" . PHP_EOL);
+            print("\033[37m     Lists all the installed packages on the system" . PHP_EOL . PHP_EOL);
+
+            print("\033[37m \033[33m--github-add-pak" . PHP_EOL);
+            print("\033[37m     Adds a GitHub personal access key to be used with the GitHub API (Secured)" . PHP_EOL);
         }
 
         /**
