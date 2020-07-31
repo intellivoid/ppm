@@ -85,4 +85,30 @@
             return self::getMainPath($create) . DIRECTORY_SEPARATOR . "github.vault";
         }
 
+        public static function getRemoteRepoPath(bool $create=false): string
+        {
+            if($create)
+            {
+                if(file_exists(self::getMainPath($create) . DIRECTORY_SEPARATOR . "repos") == false)
+                {
+                    mkdir(self::getMainPath($create) . DIRECTORY_SEPARATOR . "repos");
+                }
+            }
+
+            return self::getMainPath($create) . DIRECTORY_SEPARATOR . "repos";
+        }
+
+        public static function getBuildPath(bool $create=false): string
+        {
+            if($create)
+            {
+                if(file_exists(self::getMainPath($create) . DIRECTORY_SEPARATOR . "builds") == false)
+                {
+                    mkdir(self::getMainPath($create) . DIRECTORY_SEPARATOR . "builds");
+                }
+            }
+
+            return self::getMainPath($create) . DIRECTORY_SEPARATOR . "builds";
+        }
+
     }

@@ -4,6 +4,7 @@
     namespace ppm\Utilities;
 
     use Exception;
+    use ppm\Classes\GitManager;
     use ppm\Exceptions\GithubPersonalAccessTokenAlreadyExistsException;
     use ppm\Exceptions\GithubPersonalAccessTokenNotFoundException;
     use ppm\Exceptions\InvalidPackageLockException;
@@ -37,6 +38,7 @@
                 "github-remove-pat",
                 "installed",
                 "compile::",
+                "directory::",
                 "alias::",
                 "token::",
                 "install::",
@@ -455,12 +457,119 @@
             ppm::savePackageLock($PackageLock);
         }
 
+        public static function installGithubPackage(string $alias, string $organization, string $repo, string $branch="master")
+        {
+            $github_vault = new GithubVault();
+            $github_vault->load();
+
+            try
+            {
+                $personal_access_token = $github_vault->get($alias);
+            }
+            catch (GithubPersonalAccessTokenNotFoundException $e)
+            {
+                self::logError("The alias is not registered in the Github vault, run 'ppm --github-add-pat'");
+                exit(255);
+            }
+
+            if(System::isRoot() == false)
+            {
+                self::logError("This operation requires root privileges, please run ppm with 'sudo -H'");
+                exit(255);
+            }
+
+            if(IO::writeTest(PathFinder::getMainPath(true)) == false)
+            {
+                self::logError("Write test failed, cannot write to the PPM installation directory");
+                exit(255);
+            }
+
+            $repo_id = hash("sha1", $alias . $organization . $repo . $branch);
+            $remote_path = PathFinder::getRemoteRepoPath(true) . DIRECTORY_SEPARATOR . $repo_id;
+            $remote_uri = "https://" . $personal_access_token->PersonalAccessToken . "@github.com/" . $organization . "/" . $repo . ".git";
+
+            if(file_exists($remote_path))
+            {
+                IO::deleteDirectory($remote_path);
+            }
+
+            try
+            {
+                self::logEvent("Cloning " . $remote_uri);
+                mkdir($remote_path);
+                $repository = GitManager::clone_remote($remote_path, $remote_uri);
+            }
+            catch (Exception $e)
+            {
+                self::logError("Clone failed", $e);
+                exit(255);
+            }
+
+            try
+            {
+                self::logEvent("Checking out " . $branch);
+                $repository->checkout($branch);
+            }
+            catch (Exception $e)
+            {
+                self::logError("Checkout failed", $e);
+                exit(255);
+            }
+
+            $source_package = null;
+
+            if(file_exists($remote_path . DIRECTORY_SEPARATOR . "package.json"))
+            {
+                $source_package = $remote_path;
+            }
+
+            if(file_exists($remote_path . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "package.json"))
+            {
+                $source_package = $remote_path;
+            }
+
+            if(file_exists($remote_path . DIRECTORY_SEPARATOR . ".ppm_package"))
+            {
+                $pointer = file_get_contents($remote_path . DIRECTORY_SEPARATOR . ".ppm_package");
+                $pointer = str_ireplace("/", DIRECTORY_SEPARATOR, $pointer);
+                if(file_exists($remote_path . DIRECTORY_SEPARATOR . $pointer))
+                {
+                    $source_package = $remote_path . DIRECTORY_SEPARATOR . $pointer;
+                }
+            }
+
+            if($source_package == null)
+            {
+                self::logError("Cannot locate package.json file, is this repo built for ppm?");
+                exit(255);
+            }
+
+            $compiled_file_path = self::compilePackage($source_package, PathFinder::getBuildPath(true), false);
+            self::installPackage($compiled_file_path);
+        }
+
         /**
          * @param string $path
          * @throws InvalidPackageLockException
          */
         public static function installPackage(string $path)
         {
+            if(stripos($path, "github@") !== false)
+            {
+                $remote_syntax = explode("/", $path);
+                if(count($remote_syntax) < 3)
+                {
+                    self::logError("It seems like you were trying to install a package from github with a invalid syntax, expected github@alias/organization/repo");
+                    exit(255);
+                }
+
+                self::installGithubPackage(
+                    str_ireplace("github@", "", $remote_syntax[0]), $remote_syntax[1], $remote_syntax[2]
+                );
+
+                exit(1);
+            }
+
             if(file_exists($path) == false)
             {
                 self::logError("The path '$path' does not exist");
@@ -549,7 +658,6 @@
                 }
             }
 
-
             self::logEvent("Installing " . $package_name . "==" . $package_version);
             $InstallationPath = PathFinder::getPackagePath(
                 $PackageInformation->Metadata->PackageName, $PackageInformation->Metadata->Version, true
@@ -601,8 +709,11 @@
 
         /**
          * @param string $path
+         * @param string $output_directory
+         * @param bool $exit
+         * @return string|null
          */
-        public static function compilePackage(string $path)
+        public static function compilePackage(string $path, string $output_directory=null, bool $exit=true)
         {
             $starting_time = microtime(true);
             self::logEvent("Loading from source");
@@ -628,11 +739,47 @@
                 "compiled_components" => $CompiledComponents
             );
             $EncodedContents = ZiProto::encode($Contents);
-            file_put_contents($Source->Package->Metadata->PackageName . ".ppm", $EncodedContents);
+            $compiled_file = $Source->Package->Metadata->PackageName . ".ppm";
 
+            if($output_directory !== null)
+            {
+                if(isset(self::options()['directory']))
+                {
+                    $output_directory = self::options()['directory'];
+                }
+            }
+
+            $output_file = null;
+            if($output_directory !== null)
+            {
+                if(file_exists($output_directory) == false)
+                {
+                    mkdir($output_directory);
+                }
+
+                if(file_exists($output_directory) == false)
+                {
+                    self::logError("The directory " . $output_directory . " cannot be created");
+                    exit(255);
+                }
+
+                $output_file = $output_directory . DIRECTORY_SEPARATOR . $compiled_file;
+            }
+            else
+            {
+                $output_file = $compiled_file;
+            }
+
+            file_put_contents($output_file, $EncodedContents);
             $execution_time = (microtime(true) - $starting_time)/60;
 
             self::logEvent("Completed! Operation took $execution_time seconds");
-            exit(0);
+
+            if($exit)
+            {
+                exit(0);
+            }
+
+            return $output_file;
         }
     }
