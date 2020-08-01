@@ -16,6 +16,7 @@
 # Global Variables
 PPM_INSTALL_DIRECTORY="/var/ppm"
 PPM_SOURCE_DIRECTORY="./src/ppm"
+PPM_PEAR_VERSION="1.0.0"
 PPM_MAIN="./ppm.sh"
 USER_BIN="/usr/bin"
 
@@ -55,5 +56,14 @@ then
 fi
 
 ln -s "${PPM_INSTALL_DIRECTORY}/ppm.sh" "${USER_BIN}/ppm"
+
+
+# Install the pear extension
+cd src/pear
+pear uninstall __uri/ppm || true
+tar -czvf ppm-$PPM_PEAR_VERSION.tgz package.xml ppm-$PPM_PEAR_VERSION/ppm
+sudo pear install ppm-$PPM_PEAR_VERSION.tgz
+rm ppm-$PPM_PEAR_VERSION.tgz
+cd ../../
 
 echo "Installation completed"
