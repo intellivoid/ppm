@@ -165,7 +165,8 @@
 
                     if(file_exists($path) == false)
                     {
-                        mkdir($path, 200, true);
+                        mkdir($path, 775, true);
+                        System::setPermissions($path, 775);
                     }
                 }
                 else
@@ -178,7 +179,7 @@
                 $prettyPrinter = new Standard;
                 $AST = $JsonDecoder->decode($DecompiledComponent);
                 file_put_contents($file_path, $prettyPrinter->prettyPrintFile($AST));
-                System::setPermissions($file_path, 200);
+                System::setPermissions($file_path, 0744);
             }
 
             CLI::logEvent("Creating Package Data");

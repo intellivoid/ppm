@@ -8,6 +8,7 @@
     use ppm\Objects\PackageLock;
     use ppm\Utilities\CLI;
     use ppm\Utilities\PathFinder;
+    use ppm\Utilities\System;
     use ZiProto\ZiProto;
 
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Interfaces" . DIRECTORY_SEPARATOR . "HtmlString.php");
@@ -127,6 +128,7 @@
 
             $contents = ZiProto::encode($packageLock->toArray());
             file_put_contents($path, $contents);
+            System::setPermissions($path, 0744);
 
             return true;
         }
