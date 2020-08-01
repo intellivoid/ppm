@@ -4,19 +4,11 @@
     namespace ppm\Utilities;
 
     use Exception;
-    use ppm\Classes\GitManager;
-    use ppm\Exceptions\GithubPersonalAccessTokenAlreadyExistsException;
-    use ppm\Exceptions\GithubPersonalAccessTokenNotFoundException;
     use ppm\Exceptions\InvalidPackageLockException;
     use ppm\Exceptions\VersionNotFoundException;
-    use ppm\Objects\GithubVault;
-    use ppm\Objects\Package;
-    use ppm\Objects\PackageLock\PackageLockItem;
-    use ppm\Objects\Source;
-    use ppm\ppm;
-    use PpmParser\JsonDecoder as JsonDecoderAlias;
-    use PpmParser\PrettyPrinter\Standard;
-    use ZiProto\ZiProto;
+    use ppm\Utilities\CLI\Compiler;
+    use ppm\Utilities\CLI\GithubVault;
+    use ppm\Utilities\CLI\PackageManager;
 
     /**
      * Class CLI
@@ -33,7 +25,6 @@
             $long_opts = array(
                 "ppm",
                 "no-prompt",
-                "no-intro",
                 "github-add-pat",
                 "github-remove-pat",
                 "installed",
@@ -42,6 +33,7 @@
                 "alias::",
                 "token::",
                 "install::",
+                "branch::",
                 "uninstall::",
                 "version::"
             );
@@ -49,6 +41,14 @@
             return getopt($options, $long_opts);
         }
 
+        /**
+         * Gets a parameter from the CLI or user-input
+         *
+         * @param string $name
+         * @param string $text
+         * @param bool $require_parameter
+         * @return string
+         */
         public static function getParameter(string $name, string $text, bool $require_parameter): string
         {
             if(isset(CLI::options()[$name]))
@@ -67,6 +67,12 @@
             return self::getInput($text . ": ");
         }
 
+        /**
+         * Prompts the user with a Yes/No input
+         *
+         * @param string $message
+         * @return bool
+         */
         public static function getBooleanInput(string $message): bool
         {
             if(isset(CLI::options()["no-prompt"]))
@@ -87,6 +93,12 @@
             return true;
         }
 
+        /**
+         * Gets input from stdout without the trailing linebreak
+         *
+         * @param string $message
+         * @return string
+         */
         public static function getInput(string $message): string
         {
             print($message);
@@ -99,11 +111,6 @@
          */
         public static function displayIntro()
         {
-            if(isset(CLI::options()["no-intro"]))
-            {
-                return;
-            }
-
             print("\e[34m ________  ________  _____ ______      " . PHP_EOL);
             print("\e[34m|\   __  \|\   __  \|\   _ \  _   \    " . PHP_EOL);
             print("\e[34m\ \  \|\  \ \  \|\  \ \  \\\__\ \   \   " . PHP_EOL);
@@ -122,8 +129,11 @@
          */
         public static function displayHelpMenu()
         {
+            self::displayIntro();
             print("\033[37m \033[33m--compile\033[37m=\"<path>\"" . PHP_EOL);
-            print("\033[37m     Compiles a PHP library from source to a .ppm file" . PHP_EOL);
+            print("\033[37m     Compiles a PHP library/program from source to a .ppm file" . PHP_EOL);
+            print("\033[37m \033[33m--compile" . PHP_EOL);
+            print("\033[37m     Compiles the current PHP library/program from source to a .ppm file" . PHP_EOL);
             print("\033[37m \033[33m--install\033[37m=\"<path>\"" . PHP_EOL);
             print("\033[37m     Installs a .ppm package to the system" . PHP_EOL);
             print("\033[37m \033[33m--install\033[37m=\"github@<alias>/<organization>/<repo>\" \e[33m--branch\e[37m=\"<optional_branch>\"" . PHP_EOL);
@@ -186,20 +196,25 @@
          */
         public static function start()
         {
-            self::displayIntro();
-
             if(isset(self::options()['compile']))
             {
-                self::compilePackage(self::options()['compile']);
+                if(strlen(self::options()['compile']) == 0)
+                {
+                    Compiler::compilePackage(getcwd());
+                }
+                else
+                {
+                    Compiler::compilePackage(self::options()['compile']);
+                }
+
                 return;
             }
-
 
             if(isset(self::options()['install']))
             {
                 try
                 {
-                    self::installPackage(self::options()['install']);
+                    PackageManager::installPackage(self::options()['install']);
                 }
                 catch (InvalidPackageLockException $e)
                 {
@@ -217,12 +232,12 @@
                     if(isset(self::options()["version"]))
                     {
 
-                        self::uninstallPackage(self::options()['uninstall'], self::options()['version']);
+                        PackageManager::uninstallPackage(self::options()['uninstall'], self::options()['version']);
 
                     }
                     else
                     {
-                        self::uninstallPackage(self::options()['uninstall']);
+                        PackageManager::uninstallPackage(self::options()['uninstall']);
                     }
                 }
                 catch (InvalidPackageLockException $e)
@@ -243,7 +258,7 @@
             {
                 try
                 {
-                    self::getInstalledPackages();
+                    PackageManager::getInstalledPackages();
                 }
                 catch (InvalidPackageLockException $e)
                 {
@@ -256,530 +271,16 @@
 
             if(isset(self::options()["github-add-pat"]))
             {
-                self::githubAddPersonalAccessKey();
+                GithubVault::githubAddPersonalAccessKey();
                 return;
             }
 
             if(isset(self::options()["github-remove-pat"]))
             {
-                self::githubRemovePersonalAccessKey();
+                GithubVault::githubRemovePersonalAccessKey();
                 return;
             }
 
             self::displayHelpMenu();
-        }
-
-        /**
-         * Removes a personal access key from the Github vault
-         */
-        public static function githubRemovePersonalAccessKey()
-        {
-            if(System::isRoot() == false)
-            {
-                self::logError("This operation requires root privileges, please run ppm with 'sudo -H'");
-                exit(255);
-            }
-
-            if(IO::writeTest(PathFinder::getMainPath(true)) == false)
-            {
-                self::logError("Write test failed, cannot write to the PPM installation directory");
-                exit(255);
-            }
-
-            $github_vault = new GithubVault();
-            $github_vault->load();
-
-            try
-            {
-                $personal_access_token = $github_vault->get(self::getParameter("alias", "Alias", false));
-                $github_vault->delete($personal_access_token);
-            }
-            catch (GithubPersonalAccessTokenNotFoundException $e)
-            {
-                self::logError("Alias not registered in vault, aborting.");
-                exit(255);
-            }
-
-            $github_vault->save();
-            print("Personal Access Token removed." . PHP_EOL);
-        }
-
-        /**
-         * Adds a personal access token to the Github vault
-         */
-        public static function githubAddPersonalAccessKey()
-        {
-            if(System::isRoot() == false)
-            {
-                self::logError("This operation requires root privileges, please run ppm with 'sudo -H'");
-                exit(255);
-            }
-
-            if(IO::writeTest(PathFinder::getMainPath(true)) == false)
-            {
-                self::logError("Write test failed, cannot write to the PPM installation directory");
-                exit(255);
-            }
-
-            $github_vault = new GithubVault();
-            $github_vault->load();
-
-            $alias = self::getParameter("alias", "Alias", false);
-            $personal_access_token = self::getParameter("token", "Personal Access Token", false);
-
-            try
-            {
-                $github_vault->add($alias, $personal_access_token);
-            }
-            catch (GithubPersonalAccessTokenAlreadyExistsException $e)
-            {
-                self::logError("Personal Access Token already defined in the Github vault, aborting.");
-                exit(255);
-            }
-
-            $github_vault->save();
-            print("Personal Access Token added." . PHP_EOL);
-        }
-
-        /**
-         * @throws InvalidPackageLockException
-         */
-        public static function getInstalledPackages()
-        {
-            $PackageLock = ppm::getPackageLock();
-
-            if(count($PackageLock->Packages) == 0)
-            {
-                self::logError("There are no installed PPM packages");
-                exit(255);
-            }
-
-            /** @var PackageLockItem $packageLockItem */
-            foreach($PackageLock->Packages as $packageLockItem)
-            {
-                foreach($packageLockItem->Versions as $version)
-                {
-                    print("\e[37m" . $packageLockItem->PackageName . "==\e[32m" . $version . "\e[37m" . PHP_EOL);
-                }
-            }
-
-            exit(0);
-        }
-
-        /**
-         * Uninstalls an existing package
-         * 
-         * @param string $package
-         * @param string $version
-         * @throws InvalidPackageLockException
-         * @throws VersionNotFoundException
-         */
-        public static function uninstallPackage(string $package, string $version="all")
-        {
-            $PackageLock = ppm::getPackageLock();
-
-            if($PackageLock->packageExists($package, $version) == false)
-            {
-                if($version == "all" || $version == "latest")
-                {
-                    self::logError("The package $package is not installed");
-                    exit(255);
-                }
-                else
-                {
-                    self::logError("The package $package==$version is not installed");
-                    exit(255);
-                }
-            }
-
-            if(System::isRoot() == false)
-            {
-                self::logError("This operation requires root privileges, please run ppm with 'sudo -H'");
-                exit(255);
-            }
-
-            if(IO::writeTest(PathFinder::getMainPath(true)) == false)
-            {
-                self::logError("Write test failed, cannot write to the PPM installation directory");
-                exit(255);
-            }
-
-            if($version == "all")
-            {
-                if(self::getBooleanInput("You are about to uninstall all versions of $package, do you want to continue?") == false)
-                {
-                    self::logError("Installation denied, aborting.");
-                    exit(255);
-                }
-            }
-            elseif($version == "latest")
-            {
-                if(self::getBooleanInput("You are about to uninstall the latest version of $package, do you want to continue?") == false)
-                {
-                    self::logError("Installation denied, aborting.");
-                    exit(255);
-                }
-            }
-            else
-            {
-                if(self::getBooleanInput("You are about to uninstall $package==$version, do you want to continue?") == false)
-                {
-                    self::logError("Installation denied, aborting.");
-                    exit(255);
-                }
-            }
-
-            /** @var PackageLockItem $PackageLockItem */
-            $PackageLockItem = $PackageLock->Packages[$package];
-
-            if($version == "all")
-            {
-                foreach($PackageLock->Packages[$package]->Versions as $version)
-                {
-                    self::logEvent("Uninstalling " . $PackageLockItem->PackageName . "==" . $version);
-                    IO::deleteDirectory($PackageLockItem->getPackagePath($version));
-                    $PackageLock->removePackage($package, $version);
-                }
-            }
-            else
-            {
-                if($version == "latest")
-                {
-                    $version = $PackageLockItem->getLatestVersion();
-                }
-
-                self::logEvent("Uninstalling " . $PackageLockItem->PackageName . "==" . $version);
-                IO::deleteDirectory($PackageLockItem->getPackagePath($version));
-                $PackageLock->removePackage($package, $version);
-            }
-
-            self::logEvent("Updating Package Lock");
-            ppm::savePackageLock($PackageLock);
-        }
-
-        public static function installGithubPackage(string $alias, string $organization, string $repo, string $branch="master")
-        {
-            $github_vault = new GithubVault();
-            $github_vault->load();
-
-            try
-            {
-                $personal_access_token = $github_vault->get($alias);
-            }
-            catch (GithubPersonalAccessTokenNotFoundException $e)
-            {
-                self::logError("The alias is not registered in the Github vault, run 'ppm --github-add-pat'");
-                exit(255);
-            }
-
-            if(System::isRoot() == false)
-            {
-                self::logError("This operation requires root privileges, please run ppm with 'sudo -H'");
-                exit(255);
-            }
-
-            if(IO::writeTest(PathFinder::getMainPath(true)) == false)
-            {
-                self::logError("Write test failed, cannot write to the PPM installation directory");
-                exit(255);
-            }
-
-            $repo_id = hash("sha1", $alias . $organization . $repo . $branch);
-            $remote_path = PathFinder::getRemoteRepoPath(true) . DIRECTORY_SEPARATOR . $repo_id;
-            $remote_uri = "https://" . $personal_access_token->PersonalAccessToken . "@github.com/" . $organization . "/" . $repo . ".git";
-
-            if(file_exists($remote_path))
-            {
-                IO::deleteDirectory($remote_path);
-            }
-
-            try
-            {
-                self::logEvent("Cloning " . $remote_uri);
-                mkdir($remote_path);
-                $repository = GitManager::clone_remote($remote_path, $remote_uri);
-            }
-            catch (Exception $e)
-            {
-                self::logError("Clone failed", $e);
-                exit(255);
-            }
-
-            try
-            {
-                self::logEvent("Checking out " . $branch);
-                $repository->checkout($branch);
-            }
-            catch (Exception $e)
-            {
-                self::logError("Checkout failed", $e);
-                exit(255);
-            }
-
-            $source_package = null;
-
-            if(file_exists($remote_path . DIRECTORY_SEPARATOR . "package.json"))
-            {
-                $source_package = $remote_path;
-            }
-
-            if(file_exists($remote_path . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "package.json"))
-            {
-                $source_package = $remote_path;
-            }
-
-            if(file_exists($remote_path . DIRECTORY_SEPARATOR . ".ppm_package"))
-            {
-                $pointer = file_get_contents($remote_path . DIRECTORY_SEPARATOR . ".ppm_package");
-                $pointer = str_ireplace("/", DIRECTORY_SEPARATOR, $pointer);
-                if(file_exists($remote_path . DIRECTORY_SEPARATOR . $pointer))
-                {
-                    $source_package = $remote_path . DIRECTORY_SEPARATOR . $pointer;
-                }
-            }
-
-            if($source_package == null)
-            {
-                self::logError("Cannot locate package.json file, is this repo built for ppm?");
-                exit(255);
-            }
-
-            $compiled_file_path = self::compilePackage($source_package, PathFinder::getBuildPath(true), false);
-            self::installPackage($compiled_file_path);
-        }
-
-        /**
-         * @param string $path
-         * @throws InvalidPackageLockException
-         */
-        public static function installPackage(string $path)
-        {
-            if(stripos($path, "github@") !== false)
-            {
-                $remote_syntax = explode("/", $path);
-                if(count($remote_syntax) < 3)
-                {
-                    self::logError("It seems like you were trying to install a package from github with a invalid syntax, expected github@alias/organization/repo");
-                    exit(255);
-                }
-
-                self::installGithubPackage(
-                    str_ireplace("github@", "", $remote_syntax[0]), $remote_syntax[1], $remote_syntax[2]
-                );
-
-                exit(1);
-            }
-
-            if(file_exists($path) == false)
-            {
-                self::logError("The path '$path' does not exist");
-                exit(255);
-            }
-
-            try
-            {
-                $PackageContents = ZiProto::decode(file_get_contents($path));
-            }
-            catch(Exception $e)
-            {
-                self::logError("The package cannot be opened correctly, the file may corrupted");
-                exit(255);
-            }
-
-            if(isset($PackageContents['package']) == false)
-            {
-                self::logError("This package is missing information, is this a ppm package?");
-                exit(255);
-            }
-
-            try
-            {
-                $PackageInformation = Package::fromArray($PackageContents['package']);
-            }
-            catch (Exception $e)
-            {
-                self::logError("There was an error while trying to read the package information", $e);
-                exit(255);
-            }
-
-            if(System::isRoot() == false)
-            {
-                self::logError("This operation requires root privileges, please run ppm with 'sudo -H'");
-                exit(255);
-            }
-
-            if(IO::writeTest(PathFinder::getMainPath(true)) == false)
-            {
-                self::logError("Write test failed, cannot write to the PPM installation directory");
-                exit(255);
-            }
-
-            print("Installation Details" . PHP_EOL . PHP_EOL);
-            print(" Package       :   \e[32m" . $PackageInformation->Metadata->PackageName . "\e[37m" . PHP_EOL);
-            print(" Name          :   \e[32m" . $PackageInformation->Metadata->Name . "\e[37m" . PHP_EOL);
-            print(" Version       :   \e[32m" . $PackageInformation->Metadata->Version . "\e[37m" . PHP_EOL);
-            print(" Author        :   \e[32m" . $PackageInformation->Metadata->Author . "\e[37m" . PHP_EOL);
-            print(" Organization  :   \e[32m" . $PackageInformation->Metadata->Organization . "\e[37m" . PHP_EOL);
-            print(" URL           :   \e[32m" . $PackageInformation->Metadata->URL . PHP_EOL . "\e[37m" . PHP_EOL);
-            print($PackageInformation->Metadata->Description . PHP_EOL . PHP_EOL);
-
-            if(self::getBooleanInput("Do you want to install this package?") == false)
-            {
-                self::logError("Installation denied, aborting.");
-                exit(255);
-            }
-
-            self::logEvent("Preparing installation");
-            $PackageLock = ppm::getPackageLock();
-            $package_name = $PackageInformation->Metadata->PackageName;
-            $package_version =  $PackageInformation->Metadata->Version;
-
-            if($PackageLock->packageExists($PackageInformation->Metadata->PackageName, $PackageInformation->Metadata->Version))
-            {
-                self::logError("Installation failed, the package " . $package_name . "==" . $package_version . " is already satisfied");
-                exit(255);
-            }
-
-            // Check dependencies
-            /** @var Package\Dependency $dependency */
-            foreach($PackageInformation->Dependencies as $dependency)
-            {
-                if($PackageLock->packageExists($dependency->Package, $dependency->Version) == false)
-                {
-                    if($dependency->Required)
-                    {
-                        self:self::logError("Installation failed, This package requires the dependency '\e[37m" . $dependency->Package . "==\e[32m" .  $dependency->Version . "\e[91m' which is not installed");
-                        exit(255);
-                    }
-                    else
-                    {
-                        self::logWarning("This package uses a non-required dependency '" . $dependency->Package . "==\e[32m" .  $dependency->Version . "\e[37m' which is not installed");
-                    }
-                }
-            }
-
-            self::logEvent("Installing " . $package_name . "==" . $package_version);
-            $InstallationPath = PathFinder::getPackagePath(
-                $PackageInformation->Metadata->PackageName, $PackageInformation->Metadata->Version, true
-            );
-
-            foreach($PackageContents["compiled_components"] as $component_name => $component)
-            {
-                if(stripos($component_name, "::"))
-                {
-                    $pieces = explode("::", $component_name);
-                    $file_path = $InstallationPath . DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, $pieces);
-                    array_pop($pieces);
-                    $path = $InstallationPath . DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, $pieces);
-
-                    if(file_exists($path) == false)
-                    {
-                        mkdir($path, 200, true);
-                    }
-                }
-                else
-                {
-                    $file_path = $InstallationPath . DIRECTORY_SEPARATOR . $component_name;
-                }
-
-                $DecompiledComponent = json_encode(ZiProto::decode($component));
-                $JsonDecoder = new JsonDecoderAlias();
-                $prettyPrinter = new Standard;
-                $AST = $JsonDecoder->decode($DecompiledComponent);
-                file_put_contents($file_path, $prettyPrinter->prettyPrintFile($AST));
-                System::setPermissions($file_path, 200);
-            }
-
-            self::logEvent("Creating Package Data");
-
-            $PackageDataPath = $InstallationPath . DIRECTORY_SEPARATOR . '.ppm';
-            $PackageInformationPath = $PackageDataPath . DIRECTORY_SEPARATOR . 'PACKAGE';
-            $PackageAutoloaderPath = $PackageDataPath . DIRECTORY_SEPARATOR . 'COMPONENTS';
-
-            mkdir($PackageDataPath);
-            file_put_contents(
-                $PackageInformationPath, ZiProto::encode($PackageInformation->toArray()));
-            file_put_contents(
-                $PackageAutoloaderPath, ZiProto::encode(array_keys($PackageContents["compiled_components"])));
-
-            self::logEvent("Updating Package Lock");
-            $PackageLock->addPackage($PackageInformation);
-            ppm::savePackageLock($PackageLock);
-        }
-
-        /**
-         * @param string $path
-         * @param string $output_directory
-         * @param bool $exit
-         * @return string|null
-         */
-        public static function compilePackage(string $path, string $output_directory=null, bool $exit=true)
-        {
-            $starting_time = microtime(true);
-            self::logEvent("Loading from source");
-
-            try
-            {
-                $Source = Source::loadSource($path);
-            }
-            catch (Exception $e)
-            {
-                self::logError("There was an error while trying to load from source", $e);
-                exit(255);
-            }
-
-            self::logEvent("Compiling components");
-            $CompiledComponents = $Source->compileComponents(true);
-
-            self::logEvent("Packing package contents");
-            $Contents = array(
-                "type" => "ppm_package",
-                "ppm_version" => PPM_VERSION,
-                "package" => $Source->Package->toArray(),
-                "compiled_components" => $CompiledComponents
-            );
-            $EncodedContents = ZiProto::encode($Contents);
-            $compiled_file = $Source->Package->Metadata->PackageName . ".ppm";
-
-            if($output_directory !== null)
-            {
-                if(isset(self::options()['directory']))
-                {
-                    $output_directory = self::options()['directory'];
-                }
-            }
-
-            $output_file = null;
-            if($output_directory !== null)
-            {
-                if(file_exists($output_directory) == false)
-                {
-                    mkdir($output_directory);
-                }
-
-                if(file_exists($output_directory) == false)
-                {
-                    self::logError("The directory " . $output_directory . " cannot be created");
-                    exit(255);
-                }
-
-                $output_file = $output_directory . DIRECTORY_SEPARATOR . $compiled_file;
-            }
-            else
-            {
-                $output_file = $compiled_file;
-            }
-
-            file_put_contents($output_file, $EncodedContents);
-            $execution_time = (microtime(true) - $starting_time)/60;
-
-            self::logEvent("Completed! Operation took $execution_time seconds");
-
-            if($exit)
-            {
-                exit(0);
-            }
-
-            return $output_file;
         }
     }
