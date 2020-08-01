@@ -138,6 +138,10 @@
                     Autoloader::loadStaticLoader($this->getPackagePath($version));
                     return true;
 
+                case AutoloadMethod::Indexed:
+                    Autoloader::loadIndexedLoader($this->getPackagePath($version));
+                    return true;
+
                 default:
                     throw new AutoloaderException("The autoloader method '" . $Configuration->AutoloadMethod . "' is not supported.");
             }

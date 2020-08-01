@@ -4,6 +4,7 @@
     namespace ppm;
 
 
+    use ppm\Classes\AutoIndexer;
     use ppm\Exceptions\PackageNotFoundException;
     use ppm\Objects\PackageLock;
     use ppm\Utilities\CLI;
@@ -101,6 +102,11 @@
         private static $importedPackages;
 
         /**
+         * @var AutoIndexer
+         */
+        private static $autoIndexer;
+
+        /**
          * @return PackageLock
          * @throws Exceptions\InvalidPackageLockException
          */
@@ -137,7 +143,7 @@
         {
             if(isset(self::$importedPackages[$package]))
             {
-                return true;
+                return false;
             }
 
             $PackageLock = self::getPackageLock();
@@ -151,6 +157,28 @@
 
             self::$importedPackages[$package] = $version;
             return true;
+        }
+
+        /**
+         * @return AutoIndexer
+         */
+        public static function getAutoIndexer(): AutoIndexer
+        {
+            if(ppm::$autoIndexer == null)
+            {
+                ppm::$autoIndexer = new AutoIndexer();
+                ppm::$autoIndexer->setTempDirectory(PathFinder::getCachePath(true));
+            }
+
+            return self::$autoIndexer;
+        }
+
+        /**
+         * @return array
+         */
+        public static function getImportedPackages(): array
+        {
+            return self::$importedPackages;
         }
     }
 

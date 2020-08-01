@@ -194,6 +194,7 @@
 
             CLI::logEvent("Updating Package Lock");
             $PackageLock->addPackage($PackageInformation);
+            ppm::getAutoIndexer();
             ppm::savePackageLock($PackageLock);
         }
 

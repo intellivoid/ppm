@@ -7,4 +7,6 @@
     abstract class AutoloadMethod
     {
         const Static = "static";
+
+        const Indexed = "indexed";
     }

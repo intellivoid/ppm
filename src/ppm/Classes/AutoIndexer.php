@@ -10,6 +10,7 @@
     use ppm\Exceptions\IOException;
     use ppm\Exceptions\NotSupportedException;
     use ppm\Utilities\Finder;
+    use ppm\Utilities\System;
     use ReflectionException;
     use ReflectionProperty;
     use RuntimeException;
@@ -543,10 +544,13 @@
                 @unlink("$file.tmp"); // @ file may not exist
                 throw new RuntimeException("Unable to create '$file'.");
             }
+
             if (function_exists('opcache_invalidate'))
             {
                 @opcache_invalidate($file, true); // @ can be restricted
             }
+
+            System::setPermissions("$file.tmp", 0777);
         }
 
         /**

@@ -105,10 +105,25 @@
                 if(file_exists(self::getMainPath($create) . DIRECTORY_SEPARATOR . "builds") == false)
                 {
                     mkdir(self::getMainPath($create) . DIRECTORY_SEPARATOR . "builds");
+                    System::setPermissions(self::getMainPath($create) . DIRECTORY_SEPARATOR . "cache", 0777);
                 }
             }
 
             return self::getMainPath($create) . DIRECTORY_SEPARATOR . "builds";
+        }
+
+        public static function getCachePath(bool $create=false): string
+        {
+            if($create)
+            {
+                if(file_exists(self::getMainPath($create) . DIRECTORY_SEPARATOR . "cache") == false)
+                {
+                    mkdir(self::getMainPath($create) . DIRECTORY_SEPARATOR . "cache");
+                    System::setPermissions(self::getMainPath($create) . DIRECTORY_SEPARATOR . "cache", 0777);
+                }
+            }
+
+            return self::getMainPath($create) . DIRECTORY_SEPARATOR . "cache";
         }
 
     }

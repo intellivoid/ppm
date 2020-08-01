@@ -1,13 +1,10 @@
 <?php
 
-
     namespace ppm\Utilities;
-
 
     use Exception;
     use ppm\Exceptions\AutoloaderException;
-    use ppm\Exceptions\InvalidComponentException;
-    use ppm\Objects\Package\Component;
+    use ppm\ppm;
     use ZiProto\ZiProto;
 
     /**
@@ -54,6 +51,19 @@
                 }
             }
 
+            return true;
+        }
+
+        /**
+         * Registers an auto indexer
+         *
+         * @param string $package_path
+         * @return bool
+         */
+        public static function loadIndexedLoader(string $package_path): bool
+        {
+            ppm::getAutoIndexer()->addDirectory($package_path);
+            ppm::getAutoIndexer()->register();
             return true;
         }
     }
