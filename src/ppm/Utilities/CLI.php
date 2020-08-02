@@ -9,6 +9,7 @@
     use ppm\Utilities\CLI\Compiler;
     use ppm\Utilities\CLI\GithubVault;
     use ppm\Utilities\CLI\PackageManager;
+    use ppm\Utilities\CLI\Runner;
 
     /**
      * Class CLI
@@ -29,6 +30,8 @@
                 "github-remove-pat",
                 "installed",
                 "compile::",
+                "main::",
+                "args::",
                 "directory::",
                 "alias::",
                 "token::",
@@ -143,7 +146,13 @@
             print("\033[37m \033[33m--uninstall\033[37m=\"<package_name>\" \e[33m--version\e[37m=\"<version>\"" . PHP_EOL);
             print("\033[37m     Uninstalls a specific version of the package from the system" . PHP_EOL);
             print("\033[37m \033[33m--installed" . PHP_EOL);
-            print("\033[37m     Lists all the installed packages on the system" . PHP_EOL . PHP_EOL);
+            print("\033[37m     Lists all the installed packages on the system" . PHP_EOL);
+            print("\033[37m \033[33m--main\e[37m=\"<package_name>\"" . PHP_EOL);
+            print("\033[37m     Executes the main execution point of a package" . PHP_EOL);
+            print("\033[37m \033[33m--main\e[37m=\"<package_name>\" \e[33m--version\e[37m=\"<version>\"" . PHP_EOL);
+            print("\033[37m     Executes the execution point of a specific version of a package" . PHP_EOL);
+            print("\033[37m \033[33m--main\e[37m=\"<package_name>\" \e[33m--args\e[37m=\"<arguments>\"" . PHP_EOL);
+            print("\033[37m     Executes the execution point of a package, passing on optional commandline arguments" . PHP_EOL . PHP_EOL);
 
             print("\033[37m \033[33m--github-add-pat \e[33m--alias\e[37m=\"<alias>\" \e[33m--token\e[37m=\"<personal_access_token>\"" . PHP_EOL);
             print("\033[37m     Adds a GitHub personal access key to be used with the GitHub API (Secured)" . PHP_EOL);
@@ -233,7 +242,6 @@
                     {
 
                         PackageManager::uninstallPackage(self::options()['uninstall'], self::options()['version']);
-
                     }
                     else
                     {
@@ -263,6 +271,39 @@
                 catch (InvalidPackageLockException $e)
                 {
                     self::logError("Failed to list installed packages, Invalid Package Lock Error", $e);
+                    exit(255);
+                }
+
+                return;
+            }
+
+            if(isset(self::options()['main']))
+            {
+                try
+                {
+                    $version = "latest";
+                    $args = "latest";
+
+                    if(isset(self::options()["version"]))
+                    {
+                        $version = self::options()["version"];
+                    }
+
+                    if(isset(self::options()["args"]))
+                    {
+                        $args = self::options()["args"];
+                    }
+
+                    Runner::executePackageMain(self::options()['main'], $version, $args);
+                }
+                catch (InvalidPackageLockException $e)
+                {
+                    self::logError("Failed to execute, invalid Package Lock Error", $e);
+                    exit(255);
+                }
+                catch (VersionNotFoundException $e)
+                {
+                    self::logError("Failed to execute, version not found", $e);
                     exit(255);
                 }
 

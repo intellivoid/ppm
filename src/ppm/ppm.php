@@ -68,6 +68,7 @@
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Utilities" . DIRECTORY_SEPARATOR . "CLI" . DIRECTORY_SEPARATOR . "Compiler.php");
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Utilities" . DIRECTORY_SEPARATOR . "CLI" . DIRECTORY_SEPARATOR . "GithubVault.php");
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Utilities" . DIRECTORY_SEPARATOR . "CLI" . DIRECTORY_SEPARATOR . "PackageManager.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Utilities" . DIRECTORY_SEPARATOR . "CLI" . DIRECTORY_SEPARATOR . "Runner.php");
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Utilities" . DIRECTORY_SEPARATOR . "Autoloader.php");
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Utilities" . DIRECTORY_SEPARATOR . "CLI.php");
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Utilities" . DIRECTORY_SEPARATOR . "DateTime.php");
