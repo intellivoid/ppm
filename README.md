@@ -10,11 +10,11 @@ instead of locally unlike composer.
 
  - [Introduction](docs/introduction.md) (Installing, uninstalling, fixing package lock)
  - [Making Packages](docs/making_packages.md) (Creating package.json and compiling your software)
- - [Managing Packages](#) (Installing, uninstalling and viewing installed packages)
- - [Github Vault](#) (Adding tokens and installing from github)
- - [Using PPM](#) (Importing packages and debugging)
- - [PPM Notes](#) (Developer notes on how PPM is suposed to be used and what it's intended for)
- - [Contribute](#) (How to contribute to PPM)
+ - [Managing Packages](docs/managing_packages.md) (Installing, uninstalling and viewing installed packages)
+ - [Github Vault](docs/github_vault.md) (Adding tokens and installing from github)
+ - [Using PPM](docs/using_ppm.md) (Importing packages and debugging)
+ - [PPM Notes](docs/notes.md) (Developer notes on how PPM is suposed to be used and what it's intended for)
+ - [Contribute](CONTRIBUTE.md) (How to contribute to PPM)
 
 
 ## Changelog
