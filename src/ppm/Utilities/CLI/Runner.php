@@ -79,6 +79,7 @@
             }
 
             $exit_code = 0;
+            chdir($PackageLockItem->getPackagePath($version));
 
             if($arguments == null)
             {
