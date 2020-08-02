@@ -89,8 +89,27 @@
         include_once(__DIR__ . DIRECTORY_SEPARATOR . "ZiProto" . DIRECTORY_SEPARATOR . "ZiProto.php");
     }
 
-    define("PPM_VERSION", "1.0.0.0");
-    define("PPM_AUTHOR", "Zi Xing Narrakas");
+    if(defined("PPM") == false)
+    {
+        $ppm_info_path = __DIR__ . DIRECTORY_SEPARATOR . "ppm.json";
+
+        if(file_exists($ppm_info_path) == false)
+        {
+            trigger_error("The file '$ppm_info_path' does not exist" , E_USER_WARNING);
+        }
+        else
+        {
+            $ppm_info = json_decode(file_get_contents($ppm_info_path), true);
+            define("PPM_VERSION", $ppm_info["VERSION"]);
+            define("PPM_AUTHOR", $ppm_info["AUTHOR"]);
+            define("PPM_URL", $ppm_info["URL"]);
+            define("PPM_STATE", $ppm_info["STATE"]);
+        }
+
+        define("PPM", true);
+        define("PPM_INSTALL", __DIR__);
+        define("PPM_DATA", PathFinder::getMainPath(false));
+    }
 
     /**
      * Class ppm
@@ -141,10 +160,23 @@
             return true;
         }
 
+        /**
+         * Imports a package, returns false if the package is already imported
+         *
+         * @param string $package
+         * @param string $version
+         * @return bool
+         * @throws Exceptions\AutoloaderException
+         * @throws Exceptions\InvalidComponentException
+         * @throws Exceptions\InvalidPackageLockException
+         * @throws Exceptions\VersionNotFoundException
+         * @throws PackageNotFoundException
+         */
         public static function import(string $package, string $version="latest"): bool
         {
             if(isset(self::$importedPackages[$package]))
             {
+                trigger_error("The package $package==" . self::$importedPackages[$package] . " was already imported", E_USER_WARNING);
                 return false;
             }
 
@@ -176,6 +208,8 @@
         }
 
         /**
+         * Returns all the packages that were imported
+         *
          * @return array
          */
         public static function getImportedPackages(): array
