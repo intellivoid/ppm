@@ -71,7 +71,7 @@
             $VersionConfiguration->Version = $package->Metadata->Version;
             $VersionConfiguration->Dependencies = $package->Dependencies;
             $VersionConfiguration->AutoloadMethod = $package->Configuration->AutoLoadMethod;
-            $VersionConfiguration->CliMain = $package->Configuration->CliMain;
+            $VersionConfiguration->Main = $package->Configuration->Main;
 
             $PackageLockItem->addVersion($package->Metadata->Version, $VersionConfiguration);
             $this->Packages[$PackageLockItem->PackageName] = $PackageLockItem;

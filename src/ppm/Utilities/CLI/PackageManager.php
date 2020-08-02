@@ -19,6 +19,7 @@
     use ppm\Utilities\PathFinder;
     use ppm\Utilities\System;
     use PpmParser\JsonDecoder as JsonDecoderAlias;
+    use PpmParser\Node\Scalar\MagicConst\File;
     use PpmParser\PrettyPrinter\Standard;
     use ZiProto\ZiProto;
 
@@ -156,9 +157,9 @@
 
             foreach($PackageContents["compiled_components"] as $component_name => $component)
             {
-                if(stripos($component_name, "::"))
+                if(stripos($component_name, "/"))
                 {
-                    $pieces = explode("::", $component_name);
+                    $pieces = explode("/", $component_name);
                     $file_path = $InstallationPath . DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, $pieces);
                     array_pop($pieces);
                     $path = $InstallationPath . DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, $pieces);
@@ -186,11 +187,23 @@
 
             $PackageDataPath = $InstallationPath . DIRECTORY_SEPARATOR . '.ppm';
             $PackageInformationPath = $PackageDataPath . DIRECTORY_SEPARATOR . 'PACKAGE';
+            $PackageMainExecutionConfigPath = $PackageDataPath . DIRECTORY_SEPARATOR . 'MAIN_CONFIG';
+            $PackageMainExecutionPath = $PackageDataPath . DIRECTORY_SEPARATOR . 'MAIN';
             $PackageAutoloaderPath = $PackageDataPath . DIRECTORY_SEPARATOR . 'COMPONENTS';
 
             mkdir($PackageDataPath);
             file_put_contents($PackageInformationPath, ZiProto::encode($PackageInformation->toArray()));
             file_put_contents($PackageAutoloaderPath, ZiProto::encode(array_keys($PackageContents["compiled_components"])));
+
+            if($PackageContents["main_file"] !== null)
+            {
+                file_put_contents($PackageMainExecutionPath, $PackageContents["main_file"]);
+            }
+
+            if($PackageContents["main"] !== null)
+            {
+                file_put_contents($PackageMainExecutionConfigPath, ZiProto::encode($PackageContents["main"]));
+            }
 
             CLI::logEvent("Updating Package Lock");
             $PackageLock->addPackage($PackageInformation);

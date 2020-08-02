@@ -7,6 +7,7 @@
     use Exception;
     use ppm\Abstracts\AutoloadMethod;
     use ppm\Exceptions\InvalidPackageLockException;
+    use ppm\Objects\Package\Configuration\MainExecution;
     use ppm\Objects\Package\Dependency;
 
     /**
@@ -31,10 +32,13 @@
         public $AutoloadMethod;
 
         /**
-         * @var string|null
+         * @var MainExecution|null
          */
-        public $CliMain;
+        public $Main;
 
+        /**
+         * VersionConfiguration constructor.
+         */
         public function __construct()
         {
             $this->Dependencies = [];
@@ -46,6 +50,12 @@
         public function toArray(): array
         {
             $dependencies = array();
+            $main = null;
+
+            if($this->Main !== null)
+            {
+                $main = $this->Main->toArray();
+            }
 
             /** @var Dependency $dependency */
             foreach($this->Dependencies as $dependency)
@@ -56,7 +66,7 @@
             return array(
                 'dependencies' => $dependencies,
                 'autoload_method' => $this->AutoloadMethod,
-                'cli_main' => $this->CliMain
+                'main' => $main
             );
         }
 
@@ -71,13 +81,13 @@
             $VersionConfigurationObject = new VersionConfiguration();
             $VersionConfigurationObject->Version = $version;
 
-            if(isset($data['cli_main']))
+            if(isset($data['main']))
             {
-                $VersionConfigurationObject->CliMain = $data['cli_main'];
+                $VersionConfigurationObject->Main = MainExecution::fromArray($data['main']);
             }
             else
             {
-                throw new InvalidPackageLockException("A version configuration for a package lock is missing 'cli_main'");
+                $VersionConfigurationObject->Main = null;
             }
 
             if(isset($data['autoload_method']))
