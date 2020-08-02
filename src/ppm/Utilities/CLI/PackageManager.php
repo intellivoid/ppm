@@ -12,6 +12,7 @@
     use ppm\Objects\GithubVault;
     use ppm\Objects\Package;
     use ppm\Objects\PackageLock\PackageLockItem;
+    use ppm\Objects\PackageLock\VersionConfiguration;
     use ppm\Objects\Sources\GithubSource;
     use ppm\ppm;
     use ppm\Utilities\CLI;
@@ -19,7 +20,6 @@
     use ppm\Utilities\PathFinder;
     use ppm\Utilities\System;
     use PpmParser\JsonDecoder as JsonDecoderAlias;
-    use PpmParser\Node\Scalar\MagicConst\File;
     use PpmParser\PrettyPrinter\Standard;
     use ZiProto\ZiProto;
 
@@ -203,6 +203,36 @@
             if($PackageContents["main"] !== null)
             {
                 file_put_contents($PackageMainExecutionConfigPath, ZiProto::encode($PackageContents["main"]));
+
+                $MainExecutionConfiguration = Package\Configuration\MainExecution::fromArray($PackageContents["main"]);
+                if($MainExecutionConfiguration->CreateSymlink)
+                {
+                    CLI::logEvent("Creating symbolic link (latest only)");
+                    $LinksPath = PathFinder::getLinksPath(true);
+                    $ShellScript = "ppm --main=\"" . $PackageInformation->Metadata->PackageName . "\" --version=\"latest\" args=\"$@\"";
+                    $ShellPath = $LinksPath . DIRECTORY_SEPARATOR . $PackageInformation->Metadata->PackageName;
+                    $SystemExecutionPoint = realpath(DIRECTORY_SEPARATOR . "usr");
+                    $SystemExecutionPoint .= DIRECTORY_SEPARATOR . "bin" . DIRECTORY_SEPARATOR . $MainExecutionConfiguration->Name;
+
+                    if(file_exists($SystemExecutionPoint))
+                    {
+                        if(file_exists($ShellPath) == false)
+                        {
+                            CLI::logError("The symbolic link cannot be registered onto the system because the name '" . $MainExecutionConfiguration->Name . "' is already used by another program");
+                            exit(255);
+                        }
+                    }
+
+                    if(file_exists($ShellPath))
+                    {
+                        unlink($ShellPath);
+                    }
+
+                    file_put_contents($ShellPath, $ShellScript);
+                    symlink($ShellPath, $SystemExecutionPoint);
+                    System::setPermissions($ShellPath, 0755);
+                    System::setPermissions($SystemExecutionPoint, 0755);
+                }
             }
 
             CLI::logEvent("Updating Package Lock");
@@ -369,6 +399,19 @@
 
             /** @var PackageLockItem $PackageLockItem */
             $PackageLockItem = $PackageLock->Packages[$package];
+            $ExecutionMethodNames = array();
+
+            /** @var VersionConfiguration $versionConfiguration */
+            foreach($PackageLockItem->VersionConfigurations as $versionConfiguration)
+            {
+                if($versionConfiguration->Main !== null)
+                {
+                    if(in_array($versionConfiguration->Main->Name, $ExecutionMethodNames) == false)
+                    {
+                        $ExecutionMethodNames[] = $versionConfiguration->Main->Name;
+                    }
+                }
+            }
 
             if($version == "all")
             {
@@ -389,6 +432,27 @@
                 CLI::logEvent("Uninstalling " . $PackageLockItem->PackageName . "==" . $version);
                 IO::deleteDirectory($PackageLockItem->getPackagePath($version));
                 $PackageLock->removePackage($package, $version);
+            }
+
+            if($PackageLock->packageExists($package) == false)
+            {
+                $MainExecutionPath = PathFinder::getLinksPath(true) . DIRECTORY_SEPARATOR . $PackageLockItem->PackageName;
+                $SystemExecutionPoint = realpath(DIRECTORY_SEPARATOR . "usr");
+
+                if(file_exists($MainExecutionPath))
+                {
+                    CLI::logEvent("Removing symbolic link");
+                    unlink($MainExecutionPath);
+                }
+
+                foreach($ExecutionMethodNames as $executionMethodName)
+                {
+                    $file_path = $SystemExecutionPoint . DIRECTORY_SEPARATOR . "bin" . DIRECTORY_SEPARATOR . $executionMethodName;
+                    if(file_exists($file_path))
+                    {
+                        unlink($file_path);
+                    }
+                }
             }
 
             CLI::logEvent("Updating Package Lock");

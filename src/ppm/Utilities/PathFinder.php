@@ -105,7 +105,7 @@
                 if(file_exists(self::getMainPath($create) . DIRECTORY_SEPARATOR . "builds") == false)
                 {
                     mkdir(self::getMainPath($create) . DIRECTORY_SEPARATOR . "builds");
-                    System::setPermissions(self::getMainPath($create) . DIRECTORY_SEPARATOR . "cache", 0777);
+                    System::setPermissions(self::getMainPath($create) . DIRECTORY_SEPARATOR . "builds", 0777);
                 }
             }
 
@@ -126,4 +126,16 @@
             return self::getMainPath($create) . DIRECTORY_SEPARATOR . "cache";
         }
 
+        public static function getLinksPath(bool $create=false): string
+        {
+            if($create)
+            {
+                if(file_exists(self::getMainPath($create) . DIRECTORY_SEPARATOR . "links") == false)
+                {
+                    mkdir(self::getMainPath($create) . DIRECTORY_SEPARATOR . "links");
+                }
+            }
+
+            return self::getMainPath($create) . DIRECTORY_SEPARATOR . "links";
+        }
     }
