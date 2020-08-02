@@ -3,9 +3,9 @@
 
     namespace ppm\Objects\Package;
 
-
     use ppm\Abstracts\AutoloadMethod;
     use ppm\Exceptions\InvalidConfigurationException;
+    use ppm\Objects\Package\Configuration\MainExecution;
 
     /**
      * Class Configuration
@@ -14,32 +14,38 @@
     class Configuration
     {
         /**
+         * The autoload method used to import this package
+         *
          * @var string|AutoloadMethod
          */
         public $AutoLoadMethod;
 
         /**
-         * @var string|null
+         * The main execution point if this component has any
+         *
+         * @var MainExecution|null
          */
-        public $CliMain;
+        public $Main;
+
+        /**
+         * The scripts to execute post
+         *
+         * @var array
+         */
+        public $PostInstallation;
 
         /**
          * @var array
          */
-        public $PostExecution;
-
-        /**
-         * @var array
-         */
-        public $FinalExecution;
+        public $PreInstallation;
 
         /**
          * Configuration constructor.
          */
         public function __construct()
         {
-            $this->PostExecution = [];
-            $this->FinalExecution = [];
+            $this->PostInstallation = [];
+            $this->PreInstallation = [];
         }
 
         /**
@@ -47,11 +53,18 @@
          */
         public function toArray(): array
         {
+            $main = null;
+
+            if($this->Main !== null)
+            {
+                $main = $this->Main->toArray();
+            }
+
             return array(
                 'autoload_method' => $this->AutoLoadMethod,
-                'cli_main' => $this->CliMain,
-                'post_execution' => $this->PostExecution,
-                'final_execution' => $this->FinalExecution
+                'main' => $main,
+                'post_installation' => $this->PostInstallation,
+                'pre_installation' => $this->PreInstallation
             );
         }
 
@@ -67,37 +80,38 @@
             if(isset($data['autoload_method']))
             {
                 $ConfigurationObject->AutoLoadMethod = $data['autoload_method'];
+                // TODO: Validate autoload method
             }
             else
             {
                 throw new InvalidConfigurationException("The configuration is missing the property 'autoload_method'");
             }
 
-            if(isset($data['cli_main']))
+            if(isset($data['main']))
             {
-                $ConfigurationObject->CliMain = $data['cli_main'];
+                $ConfigurationObject->Main = MainExecution::fromArray($data["main"]);
             }
             else
             {
-                throw new InvalidConfigurationException("The configuration is missing the property 'cli_main'");
+                $ConfigurationObject->Main = null;
             }
 
-            if(isset($data['post_execution']))
+            if(isset($data['post_installation']))
             {
-                $ConfigurationObject->PostExecution = $data['post_execution'];
+                $ConfigurationObject->PostInstallation = $data['post_installation'];
             }
             else
             {
-                throw new InvalidConfigurationException("The configuration is missing the property 'post_execution'");
+                throw new InvalidConfigurationException("The configuration is missing the property 'post_installation'");
             }
 
-            if(isset($data['final_execution']))
+            if(isset($data['pre_installation']))
             {
-                $ConfigurationObject->FinalExecution = $data['final_execution'];
+                $ConfigurationObject->PreInstallation = $data['pre_installation'];
             }
             else
             {
-                throw new InvalidConfigurationException("The configuration is missing the property 'final_execution'");
+                throw new InvalidConfigurationException("The configuration is missing the property 'pre_installation'");
             }
 
             return $ConfigurationObject;

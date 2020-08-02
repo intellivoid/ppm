@@ -48,6 +48,7 @@
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Exceptions" . DIRECTORY_SEPARATOR . "VersionNotFoundException.php");
 
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Objects" . DIRECTORY_SEPARATOR . "GithubVault" . DIRECTORY_SEPARATOR . "PersonalAccessToken.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Objects" . DIRECTORY_SEPARATOR . "Package" . DIRECTORY_SEPARATOR . "Configuration" . DIRECTORY_SEPARATOR . "MainExecution.php");
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Objects" . DIRECTORY_SEPARATOR . "Package" . DIRECTORY_SEPARATOR . "Component.php");
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Objects" . DIRECTORY_SEPARATOR . "Package" . DIRECTORY_SEPARATOR . "Configuration.php");
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Objects" . DIRECTORY_SEPARATOR . "Package" . DIRECTORY_SEPARATOR . "Dependency.php");

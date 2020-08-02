@@ -5,6 +5,7 @@
 
 
     use Exception;
+    use ppm\Objects\Package\Component;
     use ppm\Objects\Source;
     use ppm\Utilities\CLI;
     use ppm\Utilities\System;
@@ -44,17 +45,82 @@
             CLI::logEvent("Compiling components");
             $CompiledComponents = $Source->compileComponents(true);
 
+            CLI::logEvent("Packing extras");
+            $PostInstallation = array();
+            $PreInstallation = array();
+            $MainExecution = null;
+            $MainFile = null;
+
+            // Process Post Installation scripts
+            foreach($Source->Package->Configuration->PostInstallation as $script)
+            {
+                /** @noinspection DuplicatedCode */
+                $Component = new Component();
+                $Component->BaseDirectory = $Source->Path;
+                $Component->File = $script;
+
+                if(file_exists($Component->getPath()) == false)
+                {
+                    CLI::logError("Cannot find PostInstallation script '" . $Component->getPath() . "'");
+                    exit(255);
+                }
+
+                $file_hash = hash("sha1", $script);
+                $PostInstallation[$file_hash] = file_get_contents($Component->getPath());
+            }
+
+            // Process Pre Installation scripts
+            foreach($Source->Package->Configuration->PreInstallation as $script)
+            {
+                /** @noinspection DuplicatedCode */
+                $Component = new Component();
+                $Component->BaseDirectory = $Source->Path;
+                $Component->File = $script;
+
+                if(file_exists($Component->getPath()) == false)
+                {
+                    CLI::logError("Cannot find PreInstallation script '" . $Component->getPath() . "'");
+                    exit(255);
+                }
+
+                $file_hash = hash("sha1", $script);
+                $PreInstallation[$file_hash] = file_get_contents($Component->getPath());
+            }
+
+            if($Source->Package->Configuration->Main !== null)
+            {
+                $MainExecution = $Source->Package->Configuration->Main->toArray();
+
+                /** @noinspection DuplicatedCode */
+                $Component = new Component();
+                $Component->BaseDirectory = $Source->Path;
+                $Component->File = $Source->Package->Configuration->Main->ExecutionPoint;
+
+                if(file_exists($Component->getPath()) == false)
+                {
+                    CLI::logError("Cannot find the main execution pointer file '" . $Component->getPath() . "'");
+                    exit(255);
+                }
+
+                $MainFile = file_get_contents($Component->getPath());;
+            }
+
             CLI::logEvent("Packing package contents");
             $Contents = array(
                 "type" => "ppm_package",
                 "ppm_version" => PPM_VERSION,
                 "package" => $Source->Package->toArray(),
-                "compiled_components" => $CompiledComponents
+                "compiled_components" => $CompiledComponents,
+                "post_install" => $PostInstallation,
+                "pre_install" => $PreInstallation,
+                "main_file" => $MainFile,
+                "main" => $MainExecution,
             );
             $EncodedContents = ZiProto::encode($Contents);
             $compiled_file = $Source->Package->Metadata->PackageName . ".ppm";
+            $output_file = null;
 
-            if($output_directory !== null)
+            if($output_directory == null)
             {
                 if(isset(CLI::options()['directory']))
                 {
@@ -62,7 +128,6 @@
                 }
             }
 
-            $output_file = null;
             if($output_directory !== null)
             {
                 if(file_exists($output_directory) == false)

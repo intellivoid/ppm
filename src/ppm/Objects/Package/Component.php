@@ -40,7 +40,7 @@
                 $base_directory = $this->BaseDirectory;
             }
 
-            return $base_directory . DIRECTORY_SEPARATOR . str_ireplace('::', DIRECTORY_SEPARATOR, $this->File);
+            return $base_directory . DIRECTORY_SEPARATOR . str_ireplace('/', DIRECTORY_SEPARATOR, $this->File);
         }
 
         /**
