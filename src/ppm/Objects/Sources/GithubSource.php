@@ -83,17 +83,17 @@
             {
                 if(count($parsed_syntax) == 1)
                 {
-                    throw new Exception("Cannot parse Github source syntax, missing alias; github@alias/organization/repository");
+                    throw new Exception("Cannot parse Github source syntax, missing alias; alias@github/organization/repository");
                 }
 
                 if(count($parsed_syntax) == 2)
                 {
-                    throw new Exception("Cannot parse Github source syntax, missing organization; github@alias/organization/repository");
+                    throw new Exception("Cannot parse Github source syntax, missing organization; alias@github/organization/repository");
                 }
             }
 
             $GithubSource = new GithubSource();
-            $GithubSource->Alias = str_ireplace("github@", "", $parsed_syntax[0]);
+            $GithubSource->Alias = str_ireplace("@github", "", $parsed_syntax[0]);
             $GithubSource->Organization = $parsed_syntax[1];
             $GithubSource->Repository = $parsed_syntax[2];
 

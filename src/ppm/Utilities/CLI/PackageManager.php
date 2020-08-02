@@ -37,7 +37,7 @@
         public static function installPackage(string $path)
         {
             // Install remotely from Github
-            if(stripos($path, "github@") !== false)
+            if(stripos($path, "@github") !== false)
             {
                 try
                 {
@@ -448,7 +448,7 @@
                 foreach($ExecutionMethodNames as $executionMethodName)
                 {
                     $file_path = $SystemExecutionPoint . DIRECTORY_SEPARATOR . "bin" . DIRECTORY_SEPARATOR . $executionMethodName;
-                    if(file_exists($file_path))
+                    if(is_link($file_path))
                     {
                         unlink($file_path);
                     }

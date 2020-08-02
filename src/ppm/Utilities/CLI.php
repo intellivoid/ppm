@@ -139,7 +139,7 @@
             print("\033[37m     Compiles a PHP library/program from source to a .ppm file" . PHP_EOL);
             print("\033[37m \033[33m--install\033[37m=\"<path>\"" . PHP_EOL);
             print("\033[37m     Installs a .ppm package to the system" . PHP_EOL);
-            print("\033[37m \033[33m--install\033[37m=\"github@<alias>/<organization>/<repo>\" \e[33m--branch\e[37m=\"<optional_branch>\"" . PHP_EOL);
+            print("\033[37m \033[33m--install\033[37m=\"<alias>@github/<organization>/<repo>\" \e[33m--branch\e[37m=\"<optional_branch>\"" . PHP_EOL);
             print("\033[37m     Compiles and installs from a GitHub repo" . PHP_EOL);
             print("\033[37m \033[33m--uninstall\033[37m=\"<package_name>\"" . PHP_EOL);
             print("\033[37m     Completely uninstalls a installed package from the system" . PHP_EOL);
