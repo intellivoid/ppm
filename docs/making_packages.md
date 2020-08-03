@@ -108,7 +108,7 @@ to compile and install the package
 | Name        | Type                            | Required | Description                                                                                  |
 |-------------|---------------------------------|----------|----------------------------------------------------------------------------------------------|
 | ppm_version | string                          | Yes      | The version of PPM that this package is built for                                            |
-| package     | [PackageInfo](#PackageInfo)[]   | Yes      | Contains information about the package metadata, dependencies and installation configuration |
+| package     | [PackageInfo](#PackageInfo)     | Yes      | Contains information about the package metadata, dependencies and installation configuration |
 | components  | [Component](#Component)[]       | Yes      | The .php components that PPM should compile and include in the package.                      |
 
 
@@ -127,7 +127,7 @@ information about how the package should be installed
 | description   | string                                          | Yes      | User-friendly long-text description of what this package is about |
 | url           | string                                          | Yes      | The URL/Repoistory of this package                                |
 | dependencies  | [Dependency](#Dependency)[]                     | Yes      | Array of dependents that this package uses/requires               |
-| configuration | [PackageConfiguration](#PackageConfiguration)[] | Yes      | Indicates how this package is installed and used on the system    |
+| configuration | [PackageConfiguration](#PackageConfiguration)   | Yes      | Indicates how this package is installed and used on the system    |
 
 
 ### Component
