@@ -44,6 +44,7 @@
                 "alias::",
                 "token::",
                 "install::",
+                "update::",
                 "branch::",
                 "uninstall::",
                 "generate-package::",
@@ -165,6 +166,10 @@
             print("\033[37m     Completely uninstalls a installed package from the system" . PHP_EOL);
             print("\033[37m \033[33m--uninstall\033[37m=\"<package_name>\" \e[33m--version\e[37m=\"<version>\"" . PHP_EOL);
             print("\033[37m     Uninstalls a specific version of the package from the system" . PHP_EOL);
+            print("\033[37m \033[33m--update" . PHP_EOL);
+            print("\033[37m     Updates all installed packages from a remote source" . PHP_EOL);
+            print("\033[37m \033[33m--update\033[37m=\"<package_name>\"" . PHP_EOL);
+            print("\033[37m     Updates the specified package from the remote source" . PHP_EOL);
             print("\033[37m \033[33m--installed" . PHP_EOL);
             print("\033[37m     Lists all the installed packages on the system" . PHP_EOL);
             print("\033[37m \033[33m--main\e[37m=\"<package_name>\"" . PHP_EOL);
@@ -311,6 +316,33 @@
                 catch (VersionNotFoundException $e)
                 {
                     self::logError("Failed to uninstall package, Version not found", $e);
+                    exit(255);
+                }
+
+                return;
+            }
+
+            if(isset(self::options()['update']))
+            {
+                try
+                {
+                    if(strlen(self::options()['update']) == 0)
+                    {
+                        PackageManager::updateAllPackages();
+                    }
+                    else
+                    {
+                        PackageManager::updatePackage(self::options()['update']);
+                    }
+                }
+                catch (InvalidPackageLockException $e)
+                {
+                    self::logError("Failed to update package, Invalid Package Lock Error", $e);
+                    exit(255);
+                }
+                catch (VersionNotFoundException $e)
+                {
+                    self::logError("Failed to update package (probably a bug), Version not found", $e);
                     exit(255);
                 }
 

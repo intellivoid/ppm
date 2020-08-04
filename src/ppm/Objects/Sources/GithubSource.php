@@ -99,4 +99,12 @@
 
             return $GithubSource;
         }
+
+        /**
+         * @return string
+         */
+        public function __toString()
+        {
+            return $this->Alias . "@github/" . $this->Organization . "/" . $this->Repository;
+        }
     }

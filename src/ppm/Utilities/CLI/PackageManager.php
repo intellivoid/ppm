@@ -31,10 +31,16 @@
     class PackageManager
     {
         /**
+         * Installs a package onto the system
+         *
          * @param string $path
+         * @param bool $fix_conflict
+         * @param bool $no_prompt
+         * @param string|null $update_source
+         * @param string|null $update_branch
          * @throws InvalidPackageLockException
          */
-        public static function installPackage(string $path)
+        public static function installPackage(string $path, bool $fix_conflict=false, bool $no_prompt=false, string $update_source=null, string $update_branch=null)
         {
             // Install remotely from Github
             if(stripos($path, "@github") !== false)
@@ -131,10 +137,13 @@
                 print($PackageInformation->Metadata->Description . PHP_EOL . PHP_EOL);
             }
 
-            if(CLI::getBooleanInput("Do you want to install this package?") == false)
+            if($no_prompt == false)
             {
-                CLI::logError("Installation denied, aborting.");
-                exit(255);
+                if(CLI::getBooleanInput("Do you want to install this package?") == false)
+                {
+                    CLI::logError("Installation denied, aborting.");
+                    exit(255);
+                }
             }
 
             CLI::logEvent("Preparing installation");
@@ -144,7 +153,7 @@
 
             if($PackageLock->packageExists($PackageInformation->Metadata->PackageName, $PackageInformation->Metadata->Version))
             {
-                if(isset(CLI::options()["fix-conflict"]))
+                if(isset(CLI::options()["fix-conflict"]) || $fix_conflict)
                 {
                     try
                     {
@@ -270,6 +279,18 @@
                 }
             }
 
+            if($update_source !== null)
+            {
+                $UpdateSourcePath = $PackageDataPath . DIRECTORY_SEPARATOR . 'UPDATE_SOURCE';
+                file_put_contents($UpdateSourcePath, $update_source);
+            }
+
+            if($update_branch !== null)
+            {
+                $UpdateBranchPath = $PackageDataPath . DIRECTORY_SEPARATOR . 'UPDATE_BRANCH';
+                file_put_contents($UpdateBranchPath, $update_branch);
+            }
+
             CLI::logEvent("Updating Package Lock");
 
             $PackageLock->addPackage($PackageInformation);
@@ -280,10 +301,12 @@
         /**
          * @param GithubSource $githubSource
          * @param string $branch
+         * @param bool $fix_conflict
+         * @param bool $no_prompt
          * @throws InvalidPackageLockException
          * @noinspection PhpUnused
          */
-        public static function installGithubPackage(GithubSource $githubSource, string $branch="master")
+        public static function installGithubPackage(GithubSource $githubSource, string $branch="master", bool $fix_conflict=false, bool $no_prompt=false)
         {
             $github_vault = new GithubVault();
             $github_vault->load();
@@ -342,7 +365,7 @@
 
             $source_directory = Compiler::findSource($clone_destination);
             $compiled_file_path = Compiler::compilePackage($source_directory, PathFinder::getBuildPath(true), false);
-            self::installPackage($compiled_file_path);
+            self::installPackage($compiled_file_path, $fix_conflict, $no_prompt, (string)$githubSource, $branch);
 
             CLI::logEvent("Cleaning up");
             IO::deleteDirectory($source_directory);
@@ -370,8 +393,144 @@
                     print("\e[37m" . $packageLockItem->PackageName . "==\e[32m" . $version . "\e[37m" . PHP_EOL);
                 }
             }
+        }
 
-            exit(0);
+        /**
+         * Updates all installed packages from remote sources
+         */
+        public static function updateAllPackages()
+        {
+            try
+            {
+                $PackageLock = ppm::getPackageLock();
+            }
+            catch (InvalidPackageLockException $e)
+            {
+                CLI::logError("Package lock error", $e);
+                exit(255);
+            }
+
+            if(count($PackageLock->Packages) == 0)
+            {
+                CLI::logError("There are no installed PPM packages");
+                exit(255);
+            }
+
+            /** @var PackageLockItem $packageLockItem */
+            foreach($PackageLock->Packages as $packageLockItem)
+            {
+                try
+                {
+                    self::updatePackage($packageLockItem->PackageName);
+                }
+                catch (InvalidPackageLockException $e)
+                {
+                    CLI::logError("Package lock error", $e);
+                    exit(255);
+                }
+                catch (VersionNotFoundException $e)
+                {
+                    CLI::logError("Unexpected error, probably a bug. The package manager reports that a version of the package " . $packageLockItem->PackageName . " wasn't found.", $e);
+                    exit(255);
+                }
+            }
+        }
+
+        /**
+         * @param string $package
+         * @param bool $hard_failure
+         * @throws InvalidPackageLockException
+         * @throws VersionNotFoundException
+         */
+        public static function updatePackage(string $package, bool $hard_failure=true)
+        {
+            $PackageLock = ppm::getPackageLock();
+
+            if($PackageLock->packageExists($package, "latest") == false)
+            {
+                CLI::logError("The package $package is not installed");
+                exit(255);
+            }
+
+            if(System::isRoot() == false)
+            {
+                CLI::logError("This operation requires root privileges, please run ppm with 'sudo -H'");
+                exit(255);
+            }
+
+            if(IO::writeTest(PathFinder::getMainPath(true)) == false)
+            {
+                CLI::logError("Write test failed, cannot write to the PPM installation directory");
+                exit(255);
+            }
+
+            $UpdateSourcePath = null;
+            $UpdateBranchPath = null;
+
+            $PackageLockItem = $PackageLock->Packages[$package];
+            foreach($PackageLock->Packages[$package]->Versions as $version)
+            {
+                $ppm_path = $PackageLockItem->getPackagePath($version) . DIRECTORY_SEPARATOR . '.ppm';
+
+                if(file_exists($ppm_path . DIRECTORY_SEPARATOR . "UPDATE_SOURCE"))
+                {
+                    $UpdateSourcePath = $ppm_path . DIRECTORY_SEPARATOR . "UPDATE_SOURCE";
+                }
+
+                if(file_exists($ppm_path . DIRECTORY_SEPARATOR . "UPDATE_BRANCH"))
+                {
+                    $UpdateBranchPath = $ppm_path . DIRECTORY_SEPARATOR . "UPDATE_BRANCH";
+                }
+
+                if($UpdateSourcePath !== null)
+                {
+                    break;
+                }
+            }
+
+            if($UpdateSourcePath == null)
+            {
+                if($hard_failure)
+                {
+                    CLI::logError("The package '$package' cannot be updated (No remote source)");
+                    exit(255);
+                }
+                else
+                {
+                    CLI::logWarning("The package '$package' cannot be updated (No remote source)");
+                }
+            }
+
+            if($UpdateBranchPath == null)
+            {
+                CLI::logWarning("The update source of '$package' contains no branch, assuming master branch");
+            }
+
+            $UpdateSource = file_get_contents($UpdateSourcePath);
+            $UpdateBranch = file_get_contents($UpdateBranchPath);
+
+            if(stripos($UpdateSource, "@github") !== false)
+            {
+                try
+                {
+                    $github_source = GithubSource::parse($UpdateSource);
+                }
+                catch (Exception $e)
+                {
+                    CLI::logError("Remote source parsing failed (Assumed github)", $e);
+                    exit(255);
+                }
+
+                if($UpdateBranch !== null)
+                {
+                    self::installGithubPackage($github_source, $UpdateBranch, true, true);
+
+                }
+                else
+                {
+                    self::installGithubPackage($github_source, "master", true, true);
+                }
+            }
         }
 
         /**
