@@ -110,12 +110,30 @@
                 $MainFile = file_get_contents($Component->getPath());;
             }
 
+            $PackedFiles = array();
+            if($Source->Package->Files !== null)
+            {
+                foreach($Source->Package->Files as $file)
+                {
+                    $file_path = $Source->Path . DIRECTORY_SEPARATOR . str_ireplace("/", DIRECTORY_SEPARATOR, $file);
+
+                    if(file_exists($file_path) == false)
+                    {
+                        CLI::logError("Cannot find the file '" . $file_path . "'");
+                        exit(255);
+                    }
+
+                    $PackedFiles[$file] = file_get_contents($file_path);
+                }
+            }
+
             CLI::logEvent("Packing package contents");
             $Contents = array(
                 "type" => "ppm_package",
                 "ppm_version" => PPM_VERSION,
                 "package" => $Source->Package->toArray(),
                 "compiled_components" => $CompiledComponents,
+                "files" => $PackedFiles,
                 "post_install" => $PostInstallation,
                 "pre_install" => $PreInstallation,
                 "main_file" => $MainFile,

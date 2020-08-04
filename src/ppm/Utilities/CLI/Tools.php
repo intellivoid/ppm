@@ -173,9 +173,9 @@
 
             CLI::logEvent("Validating package");
             Compiler::validatePackage($Package);
+            $Package->Configuration->AutoLoadMethod = "indexed";
 
             CLI::logEvent("Discovering components");
-            $Package->Configuration->AutoLoadMethod = "indexed";
             foreach(self::discoverComponents($path) as $file)
             {
                 $Component = new Package\Component();
@@ -184,6 +184,12 @@
                 $Component->Required = true;
 
                 $Package->Components[] = $Component;
+            }
+
+            CLI::logEvent("Discovering files");
+            foreach(self::discoverFiles($path) as $file)
+            {
+                $Package->Files[] = $file;
             }
 
             CLI::logEvent("Generating package.json");
@@ -212,6 +218,32 @@
                 if (pathinfo($file, PATHINFO_EXTENSION) == "php")
                 {
                     $results[] = str_ireplace($path . DIRECTORY_SEPARATOR, "", $file);
+                }
+            }
+
+            return $results;
+        }
+
+        /**
+         * Discovers all ordinary files
+         *
+         * @param string $path
+         * @return array
+         */
+        public static function discoverFiles(string $path): array
+        {
+            $di = new RecursiveDirectoryIterator($path, RecursiveDirectoryIterator::SKIP_DOTS);
+            $it = new RecursiveIteratorIterator($di);
+            $results = [];
+
+            foreach($it as $file)
+            {
+                if (pathinfo($file, PATHINFO_EXTENSION) !== "php")
+                {
+                    if(is_dir($file) == false)
+                    {
+                        $results[] = str_ireplace($path . DIRECTORY_SEPARATOR, "", $file);
+                    }
                 }
             }
 

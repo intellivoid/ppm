@@ -31,6 +31,11 @@
         public $Components;
 
         /**
+         * @var string[]
+         */
+        public $Files;
+
+        /**
          * @var array|Dependency
          */
         public $Dependencies;
@@ -47,6 +52,7 @@
         {
             $this->Metadata = new Metadata();
             $this->Components = [];
+            $this->Files = [];
             $this->Dependencies = [];
             $this->Configuration = new Configuration();
         }
@@ -79,20 +85,20 @@
             $PackageArray['dependencies'] = $dependency_array;
             $PackageArray['configuration'] = $this->Configuration->toArray();
 
-            if($this->Components == null)
+            $Results = array();
+            $Results["package"] = $PackageArray;
+
+            if($this->Components !== null)
             {
-                return array(
-                    'package' => $PackageArray
-                );
-            }
-            else
-            {
-                return array(
-                    'package' => $PackageArray,
-                    'components' => $component_array
-                );
+                $Results["components"] = $component_array;
             }
 
+            if($this->Files !== null)
+            {
+                $Results["files"] = $this->Files;
+            }
+
+            return $Results;
         }
 
         /**
@@ -134,6 +140,26 @@
                 else
                 {
                     throw new InvalidPackageException("The package file is missing 'components'");
+                }
+            }
+
+            if(is_null($base_directory))
+            {
+                $PackageObject->Files = null;
+            }
+            else
+            {
+                if(isset($data["files"]))
+                {
+                    foreach($data["files"] as $file)
+                    {
+                        $PackageObject->Files[] = $file;
+                    }
+                }
+                else
+                {
+                    // Backwards compatibility with 1.0.0.0
+                    $PackageObject->Files = [];
                 }
             }
 
