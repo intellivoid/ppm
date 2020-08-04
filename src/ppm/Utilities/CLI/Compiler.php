@@ -196,6 +196,7 @@
                 CLI::logVerboseEvent("Found path pointer (.ppm_package) " . $path . DIRECTORY_SEPARATOR . ".ppm_package");
                 $pointer = file_get_contents($path . DIRECTORY_SEPARATOR . ".ppm_package");
                 $pointer = str_ireplace("/", DIRECTORY_SEPARATOR, $pointer);
+                $pointer = trim(preg_replace('/\s\s+/', ' ', $pointer));
 
                 if(file_exists($path . DIRECTORY_SEPARATOR . $pointer))
                 {
@@ -209,6 +210,7 @@
                 CLI::logVerboseEvent("Found path pointer (.ppm) " . $path . DIRECTORY_SEPARATOR . ".ppm");
                 $pointer = file_get_contents($path . DIRECTORY_SEPARATOR . ".ppm");
                 $pointer = str_ireplace("/", DIRECTORY_SEPARATOR, $pointer);
+                $pointer = trim(preg_replace('/\s\s+/', ' ', $pointer));
 
                 if(file_exists($path . DIRECTORY_SEPARATOR . $pointer))
                 {
