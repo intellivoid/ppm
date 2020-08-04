@@ -55,7 +55,8 @@
                 "author::",
                 "organization::",
                 "url::",
-                "verbose"
+                "verbose",
+                "fix-conflict"
             );
 
             return getopt($options, $long_opts);
@@ -156,6 +157,8 @@
             print("\033[37m     Compiles a PHP library/program from source to a .ppm file" . PHP_EOL);
             print("\033[37m \033[33m--install\033[37m=\"<path>\"" . PHP_EOL);
             print("\033[37m     Installs a .ppm package to the system" . PHP_EOL);
+            print("\033[37m \033[33m--install\033[37m=\"<path>\" \e[33m--fix-conflict" . PHP_EOL);
+            print("\033[37m     Installs a .ppm package to the system and uninstalls the conflicting package" . PHP_EOL);
             print("\033[37m \033[33m--install\033[37m=\"<alias>@github/<organization>/<repo>\" \e[33m--branch\e[37m=\"<optional_branch>\"" . PHP_EOL);
             print("\033[37m     Compiles and installs from a GitHub repo" . PHP_EOL);
             print("\033[37m \033[33m--uninstall\033[37m=\"<package_name>\"" . PHP_EOL);
@@ -214,7 +217,7 @@
             {
                 return;
             }
-            
+
             if($newline)
             {
                 print("\e[96m > \e[37m $message" . PHP_EOL);

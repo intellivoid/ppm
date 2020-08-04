@@ -19,7 +19,6 @@
     use ppm\Utilities\IO;
     use ppm\Utilities\PathFinder;
     use ppm\Utilities\System;
-    use ppm\Utilities\Validate;
     use PpmParser\JsonDecoder as JsonDecoderAlias;
     use PpmParser\PrettyPrinter\Standard;
     use PpmZiProto\ZiProto;
@@ -145,8 +144,29 @@
 
             if($PackageLock->packageExists($PackageInformation->Metadata->PackageName, $PackageInformation->Metadata->Version))
             {
-                CLI::logError("Installation failed, the package " . $package_name . "==" . $package_version . " is already satisfied");
-                exit(255);
+                if(isset(CLI::options()["fix-conflict"]))
+                {
+                    try
+                    {
+                        CLI::logEvent("Fixing conflicted package " . $package_name . "==" . $package_version);
+                        self::uninstallPackage($package_name, $package_version, false);
+                    }
+                    catch (InvalidPackageLockException $e)
+                    {
+                        CLI::logError("Invalid package lock error", $e);
+                        exit(255);
+                    }
+                    catch (VersionNotFoundException $e)
+                    {
+                        CLI::logError("Unexpected error, probably a bug. The package manager reports that the version of this package wasn't found.", $e);
+                        exit(255);
+                    }
+                }
+                else
+                {
+                    CLI::logError("Installation failed, the package " . $package_name . "==" . $package_version . " is already satisfied");
+                    exit(255);
+                }
             }
 
             // Check dependencies
@@ -200,8 +220,6 @@
                 System::setPermissions($file_path, 0744);
             }
 
-            CLI::logEvent("Creating Package Data");
-
             $PackageDataPath = $InstallationPath . DIRECTORY_SEPARATOR . '.ppm';
             $PackageInformationPath = $PackageDataPath . DIRECTORY_SEPARATOR . 'PACKAGE';
             $PackageMainExecutionConfigPath = $PackageDataPath . DIRECTORY_SEPARATOR . 'MAIN_CONFIG';
@@ -240,9 +258,9 @@
                         }
                     }
 
-                    if(file_exists($ShellPath))
+                    if(file_exists($SystemExecutionPoint))
                     {
-                        unlink($ShellPath);
+                        unlink($SystemExecutionPoint);
                     }
 
                     file_put_contents($ShellPath, $ShellScript);
@@ -253,9 +271,10 @@
             }
 
             CLI::logEvent("Updating Package Lock");
+
             $PackageLock->addPackage($PackageInformation);
-            ppm::getAutoIndexer();
             ppm::savePackageLock($PackageLock);
+            ppm::getAutoIndexer();
         }
 
         /**
@@ -324,6 +343,10 @@
             $source_directory = Compiler::findSource($clone_destination);
             $compiled_file_path = Compiler::compilePackage($source_directory, PathFinder::getBuildPath(true), false);
             self::installPackage($compiled_file_path);
+
+            CLI::logEvent("Cleaning up");
+            IO::deleteDirectory($source_directory);
+            unlink($compiled_file_path);
         }
 
         /**
@@ -356,10 +379,11 @@
          *
          * @param string $package
          * @param string $version
+         * @param bool $prompt
          * @throws InvalidPackageLockException
          * @throws VersionNotFoundException
          */
-        public static function uninstallPackage(string $package, string $version="all")
+        public static function uninstallPackage(string $package, string $version="all", bool $prompt=true)
         {
             $PackageLock = ppm::getPackageLock();
 
@@ -389,28 +413,31 @@
                 exit(255);
             }
 
-            if($version == "all")
+            if($prompt)
             {
-                if(CLI::getBooleanInput("You are about to uninstall all versions of $package, do you want to continue?") == false)
+                if($version == "all")
                 {
-                    CLI::logError("Installation denied, aborting.");
-                    exit(255);
+                    if(CLI::getBooleanInput("You are about to uninstall all versions of $package, do you want to continue?") == false)
+                    {
+                        CLI::logError("Installation denied, aborting.");
+                        exit(255);
+                    }
                 }
-            }
-            elseif($version == "latest")
-            {
-                if(CLI::getBooleanInput("You are about to uninstall the latest version of $package, do you want to continue?") == false)
+                elseif($version == "latest")
                 {
-                    CLI::logError("Installation denied, aborting.");
-                    exit(255);
+                    if(CLI::getBooleanInput("You are about to uninstall the latest version of $package, do you want to continue?") == false)
+                    {
+                        CLI::logError("Installation denied, aborting.");
+                        exit(255);
+                    }
                 }
-            }
-            else
-            {
-                if(CLI::getBooleanInput("You are about to uninstall $package==$version, do you want to continue?") == false)
+                else
                 {
-                    CLI::logError("Installation denied, aborting.");
-                    exit(255);
+                    if(CLI::getBooleanInput("You are about to uninstall $package==$version, do you want to continue?") == false)
+                    {
+                        CLI::logError("Installation denied, aborting.");
+                        exit(255);
+                    }
                 }
             }
 
