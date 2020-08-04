@@ -201,6 +201,28 @@
                 $PackageInformation->Metadata->PackageName, $PackageInformation->Metadata->Version, true
             );
 
+            if(isset($PackageContents["pre_install"]))
+            {
+                foreach($PackageContents["pre_install"] as $script_id => $script)
+                {
+                    $first_line = trim(preg_replace('/\s\s+/', ' ', strtok($script, "\n")));
+                    if(strtolower($first_line) == "<?php")
+                    {
+                        $script = substr($script, strpos($script, "\n"));
+                    }
+
+                    try
+                    {
+                        CLI::logEvent("Executing pre-install script '" . $script_id . "'");
+                        eval($script);
+                    }
+                    catch(Exception $e)
+                    {
+                        CLI::logError("Cannot execute pre-install script '" . $script_id . "'", $e);
+                    }
+                }
+            }
+
             foreach($PackageContents["compiled_components"] as $component_name => $component)
             {
                 if(stripos($component_name, "/"))
@@ -289,6 +311,28 @@
             {
                 $UpdateBranchPath = $PackageDataPath . DIRECTORY_SEPARATOR . 'UPDATE_BRANCH';
                 file_put_contents($UpdateBranchPath, $update_branch);
+            }
+
+            if(isset($PackageContents["post_install"]))
+            {
+                foreach($PackageContents["post_install"] as $script_id => $script)
+                {
+                    $first_line = trim(preg_replace('/\s\s+/', ' ', strtok($script, "\n")));
+                    if(strtolower($first_line) == "<?php")
+                    {
+                        $script = substr($script, strpos($script, "\n"));
+                    }
+
+                    try
+                    {
+                        CLI::logEvent("Executing post-install script '" . $script_id . "'");
+                        eval($script);
+                    }
+                    catch(Exception $e)
+                    {
+                        CLI::logError("Cannot execute post-install script '" . $script_id . "'", $e);
+                    }
+                }
             }
 
             CLI::logEvent("Updating Package Lock");
