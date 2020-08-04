@@ -28,6 +28,7 @@
      * Returns the definitions defined by PPM
      *
      * @return array
+     * @noinspection PhpUnused
      */
     function ppm_definitions(): array
     {
