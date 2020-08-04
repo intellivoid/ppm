@@ -1,0 +1,14 @@
+This update introduces minor bug fixes and optimizations
+
+ - Added "files" to the package structure to allow for non-php files to be included in a package
+ - Updated package generator to discover non-php files to include in the "files" property of a package
+ - Partially corrected PackageManager to use options instead of bare-parameters
+ - Added option "no_details" in PackageManager to omit package details during an update
+ - Bug fix PackageManager when updating all packages and one package is not updated due to hard_failure not being set
+   to "False" causing the update to fail
+
+This update does not fix the concurrent issues ongoing with Windows, PPM is not yet optimized for Windows and no
+uninstaller is made available yet. Follow the documentation on how to uninstall PPM.
+
+Updating PPM from 1.0.0.0 to 1.0.0.1 simply requires you to run the installer, previous package installations/packages
+will be backwards compatible with this version and it will work as expected.
