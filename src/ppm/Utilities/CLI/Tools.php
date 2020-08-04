@@ -10,7 +10,6 @@
     use ppm\Exceptions\MissingPackagePropertyException;
     use ppm\Objects\Package;
     use ppm\Utilities\CLI;
-    use ppm\Utilities\Validate;
     use RecursiveDirectoryIterator;
     use RecursiveIteratorIterator;
 
