@@ -30,17 +30,24 @@
      */
     class PackageManager
     {
+        private static function optionIsSet(array $options, string $option): bool
+        {
+            if(isset($options[$option]))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         /**
          * Installs a package onto the system
          *
          * @param string $path
-         * @param bool $fix_conflict
-         * @param bool $no_prompt
-         * @param string|null $update_source
-         * @param string|null $update_branch
+         * @param array $options
          * @throws InvalidPackageLockException
          */
-        public static function installPackage(string $path, bool $fix_conflict=false, bool $no_prompt=false, string $update_source=null, string $update_branch=null)
+        public static function installPackage(string $path, array $options=array())
         {
             // Install remotely from Github
             if(stripos($path, "@github") !== false)
@@ -112,32 +119,35 @@
                 exit(255);
             }
 
-            print("Installation Details" . PHP_EOL . PHP_EOL);
-            print(" Package       :   \e[32m" . $PackageInformation->Metadata->PackageName . "\e[37m" . PHP_EOL);
-            print(" Name          :   \e[32m" . $PackageInformation->Metadata->Name . "\e[37m" . PHP_EOL);
-            print(" Version       :   \e[32m" . $PackageInformation->Metadata->Version . "\e[37m" . PHP_EOL);
-
-            if($PackageInformation->Metadata->Author !== null)
+            if(self::optionIsSet($options, "no_details") == false)
             {
-                print(" Author        :   \e[32m" . $PackageInformation->Metadata->Author . "\e[37m" . PHP_EOL);
+                print("Installation Details" . PHP_EOL . PHP_EOL);
+                print(" Package       :   \e[32m" . $PackageInformation->Metadata->PackageName . "\e[37m" . PHP_EOL);
+                print(" Name          :   \e[32m" . $PackageInformation->Metadata->Name . "\e[37m" . PHP_EOL);
+                print(" Version       :   \e[32m" . $PackageInformation->Metadata->Version . "\e[37m" . PHP_EOL);
+
+                if($PackageInformation->Metadata->Author !== null)
+                {
+                    print(" Author        :   \e[32m" . $PackageInformation->Metadata->Author . "\e[37m" . PHP_EOL);
+                }
+
+                if($PackageInformation->Metadata->Organization !== null)
+                {
+                    print(" Organization  :   \e[32m" . $PackageInformation->Metadata->Organization . "\e[37m" . PHP_EOL);
+                }
+
+                if($PackageInformation->Metadata->URL !== null)
+                {
+                    print(" URL           :   \e[32m" . $PackageInformation->Metadata->URL . PHP_EOL . "\e[37m" . PHP_EOL);
+                }
+
+                if($PackageInformation->Metadata->Description !== null)
+                {
+                    print($PackageInformation->Metadata->Description . PHP_EOL . PHP_EOL);
+                }
             }
 
-            if($PackageInformation->Metadata->Organization !== null)
-            {
-                print(" Organization  :   \e[32m" . $PackageInformation->Metadata->Organization . "\e[37m" . PHP_EOL);
-            }
-
-            if($PackageInformation->Metadata->URL !== null)
-            {
-                print(" URL           :   \e[32m" . $PackageInformation->Metadata->URL . PHP_EOL . "\e[37m" . PHP_EOL);
-            }
-
-            if($PackageInformation->Metadata->Description !== null)
-            {
-                print($PackageInformation->Metadata->Description . PHP_EOL . PHP_EOL);
-            }
-
-            if($no_prompt == false)
+            if(self::optionIsSet($options, "no_prompt") == false)
             {
                 if(CLI::getBooleanInput("Do you want to install this package?") == false)
                 {
@@ -153,7 +163,7 @@
 
             if($PackageLock->packageExists($PackageInformation->Metadata->PackageName, $PackageInformation->Metadata->Version))
             {
-                if(isset(CLI::options()["fix-conflict"]) || $fix_conflict)
+                if(isset(CLI::options()["fix-conflict"]) || self::optionIsSet($options, "fix_conflict"))
                 {
                     try
                     {
@@ -333,16 +343,16 @@
                 }
             }
 
-            if($update_source !== null)
+            if(self::optionIsSet($options, "update_source") == true)
             {
                 $UpdateSourcePath = $PackageDataPath . DIRECTORY_SEPARATOR . 'UPDATE_SOURCE';
-                file_put_contents($UpdateSourcePath, $update_source);
+                file_put_contents($UpdateSourcePath, $options["update_source"]);
             }
 
-            if($update_branch !== null)
+            if(self::optionIsSet($options, "update_branch") == true)
             {
                 $UpdateBranchPath = $PackageDataPath . DIRECTORY_SEPARATOR . 'UPDATE_BRANCH';
-                file_put_contents($UpdateBranchPath, $update_branch);
+                file_put_contents($UpdateBranchPath, $options["update_branch"]);
             }
 
             if(isset($PackageContents["post_install"]))
@@ -377,12 +387,11 @@
         /**
          * @param GithubSource $githubSource
          * @param string $branch
-         * @param bool $fix_conflict
-         * @param bool $no_prompt
+         * @param array $options
          * @throws InvalidPackageLockException
          * @noinspection PhpUnused
          */
-        public static function installGithubPackage(GithubSource $githubSource, string $branch="master", bool $fix_conflict=false, bool $no_prompt=false)
+        public static function installGithubPackage(GithubSource $githubSource, string $branch="master", array $options=array())
         {
             $github_vault = new GithubVault();
             $github_vault->load();
@@ -441,7 +450,12 @@
 
             $source_directory = Compiler::findSource($clone_destination);
             $compiled_file_path = Compiler::compilePackage($source_directory, PathFinder::getBuildPath(true), false);
-            self::installPackage($compiled_file_path, $fix_conflict, $no_prompt, (string)$githubSource, $branch);
+            $options = array_merge($options, [
+                "update_source" => (string)$githubSource,
+                "update_branch" => $branch
+            ]);
+
+            self::installPackage($compiled_file_path, $options);
 
             CLI::logEvent("Cleaning up");
             IO::deleteDirectory($source_directory);
@@ -497,7 +511,7 @@
             {
                 try
                 {
-                    self::updatePackage($packageLockItem->PackageName);
+                    self::updatePackage($packageLockItem->PackageName, false);
                 }
                 catch (InvalidPackageLockException $e)
                 {
@@ -543,6 +557,7 @@
             $UpdateSourcePath = null;
             $UpdateBranchPath = null;
 
+            // Find the update source path
             $PackageLockItem = $PackageLock->Packages[$package];
             foreach($PackageLock->Packages[$package]->Versions as $version)
             {
@@ -574,16 +589,21 @@
                 else
                 {
                     CLI::logWarning("The package '$package' cannot be updated (No remote source)");
+                    return;
                 }
             }
 
             if($UpdateBranchPath == null)
             {
                 CLI::logWarning("The update source of '$package' contains no branch, assuming master branch");
+                $UpdateBranch = "master";
+            }
+            else
+            {
+                $UpdateBranch = file_get_contents($UpdateBranchPath);
             }
 
             $UpdateSource = file_get_contents($UpdateSourcePath);
-            $UpdateBranch = file_get_contents($UpdateBranchPath);
 
             if(stripos($UpdateSource, "@github") !== false)
             {
@@ -599,12 +619,19 @@
 
                 if($UpdateBranch !== null)
                 {
-                    self::installGithubPackage($github_source, $UpdateBranch, true, true);
-
+                    self::installGithubPackage($github_source, $UpdateBranch, [
+                        "fix_conflict" => true,
+                        "no_prompt" => true,
+                        "no_details" => true
+                    ]);
                 }
                 else
                 {
-                    self::installGithubPackage($github_source, "master", true, true);
+                    self::installGithubPackage($github_source, "master", [
+                        "fix_conflict" => true,
+                        "no_prompt" => true,
+                        "no_details" => true
+                    ]);
                 }
             }
         }
