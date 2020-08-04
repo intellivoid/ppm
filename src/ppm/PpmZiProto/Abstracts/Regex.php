@@ -1,6 +1,6 @@
 <?php
 
-    namespace ZiProto\Abstracts;
+    namespace PpmZiProto\Abstracts;
 
     /**
      * Class Regex

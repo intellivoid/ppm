@@ -1,9 +1,9 @@
 <?php
 
-    namespace ZiProto\TypeTransformer;
+    namespace PpmZiProto\TypeTransformer;
 
-    use ZiProto\Packet;
-    use ZiProto\Type\Binary;
+    use PpmZiProto\Packet;
+    use PpmZiProto\Type\Binary;
 
     /**
      * Class BinaryTransformer

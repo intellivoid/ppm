@@ -22,7 +22,7 @@
     use ppm\Utilities\Validate;
     use PpmParser\JsonDecoder as JsonDecoderAlias;
     use PpmParser\PrettyPrinter\Standard;
-    use ZiProto\ZiProto;
+    use PpmZiProto\ZiProto;
 
 
     /**

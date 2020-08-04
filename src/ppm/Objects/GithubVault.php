@@ -8,7 +8,7 @@
     use ppm\Exceptions\GithubPersonalAccessTokenNotFoundException;
     use ppm\Objects\GithubVault\PersonalAccessToken;
     use ppm\Utilities\PathFinder;
-    use ZiProto\ZiProto;
+    use PpmZiProto\ZiProto;
 
     /**
      * Class GithubVault

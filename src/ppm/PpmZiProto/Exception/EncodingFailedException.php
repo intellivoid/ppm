@@ -1,6 +1,6 @@
 <?php
 
-    namespace ZiProto\Exception;
+    namespace PpmZiProto\Exception;
 
     use function get_class;
     use function gettype;

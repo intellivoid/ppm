@@ -5,7 +5,7 @@
     use Exception;
     use ppm\Exceptions\AutoloaderException;
     use ppm\ppm;
-    use ZiProto\ZiProto;
+    use PpmZiProto\ZiProto;
 
     /**
      * Class Autoloader

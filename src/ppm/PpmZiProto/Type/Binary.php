@@ -1,6 +1,6 @@
 <?php
 
-    namespace ZiProto\Type;
+    namespace PpmZiProto\Type;
 
     /**
      * Class Binary

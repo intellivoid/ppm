@@ -1,16 +1,16 @@
 <?php
-    namespace ZiProto;
+    namespace PpmZiProto;
 
     use function gmp_init;
     use function ord;
     use function sprintf;
     use function substr;
     use function unpack;
-    use ZiProto\Exception\InsufficientDataException;
-    use ZiProto\Exception\IntegerOverflowException;
-    use ZiProto\Exception\DecodingFailedException;
-    use ZiProto\Exception\InvalidOptionException;
-    use ZiProto\TypeTransformer\Extension;
+    use PpmZiProto\Exception\InsufficientDataException;
+    use PpmZiProto\Exception\IntegerOverflowException;
+    use PpmZiProto\Exception\DecodingFailedException;
+    use PpmZiProto\Exception\InvalidOptionException;
+    use PpmZiProto\TypeTransformer\Extension;
 
     /**
      * Class BufferStream

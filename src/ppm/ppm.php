@@ -10,7 +10,7 @@
     use ppm\Utilities\CLI;
     use ppm\Utilities\PathFinder;
     use ppm\Utilities\System;
-    use ZiProto\ZiProto;
+    use PpmZiProto\ZiProto;
 
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Interfaces" . DIRECTORY_SEPARATOR . "HtmlString.php");
 
@@ -86,9 +86,9 @@
         include_once(__DIR__ . DIRECTORY_SEPARATOR . "PpmParser" . DIRECTORY_SEPARATOR . "PpmParser.php");
     }
 
-    if(class_exists("ZiProto\ZiProto") == false)
+    if(class_exists("PpmZiProto\ZiProto") == false)
     {
-        include_once(__DIR__ . DIRECTORY_SEPARATOR . "ZiProto" . DIRECTORY_SEPARATOR . "ZiProto.php");
+        include_once(__DIR__ . DIRECTORY_SEPARATOR . "PpmZiProto" . DIRECTORY_SEPARATOR . "ZiProto.php");
     }
 
     if(defined("PPM") == false)

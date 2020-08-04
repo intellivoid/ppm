@@ -19,6 +19,13 @@
     class CLI
     {
         /**
+         * When enabled the CLI will spit out verbose information
+         *
+         * @var bool
+         */
+        public static $VerboseMode = false;
+
+        /**
          * Returns CLI options
          */
         public static function options()
@@ -47,7 +54,8 @@
                 "description::",
                 "author::",
                 "organization::",
-                "url::"
+                "url::",
+                "verbose"
             );
 
             return getopt($options, $long_opts);
@@ -195,6 +203,29 @@
         }
 
         /**
+         * Logs a verbose event
+         *
+         * @param string $message
+         * @param bool $newline
+         */
+        public static function logVerboseEvent(string $message, bool $newline=true)
+        {
+            if(self::$VerboseMode == false)
+            {
+                return;
+            }
+            
+            if($newline)
+            {
+                print("\e[96m > \e[37m $message" . PHP_EOL);
+            }
+            else
+            {
+                print("\e[96m > \e[37m $message");
+            }
+        }
+
+        /**
          * @param string $message
          * @param Exception $exception
          */
@@ -221,6 +252,11 @@
          */
         public static function start()
         {
+            if(isset(self::options()["verbose"]))
+            {
+                self::$VerboseMode = true;
+            }
+
             if(isset(self::options()['compile']))
             {
                 if(strlen(self::options()['compile']) == 0)

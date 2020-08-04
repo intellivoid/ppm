@@ -1,8 +1,8 @@
 <?php
 
-    namespace ZiProto\TypeTransformer;
+    namespace PpmZiProto\TypeTransformer;
 
-    use ZiProto\BufferStream;
+    use PpmZiProto\BufferStream;
 
     /**
      * Interface Extension

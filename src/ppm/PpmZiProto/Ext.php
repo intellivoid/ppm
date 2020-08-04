@@ -1,5 +1,5 @@
 <?php
-    namespace ZiProto;
+    namespace PpmZiProto;
 
     /**
      * Class Ext

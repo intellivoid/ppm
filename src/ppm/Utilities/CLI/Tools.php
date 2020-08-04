@@ -175,7 +175,6 @@
             Compiler::validatePackage($Package);
 
             CLI::logEvent("Discovering components");
-
             $Package->Configuration->AutoLoadMethod = "indexed";
             foreach(self::discoverComponents($path) as $file)
             {

@@ -1,6 +1,6 @@
 <?php
 
-    namespace ZiProto;
+    namespace PpmZiProto;
 
     use function array_values;
     use function chr;
@@ -13,10 +13,10 @@
     use function pack;
     use function preg_match;
     use function strlen;
-    use ZiProto\Abstracts\Regex;
-    use ZiProto\Exception\InvalidOptionException;
-    use ZiProto\Exception\EncodingFailedException;
-    use ZiProto\TypeTransformer\Validator;
+    use PpmZiProto\Abstracts\Regex;
+    use PpmZiProto\Exception\InvalidOptionException;
+    use PpmZiProto\Exception\EncodingFailedException;
+    use PpmZiProto\TypeTransformer\Validator;
 
     /**
      * Class Packet

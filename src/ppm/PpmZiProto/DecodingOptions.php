@@ -1,8 +1,8 @@
 <?php
-    namespace ZiProto;
+    namespace PpmZiProto;
 
-    use ZiProto\Exception\InvalidOptionException;
-    use ZiProto\Abstracts\Options;
+    use PpmZiProto\Exception\InvalidOptionException;
+    use PpmZiProto\Abstracts\Options;
 
     /**
      * Class DecodingOptions

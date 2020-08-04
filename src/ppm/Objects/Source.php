@@ -11,7 +11,7 @@
     use ppm\Exceptions\PathNotFoundException;
     use ppm\Objects\Package\Component;
     use ppm\Utilities\CLI;
-    use ZiProto\ZiProto;
+    use PpmZiProto\ZiProto;
 
     /**
      * Class Source

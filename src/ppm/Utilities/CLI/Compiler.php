@@ -11,7 +11,7 @@
     use ppm\Utilities\CLI;
     use ppm\Utilities\System;
     use ppm\Utilities\Validate;
-    use ZiProto\ZiProto;
+    use PpmZiProto\ZiProto;
 
     /**
      * Class Compiler
@@ -177,35 +177,42 @@
         public static function findSource(string $path): string
         {
             $package_file = null;
+            CLI::logVerboseEvent("Attempting to find package.json");
 
             if(file_exists($path . DIRECTORY_SEPARATOR . "package.json"))
             {
+                CLI::logVerboseEvent("Found " . $path . DIRECTORY_SEPARATOR . "package.json");
                 return $path;
             }
 
             if(file_exists($path . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "package.json"))
             {
+                CLI::logVerboseEvent("Found " . $path . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "package.json");
                 return $path . DIRECTORY_SEPARATOR . "src";
             }
 
             if(file_exists($path . DIRECTORY_SEPARATOR . ".ppm_package"))
             {
+                CLI::logVerboseEvent("Found path pointer (.ppm_package) " . $path . DIRECTORY_SEPARATOR . ".ppm_package");
                 $pointer = file_get_contents($path . DIRECTORY_SEPARATOR . ".ppm_package");
                 $pointer = str_ireplace("/", DIRECTORY_SEPARATOR, $pointer);
 
                 if(file_exists($path . DIRECTORY_SEPARATOR . $pointer))
                 {
+                    CLI::logVerboseEvent("Found " . $path . DIRECTORY_SEPARATOR . $pointer);
                     return $path . DIRECTORY_SEPARATOR . $pointer;
                 }
             }
 
             if(file_exists($path . DIRECTORY_SEPARATOR . ".ppm"))
             {
+                CLI::logVerboseEvent("Found path pointer (.ppm) " . $path . DIRECTORY_SEPARATOR . ".ppm");
                 $pointer = file_get_contents($path . DIRECTORY_SEPARATOR . ".ppm");
                 $pointer = str_ireplace("/", DIRECTORY_SEPARATOR, $pointer);
 
                 if(file_exists($path . DIRECTORY_SEPARATOR . $pointer))
                 {
+                    CLI::logVerboseEvent("Found " . $path . DIRECTORY_SEPARATOR . $pointer);
                     return $path . DIRECTORY_SEPARATOR . $pointer;
                 }
             }

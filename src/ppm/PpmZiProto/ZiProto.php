@@ -1,10 +1,10 @@
 <?php
 
-    namespace ZiProto;
+    namespace PpmZiProto;
 
-    use ZiProto\Exception\DecodingFailedException;
-    use ZiProto\Exception\EncodingFailedException;
-    use ZiProto\Exception\InvalidOptionException;
+    use PpmZiProto\Exception\DecodingFailedException;
+    use PpmZiProto\Exception\EncodingFailedException;
+    use PpmZiProto\Exception\InvalidOptionException;
 
     include_once(__DIR__ . DIRECTORY_SEPARATOR . 'Abstracts' . DIRECTORY_SEPARATOR . 'Options.php');
     include_once(__DIR__ . DIRECTORY_SEPARATOR . 'Abstracts' . DIRECTORY_SEPARATOR . 'Regex.php');

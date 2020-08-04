@@ -1,8 +1,8 @@
 <?php
-    namespace ZiProto\TypeTransformer;
+    namespace PpmZiProto\TypeTransformer;
 
-    use ZiProto\Packet;
-    use ZiProto\Type\Map;
+    use PpmZiProto\Packet;
+    use PpmZiProto\Type\Map;
 
     /**
      * Class MapTransformer

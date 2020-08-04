@@ -1,7 +1,7 @@
 <?php
-    namespace ZiProto\TypeTransformer;
+    namespace PpmZiProto\TypeTransformer;
 
-    use ZiProto\Packet;
+    use PpmZiProto\Packet;
 
     /**
      * Interface Validator
