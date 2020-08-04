@@ -19,6 +19,7 @@
     use ppm\Utilities\IO;
     use ppm\Utilities\PathFinder;
     use ppm\Utilities\System;
+    use ppm\Utilities\Validate;
     use PpmParser\JsonDecoder as JsonDecoderAlias;
     use PpmParser\PrettyPrinter\Standard;
     use ZiProto\ZiProto;
@@ -110,10 +111,26 @@
             print(" Package       :   \e[32m" . $PackageInformation->Metadata->PackageName . "\e[37m" . PHP_EOL);
             print(" Name          :   \e[32m" . $PackageInformation->Metadata->Name . "\e[37m" . PHP_EOL);
             print(" Version       :   \e[32m" . $PackageInformation->Metadata->Version . "\e[37m" . PHP_EOL);
-            print(" Author        :   \e[32m" . $PackageInformation->Metadata->Author . "\e[37m" . PHP_EOL);
-            print(" Organization  :   \e[32m" . $PackageInformation->Metadata->Organization . "\e[37m" . PHP_EOL);
-            print(" URL           :   \e[32m" . $PackageInformation->Metadata->URL . PHP_EOL . "\e[37m" . PHP_EOL);
-            print($PackageInformation->Metadata->Description . PHP_EOL . PHP_EOL);
+
+            if($PackageInformation->Metadata->Author !== null)
+            {
+                print(" Author        :   \e[32m" . $PackageInformation->Metadata->Author . "\e[37m" . PHP_EOL);
+            }
+
+            if($PackageInformation->Metadata->Organization !== null)
+            {
+                print(" Organization  :   \e[32m" . $PackageInformation->Metadata->Organization . "\e[37m" . PHP_EOL);
+            }
+
+            if($PackageInformation->Metadata->URL !== null)
+            {
+                print(" URL           :   \e[32m" . $PackageInformation->Metadata->URL . PHP_EOL . "\e[37m" . PHP_EOL);
+            }
+
+            if($PackageInformation->Metadata->Description !== null)
+            {
+                print($PackageInformation->Metadata->Description . PHP_EOL . PHP_EOL);
+            }
 
             if(CLI::getBooleanInput("Do you want to install this package?") == false)
             {

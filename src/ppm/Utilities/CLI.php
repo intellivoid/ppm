@@ -10,6 +10,7 @@
     use ppm\Utilities\CLI\GithubVault;
     use ppm\Utilities\CLI\PackageManager;
     use ppm\Utilities\CLI\Runner;
+    use ppm\Utilities\CLI\Tools;
 
     /**
      * Class CLI
@@ -38,7 +39,15 @@
                 "install::",
                 "branch::",
                 "uninstall::",
-                "version::"
+                "generate-package::",
+                "recreate",
+                "version::",
+                "package-name::",
+                "name::",
+                "description::",
+                "author::",
+                "organization::",
+                "url::"
             );
 
             return getopt($options, $long_opts);
@@ -153,6 +162,13 @@
             print("\033[37m     Executes the execution point of a specific version of a package" . PHP_EOL);
             print("\033[37m \033[33m--main\e[37m=\"<package_name>\" \e[33m--args\e[37m=\"<arguments>\"" . PHP_EOL);
             print("\033[37m     Executes the execution point of a package, passing on optional commandline arguments" . PHP_EOL . PHP_EOL);
+
+            print("\033[37m \033[33m--generate-package" . PHP_EOL);
+            print("\033[37m     Generates/updates a package.json file from your project's source code (Current directory)" . PHP_EOL);
+            print("\033[37m \033[33m--generate-package\e[37m=\"<path>\"" . PHP_EOL);
+            print("\033[37m     Generates a package.json file from your project's source code" . PHP_EOL);
+            print("\033[37m \033[33m--generate-package\e[37m=\"<path>\" \e[33m--recreate" . PHP_EOL);
+            print("\033[37m     Generates/recreates a package.json from scratch file from your project's source code" . PHP_EOL . PHP_EOL);
 
             print("\033[37m \033[33m--github-add-pat \e[33m--alias\e[37m=\"<alias>\" \e[33m--token\e[37m=\"<personal_access_token>\"" . PHP_EOL);
             print("\033[37m     Adds a GitHub personal access key to be used with the GitHub API (Secured)" . PHP_EOL);
@@ -305,6 +321,27 @@
                 {
                     self::logError("Failed to execute, version not found", $e);
                     exit(255);
+                }
+
+                return;
+            }
+
+            if(isset(self::options()['generate-package']))
+            {
+                $recreate = false;
+
+                if(isset(self::options()['recreate']))
+                {
+                    $recreate = true;
+                }
+
+                if(strlen(self::options()['generate-package']) == 0)
+                {
+                    Tools::generatePackageJson(getcwd(), $recreate);
+                }
+                else
+                {
+                    Tools::generatePackageJson(self::options()['generate-package'], $recreate);
                 }
 
                 return;

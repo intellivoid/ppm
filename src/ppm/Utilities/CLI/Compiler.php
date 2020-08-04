@@ -5,10 +5,12 @@
 
 
     use Exception;
+    use ppm\Objects\Package;
     use ppm\Objects\Package\Component;
     use ppm\Objects\Source;
     use ppm\Utilities\CLI;
     use ppm\Utilities\System;
+    use ppm\Utilities\Validate;
     use ZiProto\ZiProto;
 
     /**
@@ -41,6 +43,9 @@
                 CLI::logError("There was an error while trying to load from source", $e);
                 exit(255);
             }
+
+            CLI::logEvent("Validating package");
+            self::validatePackage($Source->Package);
 
             CLI::logEvent("Compiling components");
             $CompiledComponents = $Source->compileComponents(true);
@@ -208,4 +213,83 @@
             CLI::logError("Cannot locate package.json file, is this repo built for ppm?");
             exit(255);
         }
+
+        /**
+         * Validates the package information
+         *
+         * @param Package $package
+         */
+        public static function validatePackage(Package $package)
+        {
+            if(Validate::PackageName($package->Metadata->PackageName) == false)
+            {
+                CLI::logError("The package name is invalid, it must follow the convention as follows; 'com.example.package_name'");
+                exit(255);
+            }
+
+            if(Validate::UserFriendlyPackageName($package->Metadata->Name) == false)
+            {
+                CLI::logError("The package friendly name is invalid, it must be 64 characters or less");
+                exit(255);
+            }
+
+            if(Validate::Version($package->Metadata->Version) == false)
+            {
+                CLI::logError("The package name is invalid, it must follow the convention as follows; 'Major.Minor.Build.Revision'");
+                exit(255);
+            }
+
+            if(strlen($package->Metadata->Description) == 0)
+            {
+                $package->Metadata->Description = null;
+            }
+            else
+            {
+                if(Validate::Description($package->Metadata->Description) == false)
+                {
+                    CLI::logError("The package description is invalid, it must be 1256 characters or less");
+                    exit(255);
+                }
+            }
+
+            if(strlen($package->Metadata->Author) == 0)
+            {
+                $package->Metadata->Author = null;
+            }
+            else
+            {
+                if(Validate::Author($package->Metadata->Author) == false)
+                {
+                    CLI::logError("The package author is invalid, it must be 1256 characters or less");
+                    exit(255);
+                }
+            }
+
+            if(strlen($package->Metadata->Organization) == 0)
+            {
+                $package->Metadata->Organization = null;
+            }
+            else
+            {
+                if(Validate::Organization($package->Metadata->Organization) == false)
+                {
+                    CLI::logError("The package organization is invalid, it must be 1256 characters or less");
+                    exit(255);
+                }
+            }
+
+            if(strlen($package->Metadata->URL) == 0)
+            {
+                $package->Metadata->URL = null;
+            }
+            else
+            {
+                if(Validate::Url($package->Metadata->URL) == false)
+                {
+                    CLI::logError("The package URL is invalid");
+                    exit(255);
+                }
+            }
+        }
+
     }

@@ -37,6 +37,57 @@ install:
 ```
 
 
+## Naming a package
+
+Package names are written in all lower case to avoid conflict with
+the names of classes or interfaces.
+
+Companies use their reversed Internet domain name to begin their
+package names—for example, `com.example.mypackage` for a package 
+named `mypackage` created by a programmer at `example.com`.
+
+Name collisions that occur within a single company need to be
+handled by convention within that company, perhaps by including
+the region or the project name after the company name
+(for example, `com.example.region.mypackage`).
+
+
+## Version structure
+
+Version numbers consist of two to four components: major, minor,
+build, and revision. The major and minor components are required;
+the build and revision components are optional, but the build
+component is required if the revision component is defined. 
+All defined components must be integers greater than or equal to 0.
+The format of the version number is as follows
+(optional components are shown in square brackets ([ and ]):
+
+*major.minor[.build[.revision]]*
+
+The components are used by convention as follows:
+
+ - *Major*: Packages with the same name but different major 
+ versions are not interchangeable. A higher version number might
+ indicate a major rewrite of a product where backward compatibility
+ cannot be assumed.
+ 
+ - *Minor*: If the name and major version number on two packages
+ are the same, but the minor version number is different, this
+ indicates significant enhancement with the intention of backward
+ compatibility. This higher minor version number might indicate a
+ point release of a product or a fully backward-compatible new
+ version of a product.
+ 
+ - *Build*: A difference in build number represents a recompilation
+ of the same source. Different build numbers might be used when the
+ processor, platform, or compiler changes.
+ 
+ - *Revision*: Packages with the same name, major, and minor
+ version numbers but different revisions are intended to be fully
+ interchangeable. A higher revision number might be used in a build
+ that fixes a security hole in a previously released assembly.
+
+
 ## package.json
 
 This is the main file that PPM will use to compile your code. if it

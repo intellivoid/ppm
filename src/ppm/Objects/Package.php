@@ -26,7 +26,7 @@
         public $Metadata;
 
         /**
-         * @var array|Component
+         * @var Component[]
          */
         public $Components;
 
@@ -45,6 +45,7 @@
          */
         public function __construct()
         {
+            $this->Metadata = new Metadata();
             $this->Components = [];
             $this->Dependencies = [];
             $this->Configuration = new Configuration();
