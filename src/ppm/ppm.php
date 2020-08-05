@@ -183,6 +183,7 @@
         /**
          * @param PackageLock $packageLock
          * @return bool
+         * @throws Exceptions\InvalidPackageLockException
          */
         public static function savePackageLock(PackageLock $packageLock): bool
         {
@@ -191,6 +192,7 @@
             $contents = ZiProto::encode($packageLock->toArray());
             file_put_contents($path, $contents);
             System::setPermissions($path, 0744);
+            self::getPackageLock();
 
             return true;
         }
