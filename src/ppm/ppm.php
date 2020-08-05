@@ -154,16 +154,20 @@
         /**
          * Loads the package lock from disk/cache
          *
+         * @param bool $force_update
          * @return PackageLock
          * @throws Exceptions\InvalidPackageLockException
          */
-        public static function getPackageLock(): PackageLock
+        public static function getPackageLock(bool $force_update=false): PackageLock
         {
-            if(self::$packageLockCacheEnabled)
+            if($force_update == false)
             {
-                if(self::$packageLockCache !== null)
+                if(self::$packageLockCacheEnabled)
                 {
-                    return self::$packageLockCache;
+                    if(self::$packageLockCache !== null)
+                    {
+                        return self::$packageLockCache;
+                    }
                 }
             }
 
@@ -192,7 +196,7 @@
             $contents = ZiProto::encode($packageLock->toArray());
             file_put_contents($path, $contents);
             System::setPermissions($path, 0744);
-            self::getPackageLock();
+            self::getPackageLock(true);
 
             return true;
         }
