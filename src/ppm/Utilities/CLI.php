@@ -133,13 +133,25 @@
          */
         public static function displayIntro()
         {
-            print("\e[34m ________  ________  _____ ______      " . PHP_EOL);
-            print("\e[34m|\   __  \|\   __  \|\   _ \  _   \    " . PHP_EOL);
-            print("\e[34m\ \  \|\  \ \  \|\  \ \  \\\__\ \   \   " . PHP_EOL);
-            print("\e[34m \ \   ____\ \   ____\ \  \\|__| \   \  " . PHP_EOL);
-            print("\e[34m  \ \  \___|\ \  \___|\ \  \    \ \  \ " . PHP_EOL);
-            print("\e[34m   \ \__\    \ \__\    \ \__\    \ \__\\" . PHP_EOL);
-            print("\e[34m    \|__|     \|__|     \|__|     \|__|" . PHP_EOL);
+            $dark_colors = ['31', '32', '33', '34', '35', '36'];
+            $light_colors = ['91', '92', '93', '94', '95', '96'];
+
+            if(rand(0,1) == 1)
+            {
+                $sc = $dark_colors;
+            }
+            else
+            {
+                $sc = $light_colors;
+            }
+
+            print("\e[" . $sc[array_rand($sc, 1)] . "m ________  ________  _____ ______      " . PHP_EOL);
+            print("\e[" . $sc[array_rand($sc, 1)] . "m|\   __  \|\   __  \|\   _ \  _   \    " . PHP_EOL);
+            print("\e[" . $sc[array_rand($sc, 1)] . "m\ \  \|\  \ \  \|\  \ \  \\\__\ \   \   " . PHP_EOL);
+            print("\e[" . $sc[array_rand($sc, 1)] . "m \ \   ____\ \   ____\ \  \\|__| \   \  " . PHP_EOL);
+            print("\e[" . $sc[array_rand($sc, 1)] . "m  \ \  \___|\ \  \___|\ \  \    \ \  \ " . PHP_EOL);
+            print("\e[" . $sc[array_rand($sc, 1)] . "m   \ \__\    \ \__\    \ \__\    \ \__\\" . PHP_EOL);
+            print("\e[" . $sc[array_rand($sc, 1)] . "m    \|__|     \|__|     \|__|     \|__|" . PHP_EOL);
             print(PHP_EOL);
             print("\033[37mVersion: \033[32m" . PPM_VERSION . "\033[37m | Written By " . PPM_AUTHOR . PHP_EOL);
             print("\033[37m==============================================" . PHP_EOL);
