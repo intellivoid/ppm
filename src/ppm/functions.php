@@ -12,6 +12,8 @@
      *
      * @param string $package
      * @param string $version
+     * @param bool $import_dependencies
+     * @param bool $throw_error
      * @return bool
      * @throws AutoloaderException
      * @throws InvalidComponentException
@@ -19,9 +21,9 @@
      * @throws PackageNotFoundException
      * @throws VersionNotFoundException
      */
-    function ppm_import(string $package, string $version="latest"): bool
+    function ppm_import(string $package, string $version="latest", bool $import_dependencies=true, bool $throw_error=true): bool
     {
-        return ppm::import($package, $version);
+        return ppm::import($package, $version, $import_dependencies, $throw_error);
     }
 
     /**
