@@ -176,6 +176,7 @@
             $Package->Configuration->AutoLoadMethod = "indexed";
 
             CLI::logEvent("Discovering components");
+            $Package->Components = [];
             foreach(self::discoverComponents($path) as $file)
             {
                 $Component = new Package\Component();
@@ -187,6 +188,7 @@
             }
 
             CLI::logEvent("Discovering files");
+            $Package->Files = [];
             foreach(self::discoverFiles($path) as $file)
             {
                 $Package->Files[] = $file;
