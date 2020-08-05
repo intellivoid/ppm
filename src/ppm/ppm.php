@@ -130,6 +130,13 @@
         private static $autoIndexer;
 
         /**
+         * If enabled, PPM will throw warnings
+         *
+         * @var bool
+         */
+        public static $throwWarnings = false;
+
+        /**
          * @return PackageLock
          * @throws Exceptions\InvalidPackageLockException
          */
@@ -178,7 +185,10 @@
         {
             if(isset(self::$importedPackages[$package]))
             {
-                trigger_error("The package $package==" . self::$importedPackages[$package] . " was already imported", E_USER_WARNING);
+                if(self::$throwWarnings)
+                {
+                    trigger_error("The package $package==" . self::$importedPackages[$package] . " was already imported", E_USER_WARNING);
+                }
                 return false;
             }
 
