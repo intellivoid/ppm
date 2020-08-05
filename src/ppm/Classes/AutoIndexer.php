@@ -545,12 +545,15 @@
                 throw new RuntimeException("Unable to create '$file'.");
             }
 
+            if(file_exists($file))
+            {
+                System::setPermissions($file, 0777);
+            }
+
             if (function_exists('opcache_invalidate'))
             {
                 @opcache_invalidate($file, true); // @ can be restricted
             }
-
-            System::setPermissions("$file.tmp", 0777);
         }
 
         /**

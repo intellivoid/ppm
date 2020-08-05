@@ -41,7 +41,13 @@
                 return false;
             }
 
+            if(file_exists($path) == false)
+            {
+                return false;
+            }
+
             chmod($path, $permissions);
+
             return true;
         }
     }
