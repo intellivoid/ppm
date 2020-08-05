@@ -22,7 +22,7 @@
         public $Version;
 
         /**
-         * @var array|Dependency
+         * @var Dependency[]
          */
         public $Dependencies;
 

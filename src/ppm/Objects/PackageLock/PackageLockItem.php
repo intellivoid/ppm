@@ -29,7 +29,7 @@
         public $Versions;
 
         /**
-         * @var array
+         * @var VersionConfiguration[]
          */
         public $VersionConfigurations;
 
@@ -132,6 +132,7 @@
             /** @var VersionConfiguration $Configuration */
             $Configuration = $this->VersionConfigurations[$version];
 
+            var_dump($this->PackageName . "::" . $Configuration->AutoloadMethod);
             switch($Configuration->AutoloadMethod)
             {
                 case AutoloadMethod::Static:

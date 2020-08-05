@@ -174,6 +174,8 @@
          *
          * @param string $package
          * @param string $version
+         * @param bool $import_dependencies
+         * @param bool $throw_error
          * @return bool
          * @throws Exceptions\AutoloaderException
          * @throws Exceptions\InvalidComponentException
@@ -181,7 +183,7 @@
          * @throws Exceptions\VersionNotFoundException
          * @throws PackageNotFoundException
          */
-        public static function import(string $package, string $version="latest"): bool
+        public static function import(string $package, string $version="latest", bool $import_dependencies=true, bool $throw_error=true): bool
         {
             if(isset(self::$importedPackages[$package]))
             {
@@ -196,12 +198,37 @@
 
             if($PackageLock->packageExists($package, $version) == false)
             {
-                throw new PackageNotFoundException("The package $package==$version is not installed");
+                if($throw_error)
+                {
+                    throw new PackageNotFoundException("The package $package==$version is not installed");
+                }
             }
 
             $PackageLock->getPackage($package)->import($version);
-
             self::$importedPackages[$package] = $version;
+
+            // Import sub-dependencies
+            if($import_dependencies)
+            {
+                if($version == "latest")
+                {
+                    $version = $PackageLock->getPackage($package)->getLatestVersion();
+                }
+
+                $version_configuration = $PackageLock->getPackage($package)->VersionConfigurations[$version];
+                foreach($version_configuration->Dependencies as $dependency)
+                {
+                    if($dependency->Required)
+                    {
+                        self::import($dependency->Package, $dependency->Version, $import_dependencies, true);
+                    }
+                    else
+                    {
+                        self::import($dependency->Package, $dependency->Version, $import_dependencies, false);
+                    }
+                }
+            }
+
             return true;
         }
 
