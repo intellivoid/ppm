@@ -1,0 +1,6 @@
+This update introduces optimizations and bug fixes
+
+ - Fixes PackageLock write cache issue
+
+Updating PPM from 1.0.0.+ to 1.0.0.4 simply requires you to run the installer, previous package installations/packages
+will be backwards compatible with this version and it will work as expected.
