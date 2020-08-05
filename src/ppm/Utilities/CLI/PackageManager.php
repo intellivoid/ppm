@@ -262,6 +262,36 @@
                 System::setPermissions($file_path, 0744);
             }
 
+            if(isset($PackageContents["byte_compiled"]))
+            {
+                foreach($PackageContents["byte_compiled"] as $component_name => $component)
+                {
+                    /** @noinspection DuplicatedCode */
+                    if(stripos($component_name, "/"))
+                    {
+                        $pieces = explode("/", $component_name);
+                        $file_path = $InstallationPath . DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, $pieces);
+                        array_pop($pieces);
+                        $path = $InstallationPath . DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, $pieces);
+
+                        if(file_exists($path) == false)
+                        {
+                            mkdir($path, 775, true);
+                            System::setPermissions($path, 775);
+                        }
+                    }
+                    else
+                    {
+                        $file_path = $InstallationPath . DIRECTORY_SEPARATOR . $component_name;
+                    }
+
+                    $prettyPrinter = new Standard;
+                    $AST = unserialize($component);
+                    file_put_contents($file_path, $prettyPrinter->prettyPrintFile($AST));
+                    System::setPermissions($file_path, 0744);
+                }
+            }
+
             if(isset($PackageContents["files"]))
             {
                 if($PackageContents["files"] !== null)

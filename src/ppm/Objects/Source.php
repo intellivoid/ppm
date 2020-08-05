@@ -46,27 +46,51 @@
         public function compileComponents(bool $stdout=False): array
         {
             $CompiledComponents = array();
+            $ByteCompiledComponents = array();
 
             /** @var Component $component */
             foreach($this->Package->Components as $component)
             {
                 if($stdout)
                 {
-                    CLI::logEvent("Processing " . $component->File . "...", false);
+                    CLI::logEvent("Compiling " . $component->File . "...", false);
                 }
 
                 $ParsedComponent = $component->parse();
                 $Structure = json_encode($ParsedComponent);
-                $Compiled = ZiProto::encode(json_decode($Structure, true));
-                $CompiledComponents[$component->File] = $Compiled;
 
-                if($stdout)
+                if($Structure == false)
                 {
-                    CLI::logEvent("Success");
+                    if($stdout)
+                    {
+                        CLI::logEvent("Failed");
+                        CLI::logWarning("Cannot compile " . $component->File . ", " . json_last_error_msg() . ". Will byte-compile instead");
+                        CLI::logEvent("Byte-compiling " . $component->File . "...", false);
+                    }
+
+                    $ByteCompiledComponents[$component->File] = serialize($ParsedComponent);
+
+                    if($stdout)
+                    {
+                        CLI::logEvent("Success");
+                    }
+                }
+                else
+                {
+                    $Compiled = ZiProto::encode(json_decode($Structure, true));
+                    $CompiledComponents[$component->File] = $Compiled;
+
+                    if($stdout)
+                    {
+                        CLI::logEvent("Success");
+                    }
                 }
             }
 
-            return $CompiledComponents;
+            return array(
+                "compiled_components" => $CompiledComponents,
+                "byte_compiled" => $ByteCompiledComponents
+            );
         }
 
         /**
