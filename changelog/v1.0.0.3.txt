@@ -1,0 +1,10 @@
+This update introduces bug fixes
+
+ - Fixed AutoIndexer cache permission issue
+ - Fixed compiler issue where when compiling mal-formed UTF-8 files fails, fixed the issue using a fallback
+   byte-compiler method which will now introduce the header "byte_compiled" in a compiled file
+   which will contain all the byte-compiled files instead of holding them in the "compiled_components" header
+
+Updating PPM from 1.0.0.+ to 1.0.0.3 simply requires you to run the installer, previous package installations/packages
+will be backwards compatible with this version and it will work as expected. Packages that failed to install correctly
+due to the compiler bug will be required to be recompiled so that the issue can be corrected.
