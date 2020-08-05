@@ -137,11 +137,36 @@
         public static $throwWarnings = false;
 
         /**
+         * If enabled, the package lock will be stored in memory rather than loaded from
+         * disk each time you import a package
+         *
+         * @var bool
+         */
+        public static $packageLockCacheEnabled = true;
+
+        /**
+         * The cache package lock
+         *
+         * @var PackageLock
+         */
+        private static $packageLockCache = null;
+
+        /**
+         * Loads the package lock from disk/cache
+         *
          * @return PackageLock
          * @throws Exceptions\InvalidPackageLockException
          */
         public static function getPackageLock(): PackageLock
         {
+            if(self::$packageLockCacheEnabled)
+            {
+                if(self::$packageLockCache !== null)
+                {
+                    return self::$packageLockCache;
+                }
+            }
+
             $path = PathFinder::getPackageLockPath(true);
 
             if(file_exists($path) == false)
@@ -151,7 +176,8 @@
                 return $PackageLock;
             }
 
-            return PackageLock::fromArray(ZiProto::decode(file_get_contents($path)));
+            self::$packageLockCache = PackageLock::fromArray(ZiProto::decode(file_get_contents($path)));
+            return self::$packageLockCache;
         }
 
         /**
