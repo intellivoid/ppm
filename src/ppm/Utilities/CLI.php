@@ -57,7 +57,8 @@
                 "organization::",
                 "url::",
                 "verbose",
-                "fix-conflict"
+                "fix-conflict",
+                "clear-cache"
             );
 
             return getopt($options, $long_opts);
@@ -201,6 +202,9 @@
             print("\033[37m \033[33m--github-add-pat \e[33m--alias\e[37m=\"<alias>\" \e[33m--token\e[37m=\"<personal_access_token>\"" . PHP_EOL);
             print("\033[37m     Adds a GitHub personal access key to be used with the GitHub API (Secured)" . PHP_EOL);
             print("\033[37m \033[33m--github-remove-pat \e[33m--alias\e[37m=\"<alias>\"" . PHP_EOL);
+            print("\033[37m     Removes a GitHub personal access key" . PHP_EOL . PHP_EOL);
+
+            print("\033[37m \033[33m--clear-cache" . PHP_EOL);
             print("\033[37m     Removes a GitHub personal access key" . PHP_EOL);
         }
 
@@ -439,6 +443,12 @@
             if(isset(self::options()["github-remove-pat"]))
             {
                 GithubVault::githubRemovePersonalAccessKey();
+                return;
+            }
+
+            if(isset(self::options()["clear-cache"]))
+            {
+                Tools::clearCache();
                 return;
             }
 

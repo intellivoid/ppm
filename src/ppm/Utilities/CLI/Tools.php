@@ -10,6 +10,9 @@
     use ppm\Exceptions\MissingPackagePropertyException;
     use ppm\Objects\Package;
     use ppm\Utilities\CLI;
+    use ppm\Utilities\IO;
+    use ppm\Utilities\PathFinder;
+    use ppm\Utilities\System;
     use RecursiveDirectoryIterator;
     use RecursiveIteratorIterator;
 
@@ -250,5 +253,29 @@
             }
 
             return $results;
+        }
+
+        /**
+         * Clears the cache folder for PPM
+         */
+        public static function clearCache()
+        {
+            if(System::isRoot() == false)
+            {
+                CLI::logError("This operation requires root privileges, please run ppm with 'sudo -H'");
+                exit(255);
+            }
+
+            if(IO::writeTest(PathFinder::getMainPath(true)) == false)
+            {
+                CLI::logError("Write test failed, cannot write to the PPM installation directory");
+                exit(255);
+            }
+
+            CLI::logEvent("Clearing indexed cache");
+            IO::deleteDirectory(PathFinder::getCachePath());
+            PathFinder::getCachePath(true);
+
+            CLI::logEvent("Success");
         }
     }
