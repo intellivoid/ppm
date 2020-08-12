@@ -1,0 +1,7 @@
+This update introduces optimizations and bug fixes
+
+ - Adds option --clear-cache
+ - By default, the cache is disabled.
+
+Updating PPM from 1.0.0.+ to 1.0.0.6 simply requires you to run the installer, previous package installations/packages
+will be backwards compatible with this version and it will work as expected.
