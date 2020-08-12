@@ -58,7 +58,7 @@
         private $tempDirectory;
 
         /** @var bool Indicates if cache should be used */
-        private $useCache = false;
+        private $useCache = true;
 
         /**
          * AutoIndexer constructor.
