@@ -1,6 +1,6 @@
 This update introduces a lot of improvements and new features
 
-
+ - Added DirectoryScanner Class, ported from theseer
 
 Updating PPM from 1.0.0.+ to 1.1.0.0 simply requires you to run the installer, previous package installations/packages
 will be backwards compatible with this version and it will work as expected.

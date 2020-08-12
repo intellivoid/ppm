@@ -18,6 +18,7 @@ Make sure the following dependencies are installed on the system
  - php-curl
  - php-mbstring
  - php-tokenizer
+ - php-fileinfo
  - git
 
 once that all the dependencies have been met, you can apply executable

@@ -12,6 +12,14 @@
     use ppm\Utilities\System;
     use PpmZiProto\ZiProto;
 
+    // Directory Scanner
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "DirectoryScanner" . DIRECTORY_SEPARATOR . "Exception.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "DirectoryScanner" . DIRECTORY_SEPARATOR . "PHPFilterIterator.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "DirectoryScanner" . DIRECTORY_SEPARATOR . "FilesOnlyFilterIterator.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "DirectoryScanner" . DIRECTORY_SEPARATOR . "IncludeExcludeFilterIterator.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "DirectoryScanner" . DIRECTORY_SEPARATOR . "DirectoryScanner.php");
+
+    // Core
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Interfaces" . DIRECTORY_SEPARATOR . "HtmlString.php");
 
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Abstracts" . DIRECTORY_SEPARATOR . "AutoloadMethod.php");
