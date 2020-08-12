@@ -57,6 +57,9 @@
         /** @var string|null */
         private $tempDirectory;
 
+        /** @var bool Indicates if cache should be used */
+        private $useCache = false;
+
         /**
          * AutoIndexer constructor.
          */
@@ -478,12 +481,17 @@
          */
         private function loadCache(): void
         {
+            if($this->useCache == false)
+            {
+                return;
+            }
+
             if ($this->cacheLoaded)
             {
                 return;
             }
-            $this->cacheLoaded = true;
 
+            $this->cacheLoaded = true;
             $file = $this->getCacheFile();
 
             // Solving atomicity to work everywhere is really pain in the ass.
@@ -531,6 +539,11 @@
          */
         private function saveCache($lock = null): void
         {
+            if($this->useCache == false)
+            {
+                return;
+            }
+
             // we have to acquire a lock to be able safely rename file
             // on Linux: that another thread does not rename the same named file earlier
             // on Windows: that the file is not read by another thread
