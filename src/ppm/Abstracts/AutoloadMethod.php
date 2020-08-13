@@ -36,4 +36,12 @@
          * the files defined in components.
          */
         const GeneratedStatic = "generated_static";
+
+        /**
+         * Generates a standard spl_autoload_register script and registers the function.
+         * This file will be executed upon importing the package.
+         *
+         * Fast during runtime and can be used to import packages dynamically.
+         */
+        const StandardPhpLibrary = "generated_spl";
     }

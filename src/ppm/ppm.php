@@ -278,9 +278,6 @@
                 }
             }
 
-            $PackageLock->getPackage($package)->import($version);
-            self::$importedPackages[$package] = $version;
-
             // Import sub-dependencies
             if($import_dependencies)
             {
@@ -302,6 +299,9 @@
                     }
                 }
             }
+
+            $PackageLock->getPackage($package)->import($version);
+            self::$importedPackages[$package] = $version;
 
             return true;
         }

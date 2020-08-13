@@ -143,6 +143,7 @@
                     return true;
 
                 case AutoloadMethod::GeneratedStatic:
+                case AutoloadMethod::StandardPhpLibrary:
                     $DataPath = $this->getPackagePath($version) . DIRECTORY_SEPARATOR . '.ppm';
 
                     if(file_exists($DataPath . DIRECTORY_SEPARATOR . 'AUTOLOADER') == false)
@@ -151,7 +152,13 @@
                     }
 
                     /** @noinspection PhpIncludeInspection */
-                    require(sprintf("%s%sAUTOLOADER", $DataPath, DIRECTORY_SEPARATOR));
+                    require_once(sprintf("%s%sAUTOLOADER", $DataPath, DIRECTORY_SEPARATOR));
+
+                    if(file_exists($DataPath . DIRECTORY_SEPARATOR . 'AUTOLOADER_UNITS'))
+                    {
+                        /** @noinspection PhpIncludeInspection */
+                        require_once(sprintf("%s%sAUTOLOADER_UNITS", $DataPath, DIRECTORY_SEPARATOR));
+                    }
                     return true;
 
                 default:

@@ -6,6 +6,7 @@
     use ppm\Classes\AutoloaderBuilder\Factory;
     use ppm\Exceptions\ApplicationException;
     use ppm\Exceptions\AutoloaderException;
+    use ppm\Exceptions\CollectorException;
     use ppm\Exceptions\Config;
     use ppm\ppm;
     use PpmZiProto\ZiProto;
@@ -71,9 +72,13 @@
         }
 
         /**
+         * Generates a static autoloader file
+         *
          * @param string $package_path
          * @throws ApplicationException
          * @throws \ppm\Classes\DirectoryScanner\Exception
+         * @throws CollectorException
+         * @noinspection DuplicatedCode
          */
         public static function generateStaticAutoLoader(string $package_path)
         {
@@ -84,6 +89,32 @@
             $config = new Config([$package_path]);
             $config->setOutputFile($autoloader);
             $config->setStaticMode(true);
+            $config->setLintMode(true);
+            $config->setOnceMode(true);
+            $alb_factory->setConfig($config);
+
+            // Execute the autoload generator
+            $alb_factory->getApplication()->run();
+        }
+
+        /**
+         * Generates a standard autoloader file
+         *
+         * @param string $package_path
+         * @throws ApplicationException
+         * @throws CollectorException
+         * @throws \ppm\Classes\DirectoryScanner\Exception
+         * @noinspection DuplicatedCode
+         */
+        public static function generateStandardAutoLoader(string $package_path)
+        {
+            $autoloader = $package_path . DIRECTORY_SEPARATOR . '.ppm' . DIRECTORY_SEPARATOR . 'AUTOLOADER';
+            $alb_factory = new Factory();
+
+            // Setup the configuration
+            $config = new Config([$package_path]);
+            $config->setOutputFile($autoloader);
+            $config->setStaticMode(false);
             $config->setLintMode(true);
             $config->setOnceMode(true);
             $alb_factory->setConfig($config);

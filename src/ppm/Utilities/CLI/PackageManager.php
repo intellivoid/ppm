@@ -8,6 +8,7 @@
     use ppm\Abstracts\AutoloadMethod;
     use ppm\Classes\GitManager;
     use ppm\Exceptions\ApplicationException;
+    use ppm\Exceptions\CollectorException;
     use ppm\Exceptions\GithubPersonalAccessTokenNotFoundException;
     use ppm\Exceptions\InvalidPackageLockException;
     use ppm\Exceptions\VersionNotFoundException;
@@ -353,6 +354,35 @@
                     catch (ApplicationException $e)
                     {
                         CLI::logError("Application exception raised", $e);
+                        exit(255);
+                    }
+                    catch (CollectorException $e)
+                    {
+                        CLI::logError("Collector exception raised", $e);
+                        exit(255);
+                    }
+                    break;
+
+                case AutoloadMethod::StandardPhpLibrary:
+                    CLI::logEvent("Generating standard autoloader process started");
+
+                    try
+                    {
+                        Autoloader::generateStandardAutoLoader($InstallationPath);
+                    }
+                    catch (\ppm\Classes\DirectoryScanner\Exception $e)
+                    {
+                        CLI::logError("Directory scanner exception raised", $e);
+                        exit(255);
+                    }
+                    catch (ApplicationException $e)
+                    {
+                        CLI::logError("Application exception raised", $e);
+                        exit(255);
+                    }
+                    catch (CollectorException $e)
+                    {
+                        CLI::logError("Collector exception raised", $e);
                         exit(255);
                     }
                     break;
