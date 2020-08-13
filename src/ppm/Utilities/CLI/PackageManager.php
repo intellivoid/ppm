@@ -5,7 +5,9 @@
 
 
     use Exception;
+    use ppm\Abstracts\AutoloadMethod;
     use ppm\Classes\GitManager;
+    use ppm\Exceptions\ApplicationException;
     use ppm\Exceptions\GithubPersonalAccessTokenNotFoundException;
     use ppm\Exceptions\InvalidPackageLockException;
     use ppm\Exceptions\VersionNotFoundException;
@@ -15,6 +17,7 @@
     use ppm\Objects\PackageLock\VersionConfiguration;
     use ppm\Objects\Sources\GithubSource;
     use ppm\ppm;
+    use ppm\Utilities\Autoloader;
     use ppm\Utilities\CLI;
     use ppm\Utilities\IO;
     use ppm\Utilities\PathFinder;
@@ -332,6 +335,31 @@
             mkdir($PackageDataPath);
             file_put_contents($PackageInformationPath, ZiProto::encode($PackageInformation->toArray()));
             file_put_contents($PackageAutoloaderPath, ZiProto::encode(array_keys($PackageContents["compiled_components"])));
+
+            switch($PackageInformation->Configuration->AutoLoadMethod)
+            {
+                case AutoloadMethod::GeneratedStatic:
+                    CLI::logEvent("Generating static autoloader process started");
+
+                    try
+                    {
+                        Autoloader::generateStaticAutoLoader($InstallationPath);
+                    }
+                    catch (\ppm\Classes\DirectoryScanner\Exception $e)
+                    {
+                        CLI::logError("Directory scanner exception raised", $e);
+                        exit(255);
+                    }
+                    catch (ApplicationException $e)
+                    {
+                        CLI::logError("Application exception raised", $e);
+                        exit(255);
+                    }
+                    break;
+
+                default:
+                    break;
+            }
 
             if($PackageContents["main_file"] !== null)
             {

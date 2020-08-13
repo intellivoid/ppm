@@ -142,6 +142,18 @@
                     Autoloader::loadIndexedLoader($this->getPackagePath($version));
                     return true;
 
+                case AutoloadMethod::GeneratedStatic:
+                    $DataPath = $this->getPackagePath($version) . DIRECTORY_SEPARATOR . '.ppm';
+
+                    if(file_exists($DataPath . DIRECTORY_SEPARATOR . 'AUTOLOADER') == false)
+                    {
+                        throw new AutoloaderException("The autoloading method 'GeneratedStatic' failed because the file '" . $DataPath . DIRECTORY_SEPARATOR . 'AUTOLOADER' . "' does not exist.");
+                    }
+
+                    /** @noinspection PhpIncludeInspection */
+                    require(sprintf("%s%sAUTOLOADER", $DataPath, DIRECTORY_SEPARATOR));
+                    return true;
+
                 default:
                     throw new AutoloaderException("The autoloader method '" . $Configuration->AutoloadMethod . "' is not supported.");
             }

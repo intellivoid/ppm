@@ -7,6 +7,7 @@
     use ArrayIterator;
     use ppm\Classes\DirectoryScanner\Exception;
     use ppm\Exceptions\ApplicationException;
+    use ppm\Exceptions\CollectorException;
     use ppm\Exceptions\Config;
     use ppm\Utilities\CLI;
     use SplFileInfo;
@@ -34,7 +35,7 @@
         /**
          * @return bool|int
          * @throws ApplicationException
-         * @throws Exception
+         * @throws Exception|CollectorException
          */
         public function run()
         {
@@ -63,14 +64,15 @@
             $code = $builder->render($template);
             if ($this->config->isLintMode())
             {
-                return $this->runLint($code);
+                $this->runLint($code);
             }
-            return $this->runSaver($code);
+            return $this->runSaver($code, $result);
         }
 
         /**
          * @return CollectorResult
          * @throws Exception
+         * @throws CollectorException
          */
         private function runCollector() 
         {
@@ -102,26 +104,54 @@
             return $collector->getResult();
         }
 
-        private function runSaver($code)
+        private function unitStaticRender(CollectorResult $result): string
+        {
+            $template = file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . "templates" . DIRECTORY_SEPARATOR . "unit.php.tpl");
+            $index = "";
+
+            foreach($result->getUnitFiles() as $unitFile)
+            {
+                $index .= "require_once \"$unitFile\";\n";
+            }
+
+            return  str_ireplace("___UNITLIST___", $index, $template);
+        }
+
+        private function runSaver($code, CollectorResult $result)
         {
             $output = $this->config->getOutputFile();
+            $unit_output = $output . "_UNITS";
             if (!$this->config->isPharMode())
             {
-                if ($output === 'STDOUT') {
-                    // TODO: Update this
+                if ($output === 'STDOUT')
+                {
                     CLI::logEvent("\n");
                     echo $code;
                     CLI::logEvent("\n\n");
                     return 0;
                 }
 
+                if(count($result->getUnitFiles()) > 0)
+                {
+                    $unit_static_code = $this->unitStaticRender($result);
+                    $unit_output_written = @file_put_contents($unit_output, $unit_static_code);
+
+                    if ($unit_output_written != strlen($unit_static_code))
+                    {
+                        CLI::logError("Writing to file '$unit_static_code' failed.");
+                        return 1;
+                    }
+
+                    CLI::logEvent("Unit file {$unit_output} generated.");
+                }
+
                 // @codingStandardsIgnoreStart
-                $written = @file_put_contents($output, $code);
+                $output_written = @file_put_contents($output, $code);
 
                 // @codingStandardsIgnoreEnd
-                if ($written != strlen($code))
+                if ($output_written != strlen($code))
                 {
-                    CLI::logEvent("Writing to file '$output' failed.", STDERR);
+                    CLI::logError("Writing to file '$output' failed.");
                     return 1;
                 }
 

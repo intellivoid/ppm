@@ -27,4 +27,13 @@
          */
         const Indexed = "indexed";
 
+        /**
+         * Generates a static autoloader during the installation process of the package
+         * which will be executed upon importing the package
+         *
+         * Can be slow for large packages, doesn't require you to manually list all
+         * components in the correct order. This will affect all PHP files and not just
+         * the files defined in components.
+         */
+        const GeneratedStatic = "generated_static";
     }

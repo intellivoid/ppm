@@ -40,6 +40,11 @@
         /**
          * @var array
          */
+        private $unitFiles = array();
+
+        /**
+         * @var array
+         */
         private $duplicates = array();
 
         public function __construct(array $whitelist, array $blacklist)
@@ -57,8 +62,11 @@
         {
             if (!$result->hasUnits())
             {
+                $filename = $file->getRealPath();
+                $this->unitFiles[] = $filename;
                 return;
             }
+
             $filename = $file->getRealPath();
             $this->seenFiles[$filename] = true;
 
@@ -137,6 +145,14 @@
         public function getDuplicates()
         {
             return $this->duplicates;
+        }
+
+        /**
+         * @return array
+         */
+        public function getUnitFiles(): array
+        {
+            return $this->unitFiles;
         }
 
     }

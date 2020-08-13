@@ -273,7 +273,7 @@
                 '___CREATED___'   => date( $this->dateformat, $this->timestamp ? $this->timestamp : time()),
                 '___CLASSLIST___' => join( ',' . $this->linebreak . $this->indent, $entries),
                 '___BASEDIR___'   => $baseDir,
-                '___AUTOLOAD___'  => 'autoload' . md5(serialize($entries)),
+                '___AUTOLOAD___'  => 'ppm' . md5(serialize($entries)),
                 '___EXCEPTION___' => $this->throwExceptions ? 'true' : 'false',
                 '___PREPEND___'   => $this->usePrepend ? 'true' : 'false'
             ));
