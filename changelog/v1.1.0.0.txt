@@ -2,6 +2,7 @@ This update introduces a lot of improvements and new features
 
  - Added DirectoryScanner Class, ported from theseer
  - Added AutoloaderBuilder port from composer
+ - Updated PHPDoc for AutoloadMethod.php explaining the purpose of the autoloading method and the cons
 
 Updating PPM from 1.0.0.+ to 1.1.0.0 simply requires you to run the installer, previous package installations/packages
 will be backwards compatible with this version and it will work as expected.
