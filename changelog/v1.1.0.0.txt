@@ -7,6 +7,7 @@ This update introduces a lot of improvements and new features
  - Added autoload method "generated_spl" (StandardPhpLibrary)
  - Added unit autoload generator
  - Changed import logic to import dependencies first before importing the requested package
+ - Updated --clear-cache command to clear the build and repo cache folders
 
 Updating PPM from 1.0.0.+ to 1.1.0.0 simply requires you to run the installer, previous package installations/packages
 will be backwards compatible with this version and it will work as expected.

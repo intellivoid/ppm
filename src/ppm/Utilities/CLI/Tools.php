@@ -276,6 +276,12 @@
             IO::deleteDirectory(PathFinder::getCachePath());
             PathFinder::getCachePath(true);
 
+            CLI::logEvent("Clearing build cache");
+            IO::deleteDirectory(PathFinder::getBuildPath(false));
+
+            CLI::logEvent("Clearing repo cache");
+            IO::deleteDirectory(PathFinder::getRemoteRepoPath(false));
+
             CLI::logEvent("Success");
         }
     }
