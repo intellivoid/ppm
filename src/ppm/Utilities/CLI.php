@@ -205,7 +205,7 @@
             print("\033[37m     Removes a GitHub personal access key" . PHP_EOL . PHP_EOL);
 
             print("\033[37m \033[33m--clear-cache" . PHP_EOL);
-            print("\033[37m     Removes a GitHub personal access key" . PHP_EOL);
+            print("\033[37m     Clears PPM cache from disk" . PHP_EOL);
         }
 
         /**
