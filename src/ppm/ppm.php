@@ -12,13 +12,6 @@
     use ppm\Utilities\System;
     use PpmZiProto\ZiProto;
 
-    // Directory Scanner
-    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "DirectoryScanner" . DIRECTORY_SEPARATOR . "Exception.php");
-    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "DirectoryScanner" . DIRECTORY_SEPARATOR . "PHPFilterIterator.php");
-    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "DirectoryScanner" . DIRECTORY_SEPARATOR . "FilesOnlyFilterIterator.php");
-    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "DirectoryScanner" . DIRECTORY_SEPARATOR . "IncludeExcludeFilterIterator.php");
-    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "DirectoryScanner" . DIRECTORY_SEPARATOR . "DirectoryScanner.php");
-
     // Core
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Interfaces" . DIRECTORY_SEPARATOR . "HtmlString.php");
 
@@ -34,7 +27,14 @@
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "ObjectHelpers.php");
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "Strings.php");
 
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Exceptions" . DIRECTORY_SEPARATOR . "ApplicationException.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Exceptions" . DIRECTORY_SEPARATOR . "AutoloadBuilderException.php");
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Exceptions" . DIRECTORY_SEPARATOR . "AutoloaderException.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Exceptions" . DIRECTORY_SEPARATOR . "CacheException.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Exceptions" . DIRECTORY_SEPARATOR . "ClassDependencySorterException.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Exceptions" . DIRECTORY_SEPARATOR . "CollectorException.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Exceptions" . DIRECTORY_SEPARATOR . "CollectorResultException.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Exceptions" . DIRECTORY_SEPARATOR . "ComposerIteratorException.php");
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Exceptions" . DIRECTORY_SEPARATOR . "GithubPersonalAccessTokenAlreadyExistsException.php");
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Exceptions" . DIRECTORY_SEPARATOR . "GithubPersonalAccessTokenNotFoundException.php");
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Exceptions" . DIRECTORY_SEPARATOR . "InvalidArgumentException.php");
@@ -50,6 +50,7 @@
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Exceptions" . DIRECTORY_SEPARATOR . "MissingPackagePropertyException.php");
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Exceptions" . DIRECTORY_SEPARATOR . "NotSupportedException.php");
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Exceptions" . DIRECTORY_SEPARATOR . "PackageNotFoundException.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Exceptions" . DIRECTORY_SEPARATOR . "ParserException.php");
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Exceptions" . DIRECTORY_SEPARATOR . "PathNotFoundException.php");
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Exceptions" . DIRECTORY_SEPARATOR . "RegexpException.php");
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Exceptions" . DIRECTORY_SEPARATOR . "UnexpectedValueException.php");
@@ -87,8 +88,40 @@
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Utilities" . DIRECTORY_SEPARATOR . "System.php");
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Utilities" . DIRECTORY_SEPARATOR . "Validate.php");
 
+    // Directory Scanner
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "DirectoryScanner" . DIRECTORY_SEPARATOR . "Exception.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "DirectoryScanner" . DIRECTORY_SEPARATOR . "PHPFilterIterator.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "DirectoryScanner" . DIRECTORY_SEPARATOR . "FilesOnlyFilterIterator.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "DirectoryScanner" . DIRECTORY_SEPARATOR . "IncludeExcludeFilterIterator.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "DirectoryScanner" . DIRECTORY_SEPARATOR . "DirectoryScanner.php");
+
+    // Autoloader Builder
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "AutoloaderBuilder" . DIRECTORY_SEPARATOR . "ParserInterface.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "AutoloaderBuilder" . DIRECTORY_SEPARATOR . "StaticListRenderer.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "AutoloaderBuilder" . DIRECTORY_SEPARATOR . "Application.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "AutoloaderBuilder" . DIRECTORY_SEPARATOR . "AutoloadRenderer.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "AutoloaderBuilder" . DIRECTORY_SEPARATOR . "Cache.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "AutoloaderBuilder" . DIRECTORY_SEPARATOR . "CacheEntry.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "AutoloaderBuilder" . DIRECTORY_SEPARATOR . "CacheWarmingListRenderer.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "AutoloaderBuilder" . DIRECTORY_SEPARATOR . "CachingParser.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "AutoloaderBuilder" . DIRECTORY_SEPARATOR . "ClassDependencySorter.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "AutoloaderBuilder" . DIRECTORY_SEPARATOR . "Collector.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "AutoloaderBuilder" . DIRECTORY_SEPARATOR . "CollectorResult.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "AutoloaderBuilder" . DIRECTORY_SEPARATOR . "ComposerIterator.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "AutoloaderBuilder" . DIRECTORY_SEPARATOR . "Config.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "AutoloaderBuilder" . DIRECTORY_SEPARATOR . "Factory.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "AutoloaderBuilder" . DIRECTORY_SEPARATOR . "Parser.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "AutoloaderBuilder" . DIRECTORY_SEPARATOR . "ParseResult.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "AutoloaderBuilder" . DIRECTORY_SEPARATOR . "PathComparator.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "AutoloaderBuilder" . DIRECTORY_SEPARATOR . "PharBuilder.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "AutoloaderBuilder" . DIRECTORY_SEPARATOR . "SourceFile.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "AutoloaderBuilder" . DIRECTORY_SEPARATOR . "StaticRenderer.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "AutoloaderBuilder" . DIRECTORY_SEPARATOR . "StaticRequireListRenderer.php");
+
+    // API
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "functions.php");
 
+    // Dependencies
     if(class_exists("PpmParser\Parser") == false)
     {
         include_once(__DIR__ . DIRECTORY_SEPARATOR . "PpmParser" . DIRECTORY_SEPARATOR . "PpmParser.php");
@@ -99,6 +132,7 @@
         include_once(__DIR__ . DIRECTORY_SEPARATOR . "PpmZiProto" . DIRECTORY_SEPARATOR . "ZiProto.php");
     }
 
+    // Define PPM definitions
     if(defined("PPM") == false)
     {
         $ppm_info_path = __DIR__ . DIRECTORY_SEPARATOR . "ppm.json";
