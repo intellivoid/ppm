@@ -4,10 +4,12 @@
     namespace ppm\Classes\AutoloaderBuilder;
 
 
+    use Iterator;
     use ppm\Classes\DirectoryScanner\PHPFilterIterator;
     use ppm\Exceptions\CollectorException;
     use ppm\Exceptions\CollectorResultException;
     use ppm\Exceptions\ParserException;
+    use SplFileInfo;
 
     /**
      * Class Collector
@@ -58,7 +60,7 @@
             return $this->collectorResult;
         }
 
-        public function processDirectory(\Iterator $sources)
+        public function processDirectory(Iterator $sources)
         {
             $worker = $this->trustingMode ? $sources : new PHPFilterIterator($sources);
             foreach($worker as $file)
@@ -67,7 +69,7 @@
             }
         }
 
-        public function processFile(\SplFileInfo $file)
+        public function processFile(SplFileInfo $file)
         {
             if ($this->collectorResult->hasResultFor($file))
             {

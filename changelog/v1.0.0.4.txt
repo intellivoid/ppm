@@ -2,7 +2,7 @@ This update introduces optimizations and bug fixes
 
  - The import function will now recursively import dependencies
  - PPM Will store the package lock configuration in memory rather than loading it each time from disk
- - Already-imported warnings are supressed by default
+ - Already-imported warnings are suppressed by default
 
 Updating PPM from 1.0.0.+ to 1.0.0.4 simply requires you to run the installer, previous package installations/packages
 will be backwards compatible with this version and it will work as expected.

@@ -3,6 +3,7 @@
     namespace ppm\Exceptions;
 
     use InvalidArgumentException;
+    use ppm\Classes\AutoloaderBuilder\ComposerIterator;
     use ppm\Classes\AutoloaderBuilder\PathComparator;
     use SplFileInfo;
 

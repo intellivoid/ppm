@@ -10,7 +10,7 @@
 #          https://github.com/intellivoid/ppm
 #
 # Dependency:
-#     PHP 7.*
+#     PHP 7.2+
 # ------------------------------------------------------------------
 
 # Global Variables
