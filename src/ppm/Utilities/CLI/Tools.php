@@ -194,6 +194,7 @@
             $Package->Files = [];
             foreach(self::discoverFiles($path) as $file)
             {
+                CLI::logVerboseEvent("Found " . $file_path);
                 $Package->Files[] = $file;
             }
 
@@ -214,6 +215,7 @@
          */
         public static function discoverComponents(string $path): array
         {
+            CLI::logVerboseEvent("Discovering components started");
             $di = new RecursiveDirectoryIterator($path, RecursiveDirectoryIterator::SKIP_DOTS);
             $it = new RecursiveIteratorIterator($di);
             $results = [];
@@ -222,6 +224,7 @@
             {
                 if (pathinfo($file, PATHINFO_EXTENSION) == "php")
                 {
+                    CLI::logVerboseEvent("Found " . $file);
                     $results[] = str_ireplace($path . DIRECTORY_SEPARATOR, "", $file);
                 }
             }
@@ -237,6 +240,7 @@
          */
         public static function discoverFiles(string $path): array
         {
+            CLI::logVerboseEvent("Discovering files started");
             $di = new RecursiveDirectoryIterator($path, RecursiveDirectoryIterator::SKIP_DOTS);
             $it = new RecursiveIteratorIterator($di);
             $results = [];
@@ -247,6 +251,7 @@
                 {
                     if(is_dir($file) == false)
                     {
+                        CLI::logVerboseEvent("Found " . $file);
                         $results[] = str_ireplace($path . DIRECTORY_SEPARATOR, "", $file);
                     }
                 }

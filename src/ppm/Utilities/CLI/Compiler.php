@@ -5,6 +5,7 @@
 
 
     use Exception;
+    use ppm\Abstracts\CompilerFlags;
     use ppm\Objects\Package;
     use ppm\Objects\Package\Component;
     use ppm\Objects\Source;
@@ -19,6 +20,46 @@
      */
     class Compiler
     {
+        /**
+         * Gets the linting flag state
+         *
+         * @return int
+         */
+        public static function getLintingFlag(): int
+        {
+            if(in_array(CompilerFlags::LintingWarning, CLI::$CompilerFlags))
+            {
+                return CompilerFlags::LintingWarning;
+            }
+
+            if(in_array(CompilerFlags::LintingError, CLI::$CompilerFlags))
+            {
+                return CompilerFlags::LintingError;
+            }
+
+            return CompilerFlags::LintingWarning;
+        }
+
+        /**
+         * Gets the byte compiler state
+         *
+         * @return int
+         */
+        public static function getByteCompilingFlag(): int
+        {
+            if(in_array(CompilerFlags::ByteCompilerWarning, CLI::$CompilerFlags))
+            {
+                return CompilerFlags::ByteCompilerWarning;
+            }
+
+            if(in_array(CompilerFlags::ByteCompilerError, CLI::$CompilerFlags))
+            {
+                return CompilerFlags::ByteCompilerError;
+            }
+
+            return CompilerFlags::ByteCompilerWarning;
+        }
+
         /**
          * Compiles package from source
          *
@@ -36,6 +77,7 @@
             try
             {
                 $path = self::findSource($path);
+                CLI::logVerboseEvent("Source path => " . $path);
                 $Source = Source::loadSource($path);
             }
             catch (Exception $e)
@@ -48,7 +90,7 @@
             self::validatePackage($Source->Package);
 
             CLI::logEvent("Compiling components");
-            $CompiledComponents = $Source->compileComponents(true);
+            $CompiledComponents = $Source->compileComponents();
 
             CLI::logEvent("Packing extras");
             $PostInstallation = array();
@@ -64,6 +106,10 @@
                 $Component->BaseDirectory = $Source->Path;
                 $Component->File = $script;
 
+                CLI::logVerboseEvent("== Post Installation Script ==");
+                CLI::logVerboseEvent("Base Directory => " . $Component->BaseDirectory);
+                CLI::logVerboseEvent("File => " . $Component->File);
+
                 if(file_exists($Component->getPath()) == false)
                 {
                     CLI::logError("Cannot find PostInstallation script '" . $Component->getPath() . "'");
@@ -72,6 +118,7 @@
 
                 $file_hash = hash("sha1", $script);
                 $PostInstallation[$file_hash] = file_get_contents($Component->getPath());
+                CLI::logVerboseEvent("Script hash sha1 => " . $file_hash);
             }
 
             // Process Pre Installation scripts
@@ -82,6 +129,10 @@
                 $Component->BaseDirectory = $Source->Path;
                 $Component->File = $script;
 
+                CLI::logVerboseEvent("== Pre Installation Script ==");
+                CLI::logVerboseEvent("Base Directory => " . $Component->BaseDirectory);
+                CLI::logVerboseEvent("File => " . $Component->File);
+
                 if(file_exists($Component->getPath()) == false)
                 {
                     CLI::logError("Cannot find PreInstallation script '" . $Component->getPath() . "'");
@@ -90,6 +141,7 @@
 
                 $file_hash = hash("sha1", $script);
                 $PreInstallation[$file_hash] = file_get_contents($Component->getPath());
+                CLI::logVerboseEvent("Script hash sha1 => " . $file_hash);
             }
 
             if($Source->Package->Configuration->Main !== null)
@@ -100,6 +152,10 @@
                 $Component = new Component();
                 $Component->BaseDirectory = $Source->Path;
                 $Component->File = $Source->Package->Configuration->Main->ExecutionPoint;
+
+                CLI::logVerboseEvent("== Main Execution Point ==");
+                CLI::logVerboseEvent("Base Directory => " . $Component->BaseDirectory);
+                CLI::logVerboseEvent("File => " . $Component->File);
 
                 if(file_exists($Component->getPath()) == false)
                 {
@@ -249,26 +305,31 @@
          */
         public static function validatePackage(Package $package)
         {
+            CLI::logVerboseEvent("Validating metadata entry 'package_name'");
             if(Validate::PackageName($package->Metadata->PackageName) == false)
             {
                 CLI::logError("The package name is invalid, it must follow the convention as follows; 'com.example.package_name'");
                 exit(255);
             }
 
+            CLI::logVerboseEvent("Validating metadata entry 'name'");
             if(Validate::UserFriendlyPackageName($package->Metadata->Name) == false)
             {
                 CLI::logError("The package friendly name is invalid, it must be 64 characters or less");
                 exit(255);
             }
 
+            CLI::logVerboseEvent("Validating metadata entry 'version'");
             if(Validate::Version($package->Metadata->Version) == false)
             {
                 CLI::logError("The package name is invalid, it must follow the convention as follows; 'Major.Minor.Build.Revision'");
                 exit(255);
             }
 
+            CLI::logVerboseEvent("Validating metadata entry 'description'");
             if(strlen($package->Metadata->Description) == 0)
             {
+                CLI::logWarning("This package metadata contains no description");
                 $package->Metadata->Description = null;
             }
             else
@@ -280,8 +341,10 @@
                 }
             }
 
+            CLI::logVerboseEvent("Validating metadata entry 'author'");
             if(strlen($package->Metadata->Author) == 0)
             {
+                CLI::logWarning("The package metadata contains no author");
                 $package->Metadata->Author = null;
             }
             else
@@ -293,8 +356,10 @@
                 }
             }
 
+            CLI::logVerboseEvent("Validating metadata entry 'organization'");
             if(strlen($package->Metadata->Organization) == 0)
             {
+                CLI::logWarning("The package metadata contains no organization");
                 $package->Metadata->Organization = null;
             }
             else
@@ -306,8 +371,10 @@
                 }
             }
 
+            CLI::logVerboseEvent("Validating metadata entry 'url'");
             if(strlen($package->Metadata->URL) == 0)
             {
+                CLI::logWarning("The package metadata contains no URL");
                 $package->Metadata->URL = null;
             }
             else

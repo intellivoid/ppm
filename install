@@ -57,6 +57,11 @@ fi
 
 ln -s "${PPM_INSTALL_DIRECTORY}/ppm.sh" "${USER_BIN}/ppm"
 
+# Install composer alongside PPM
+echo "Installing composer"
+php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+php composer-setup.php --install-dir="${PPM_INSTALL_DIRECTORY}"
+php -r "unlink('composer-setup.php');"
 
 # Install the pear extension
 cd src/pear

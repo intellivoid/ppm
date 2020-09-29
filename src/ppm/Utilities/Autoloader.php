@@ -85,6 +85,8 @@
             $autoloader = $package_path . DIRECTORY_SEPARATOR . '.ppm' . DIRECTORY_SEPARATOR . 'AUTOLOADER';
             $alb_factory = new Factory();
 
+            CLI::logVerboseEvent("Generating a static autoloader to " . $autoloader);
+
             // Setup the configuration
             $config = new Config([$package_path]);
             $config->setOutputFile($autoloader);
@@ -110,6 +112,8 @@
         {
             $autoloader = $package_path . DIRECTORY_SEPARATOR . '.ppm' . DIRECTORY_SEPARATOR . 'AUTOLOADER';
             $alb_factory = new Factory();
+
+            CLI::logVerboseEvent("Generating a standard autoloader to " . $autoloader);
 
             // Setup the configuration
             $config = new Config([$package_path]);

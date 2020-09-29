@@ -1,0 +1,3 @@
+This update introduces more compiler options and allows PPM to generate autoloader files for debugging purposes and
+introduces the ability to install composer packages as PPM packages by compiling the packages automatically using
+a generated SPL file.

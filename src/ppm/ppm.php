@@ -16,6 +16,7 @@
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Interfaces" . DIRECTORY_SEPARATOR . "HtmlString.php");
 
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Abstracts" . DIRECTORY_SEPARATOR . "AutoloadMethod.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Abstracts" . DIRECTORY_SEPARATOR . "CompilerFlags.php");
 
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "AutoIndexer.php");
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "Callback.php");
@@ -202,26 +203,31 @@
          */
         public static function getPackageLock(bool $force_update=false): PackageLock
         {
+            CLI::logVerboseEvent("Getting package lock");
             if($force_update == false)
             {
                 if(self::$packageLockCacheEnabled)
                 {
                     if(self::$packageLockCache !== null)
                     {
+                        CLI::logVerboseEvent("Package lock loaded from memory");
                         return self::$packageLockCache;
                     }
                 }
             }
 
             $path = PathFinder::getPackageLockPath(true);
+            CLI::logVerboseEvent("Package lock path: " . $path);
 
             if(file_exists($path) == false)
             {
+                CLI::logVerboseEvent("Package lock doesn't exist, creating it");
                 $PackageLock = new PackageLock();
                 file_put_contents($path, ZiProto::encode($PackageLock->toArray()));
                 return $PackageLock;
             }
 
+            CLI::logVerboseEvent("Package lock saved in memory cache");
             self::$packageLockCache = PackageLock::fromArray(ZiProto::decode(file_get_contents($path)));
             return self::$packageLockCache;
         }
@@ -234,6 +240,7 @@
         public static function savePackageLock(PackageLock $packageLock): bool
         {
             $path = PathFinder::getPackageLockPath(true);
+            CLI::logVerboseEvent("Writing package lock to " . $path);
 
             $contents = ZiProto::encode($packageLock->toArray());
             file_put_contents($path, $contents);

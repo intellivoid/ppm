@@ -4,6 +4,7 @@
     namespace ppm\Utilities;
 
     use Exception;
+    use ppm\Abstracts\CompilerFlags;
     use ppm\Exceptions\InvalidPackageLockException;
     use ppm\Exceptions\VersionNotFoundException;
     use ppm\Utilities\CLI\Compiler;
@@ -24,6 +25,20 @@
          * @var bool
          */
         public static $VerboseMode = false;
+
+        /**
+         * When enabled, printing functions will stream data to stdout
+         *
+         * @var bool
+         */
+        public static $Stdout = false;
+
+        /**
+         * The current flags set for the compiler
+         *
+         * @var array
+         */
+        public static $CompilerFlags = array();
 
         /**
          * Returns CLI options
@@ -49,6 +64,7 @@
                 "uninstall::",
                 "generate-package::",
                 "recreate",
+                "generate-autoloader::",
                 "version::",
                 "package-name::",
                 "name::",
@@ -57,8 +73,14 @@
                 "organization::",
                 "url::",
                 "verbose",
+                "v",
                 "fix-conflict",
-                "clear-cache"
+                "clear-cache",
+
+                "lerror",
+                "lwarning",
+                "bcerror",
+                "bcwarning"
             );
 
             return getopt($options, $long_opts);
@@ -130,10 +152,49 @@
         }
 
         /**
+         * Sets the compiler flags from user-defined or by default
+         */
+        public static function setCompilerFlags()
+        {
+            // Linting flag
+            if(isset(CLI::options()["lerror"]))
+            {
+                self::$CompilerFlags[] = CompilerFlags::LintingError;
+            }
+            elseif(isset(CLI::options()["lwarning"]))
+            {
+                self::$CompilerFlags[] = CompilerFlags::LintingWarning;
+            }
+            else
+            {
+                self::$CompilerFlags[] = CompilerFlags::LintingWarning;
+            }
+
+            // Byte compiling flags
+            if(isset(CLI::options()["bcerror"]))
+            {
+                self::$CompilerFlags[] = CompilerFlags::ByteCompilerError;
+            }
+            elseif(isset(CLI::options()["bcwarning"]))
+            {
+                self::$CompilerFlags[] = CompilerFlags::ByteCompilerWarning;
+            }
+            else
+            {
+                self::$CompilerFlags[] = CompilerFlags::ByteCompilerWarning;
+            }
+        }
+
+        /**
          * Prints out the main CLI Intro
          */
         public static function displayIntro()
         {
+            if(self::$Stdout == false)
+            {
+                return;
+            }
+
             $dark_colors = ['31', '32', '33', '34', '35', '36'];
             $light_colors = ['91', '92', '93', '94', '95', '96'];
 
@@ -164,7 +225,13 @@
          */
         public static function displayHelpMenu()
         {
+            if(self::$Stdout == false)
+            {
+                return;
+            }
+
             self::displayIntro();
+            print("Main options" . PHP_EOL);
             print("\033[37m \033[33m--compile" . PHP_EOL);
             print("\033[37m     Compiles the current PHP library/program from source to a .ppm file" . PHP_EOL);
             print("\033[37m \033[33m--compile\033[37m=\"<path>\"" . PHP_EOL);
@@ -206,6 +273,22 @@
 
             print("\033[37m \033[33m--clear-cache" . PHP_EOL);
             print("\033[37m     Clears PPM cache from disk" . PHP_EOL);
+
+            print("Extra options" . PHP_EOL);
+            print("\033[37m \033[33m--verbose -v" . PHP_EOL);
+            print("\033[37m     Reports logging information in verbose" . PHP_EOL . PHP_EOL);
+
+            print("Compiler flags/options" . PHP_EOL);
+            print("\033[37m \033[33m--alm\e[37m=\"<method>\"" . PHP_EOL);
+            print("\033[37m     Overrides the the autoload generator method" . PHP_EOL);
+            print("\033[37m \033[33m--lerror" . PHP_EOL);
+            print("\033[37m     Treats linting failures as errors which stops the operation" . PHP_EOL);
+            print("\033[37m \033[33m--lwarning" . PHP_EOL);
+            print("\033[37m     Treats linting failures as warnings" . PHP_EOL);
+            print("\033[37m \033[33m--bcerror" . PHP_EOL);
+            print("\033[37m     Treats failure to compile as an error instead of falling to byte compiling" . PHP_EOL);
+            print("\033[37m \033[33m--bcwarning" . PHP_EOL);
+            print("\033[37m     Treats failure to compile as a warning and falls to byte compiling instead" . PHP_EOL);
         }
 
         /**
@@ -216,6 +299,11 @@
          */
         public static function logEvent(string $message, bool $newline=true)
         {
+            if(self::$Stdout == false)
+            {
+                return;
+            }
+
             if($newline)
             {
                 print("\033[33m > \e[37m $message" . PHP_EOL);
@@ -234,6 +322,13 @@
          */
         public static function logVerboseEvent(string $message, bool $newline=true)
         {
+            self::setCompilerFlags();
+
+            if(self::$Stdout == false)
+            {
+                return;
+            }
+
             if(self::$VerboseMode == false)
             {
                 return;
@@ -255,6 +350,11 @@
          */
         public static function logError(string $message, Exception $exception=null)
         {
+            if(self::$Stdout == false)
+            {
+                return;
+            }
+
             print("\e[91m " . $message . "\e[37m" . PHP_EOL);
             if(is_null($exception) == false)
             {
@@ -267,6 +367,11 @@
          */
         public static function logWarning(string $message)
         {
+            if(self::$Stdout == false)
+            {
+                return;
+            }
+
             print("\e[33m WARNING: \e[37m " . $message . "\e[37m" . PHP_EOL);
 
         }
@@ -276,7 +381,14 @@
          */
         public static function start()
         {
+            self::$Stdout = true;
+
             if(isset(self::options()["verbose"]))
+            {
+                self::$VerboseMode = true;
+            }
+
+            if(isset(self::options()["v"]))
             {
                 self::$VerboseMode = true;
             }

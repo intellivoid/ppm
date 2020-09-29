@@ -5,6 +5,7 @@
 
 
     use ArrayIterator;
+    use ppm\Abstracts\CompilerFlags;
     use ppm\Classes\DirectoryScanner\Exception;
     use ppm\Exceptions\ApplicationException;
     use ppm\Exceptions\CollectorException;
@@ -259,7 +260,16 @@
 
             if ($rc == 255)
             {
-                CLI::logError("Syntax errors during lint: " . str_replace('in - on line', 'in generated code on line', $stderr));
+                if(CLI\Compiler::getLintingFlag() == CompilerFlags::LintingError)
+                {
+                    CLI::logError("Syntax errors during lint: " . str_replace('in - on line', 'in generated code on line', $stderr));
+                    exit(255);
+                }
+                else
+                {
+                    CLI::logWarning("Syntax errors during lint: " . str_replace('in - on line', 'in generated code on line', $stderr));
+                }
+
                 return 4;
             }
 
