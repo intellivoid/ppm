@@ -4,6 +4,7 @@
     namespace ppm;
 
 
+    use Exception;
     use ppm\Classes\AutoIndexer;
     use ppm\Exceptions\PackageNotFoundException;
     use ppm\Objects\PackageLock;
@@ -377,6 +378,14 @@
     {
         if(isset(CLI::options()["ppm"]))
         {
-            CLI::start();
+            try
+            {
+                CLI::start();
+            }
+            catch(Exception $e)
+            {
+                CLI::logError("There was an unexpected error with PPM", $e);
+                exit(128);
+            }
         }
     }

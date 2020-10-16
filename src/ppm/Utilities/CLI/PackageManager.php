@@ -91,7 +91,7 @@
                     catch (Exception $e)
                     {
                         CLI::logError("Remote source parsing failed", $e);
-                        exit(255);
+                        exit(1);
                     }
 
                     self::$installedSources[] = strtolower($path);
@@ -131,7 +131,7 @@
                     catch (Exception $e)
                     {
                         CLI::logError("Remote source parsing failed", $e);
-                        exit(255);
+                        exit(1);
                     }
 
                     self::$installedSources[] = strtolower($path);
@@ -151,7 +151,7 @@
             if(file_exists($path) == false)
             {
                 CLI::logError("The path '$path' does not exist");
-                exit(255);
+                exit(1);
             }
 
             try
@@ -161,13 +161,13 @@
             catch(Exception $e)
             {
                 CLI::logError("The package cannot be opened correctly, the file may corrupted");
-                exit(255);
+                exit(1);
             }
 
             if(isset($PackageContents['package']) == false)
             {
                 CLI::logError("This package is missing information, is this a ppm package?");
-                exit(255);
+                exit(1);
             }
 
             try
@@ -177,19 +177,19 @@
             catch (Exception $e)
             {
                 CLI::logError("There was an error while trying to read the package information", $e);
-                exit(255);
+                exit(1);
             }
 
             if(System::isRoot() == false)
             {
                 CLI::logError("This operation requires root privileges, please run ppm with 'sudo -H'");
-                exit(255);
+                exit(1);
             }
 
             if(IO::writeTest(PathFinder::getMainPath(true)) == false)
             {
                 CLI::logError("Write test failed, cannot write to the PPM installation directory");
-                exit(255);
+                exit(1);
             }
 
             if(self::optionIsSet($options, "no_details") == false)
@@ -225,7 +225,7 @@
                 if(CLI::getBooleanInput("Do you want to install this package?") == false)
                 {
                     CLI::logError("Installation denied, aborting.");
-                    exit(255);
+                    exit(1);
                 }
             }
 
@@ -246,18 +246,18 @@
                     catch (InvalidPackageLockException $e)
                     {
                         CLI::logError("Invalid package lock error", $e);
-                        exit(255);
+                        exit(1);
                     }
                     catch (VersionNotFoundException $e)
                     {
                         CLI::logError("Unexpected error, probably a bug. The package manager reports that the version of this package wasn't found.", $e);
-                        exit(255);
+                        exit(1);
                     }
                 }
                 else
                 {
                     CLI::logError("Installation failed, the package " . $package_name . "==" . $package_version . " is already satisfied");
-                    exit(255);
+                    exit(1);
                 }
             }
 
@@ -338,7 +338,7 @@
                         if($dependency->Required)
                         {
                             CLI::logError("Installation failed, This package requires the dependency '\e[37m" . $dependency->Package . "==\e[32m" .  $dependency->Version . "\e[91m' which is not installed");
-                            exit(255);
+                            exit(1);
                         }
                         else
                         {
@@ -516,17 +516,17 @@
                     catch (\ppm\Classes\DirectoryScanner\Exception $e)
                     {
                         CLI::logError("Directory scanner exception raised", $e);
-                        exit(255);
+                        exit(1);
                     }
                     catch (ApplicationException $e)
                     {
                         CLI::logError("Application exception raised", $e);
-                        exit(255);
+                        exit(1);
                     }
                     catch (CollectorException $e)
                     {
                         CLI::logError("Collector exception raised", $e);
-                        exit(255);
+                        exit(1);
                     }
                     break;
 
@@ -540,17 +540,17 @@
                     catch (\ppm\Classes\DirectoryScanner\Exception $e)
                     {
                         CLI::logError("Directory scanner exception raised", $e);
-                        exit(255);
+                        exit(1);
                     }
                     catch (ApplicationException $e)
                     {
                         CLI::logError("Application exception raised", $e);
-                        exit(255);
+                        exit(1);
                     }
                     catch (CollectorException $e)
                     {
                         CLI::logError("Collector exception raised", $e);
-                        exit(255);
+                        exit(1);
                     }
                     break;
 
@@ -582,7 +582,7 @@
                         if(file_exists($ShellPath) == false)
                         {
                             CLI::logError("The symbolic link cannot be registered onto the system because the name '" . $MainExecutionConfiguration->Name . "' is already used by another program");
-                            exit(255);
+                            exit(1);
                         }
                     }
 
@@ -657,13 +657,13 @@
             if(System::isRoot() == false)
             {
                 CLI::logError("This operation requires root privileges, please run ppm with 'sudo -H'");
-                exit(255);
+                exit(1);
             }
 
             if(IO::writeTest(PathFinder::getMainPath(true)) == false)
             {
                 CLI::logError("Write test failed, cannot write to the PPM installation directory");
-                exit(255);
+                exit(1);
             }
 
             $wrapper = Wrapper::create(__DIR__);
@@ -710,7 +710,7 @@
             if(file_exists($composer_lock_path) == false)
             {
                 CLI::logError("The composer.lock file cannot be found, aborting operation");
-                exit(255);
+                exit(1);
             }
 
             $composer_lock = Factory::parse($composer_lock_path);
@@ -767,7 +767,7 @@
             if($packageLockItem == null)
             {
                 CLI::logError("The installation failed because the composer.lock file does not contain information about '" . $composerSource->getPackageName() . "'");
-                exit(255);
+                exit(1);
             }
 
             CLI::logEvent("Generating package");
@@ -850,19 +850,19 @@
             catch (GithubPersonalAccessTokenNotFoundException $e)
             {
                 CLI::logError("The alias is not registered in the Github vault, run 'ppm --github-add-pat'");
-                exit(255);
+                exit(1);
             }
 
             if(System::isRoot() == false)
             {
                 CLI::logError("This operation requires root privileges, please run ppm with 'sudo -H'");
-                exit(255);
+                exit(1);
             }
 
             if(IO::writeTest(PathFinder::getMainPath(true)) == false)
             {
                 CLI::logError("Write test failed, cannot write to the PPM installation directory");
-                exit(255);
+                exit(1);
             }
 
             $clone_destination = PathFinder::getRemoteRepoPath(true) . DIRECTORY_SEPARATOR . $githubSource->toHash();
@@ -881,7 +881,7 @@
             catch (Exception $e)
             {
                 CLI::logError("Clone failed", $e);
-                exit(255);
+                exit(1);
             }
 
             try
@@ -892,7 +892,7 @@
             catch (Exception $e)
             {
                 CLI::logError("Checkout failed", $e);
-                exit(255);
+                exit(1);
             }
 
             $source_directory = Compiler::findSource($clone_destination);
@@ -919,7 +919,7 @@
             if(count($PackageLock->Packages) == 0)
             {
                 CLI::logError("There are no installed PPM packages");
-                exit(255);
+                exit(1);
             }
 
             /** @var PackageLockItem $packageLockItem */
@@ -944,13 +944,13 @@
             catch (InvalidPackageLockException $e)
             {
                 CLI::logError("Package lock error", $e);
-                exit(255);
+                exit(1);
             }
 
             if(count($PackageLock->Packages) == 0)
             {
                 CLI::logError("There are no installed PPM packages");
-                exit(255);
+                exit(1);
             }
 
             /** @var PackageLockItem $packageLockItem */
@@ -963,12 +963,12 @@
                 catch (InvalidPackageLockException $e)
                 {
                     CLI::logError("Package lock error", $e);
-                    exit(255);
+                    exit(1);
                 }
                 catch (VersionNotFoundException $e)
                 {
                     CLI::logError("Unexpected error, probably a bug. The package manager reports that a version of the package " . $packageLockItem->PackageName . " wasn't found.", $e);
-                    exit(255);
+                    exit(1);
                 }
             }
         }
@@ -986,19 +986,19 @@
             if($PackageLock->packageExists($package, "latest") == false)
             {
                 CLI::logError("The package $package is not installed");
-                exit(255);
+                exit(1);
             }
 
             if(System::isRoot() == false)
             {
                 CLI::logError("This operation requires root privileges, please run ppm with 'sudo -H'");
-                exit(255);
+                exit(1);
             }
 
             if(IO::writeTest(PathFinder::getMainPath(true)) == false)
             {
                 CLI::logError("Write test failed, cannot write to the PPM installation directory");
-                exit(255);
+                exit(1);
             }
 
             $UpdateSourcePath = null;
@@ -1040,7 +1040,7 @@
                 if($hard_failure)
                 {
                     CLI::logError("The package '$package' cannot be updated (No remote source)");
-                    exit(255);
+                    exit(1);
                 }
                 else
                 {
@@ -1076,7 +1076,7 @@
                     catch (Exception $e)
                     {
                         CLI::logError("Remote source parsing failed (Assumed github)", $e);
-                        exit(255);
+                        exit(1);
                     }
 
                     self::$installedSources[] = strtolower($UpdateSource);
@@ -1115,7 +1115,7 @@
                     catch (Exception $e)
                     {
                         CLI::logError("Remote source parsing failed", $e);
-                        exit(255);
+                        exit(1);
                     }
 
                     $options = [
@@ -1153,25 +1153,25 @@
                 if($version == "all" || $version == "latest")
                 {
                     CLI::logError("The package $package is not installed");
-                    exit(255);
+                    exit(1);
                 }
                 else
                 {
                     CLI::logError("The package $package==$version is not installed");
-                    exit(255);
+                    exit(1);
                 }
             }
 
             if(System::isRoot() == false)
             {
                 CLI::logError("This operation requires root privileges, please run ppm with 'sudo -H'");
-                exit(255);
+                exit(1);
             }
 
             if(IO::writeTest(PathFinder::getMainPath(true)) == false)
             {
                 CLI::logError("Write test failed, cannot write to the PPM installation directory");
-                exit(255);
+                exit(1);
             }
 
             if($prompt)
@@ -1181,7 +1181,7 @@
                     if(CLI::getBooleanInput("You are about to uninstall all versions of $package, do you want to continue?") == false)
                     {
                         CLI::logError("Installation denied, aborting.");
-                        exit(255);
+                        exit(1);
                     }
                 }
                 elseif($version == "latest")
@@ -1189,7 +1189,7 @@
                     if(CLI::getBooleanInput("You are about to uninstall the latest version of $package, do you want to continue?") == false)
                     {
                         CLI::logError("Installation denied, aborting.");
-                        exit(255);
+                        exit(1);
                     }
                 }
                 else
@@ -1197,7 +1197,7 @@
                     if(CLI::getBooleanInput("You are about to uninstall $package==$version, do you want to continue?") == false)
                     {
                         CLI::logError("Installation denied, aborting.");
-                        exit(255);
+                        exit(1);
                     }
                 }
             }

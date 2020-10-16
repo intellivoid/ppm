@@ -158,7 +158,7 @@
                 else
                 {
                     CLI::logError("The required file path '$autoloader_path' is missing");
-                    exit(255);
+                    exit(1);
                 }
             }
             else

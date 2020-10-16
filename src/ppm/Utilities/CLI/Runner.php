@@ -34,12 +34,12 @@
                 if($version == "all" || $version == "latest")
                 {
                     CLI::logError("The package $package is not installed");
-                    exit(255);
+                    exit(1);
                 }
                 else
                 {
                     CLI::logError("The package $package==$version is not installed");
-                    exit(255);
+                    exit(1);
                 }
             }
 
@@ -50,7 +50,7 @@
             if($version == "all")
             {
                 CLI::logError("The package version 'all' is not applicable to execution");
-                exit(255);
+                exit(1);
             }
             else
             {
@@ -66,7 +66,7 @@
             if($VersionConfiguration->Main == null)
             {
                 CLI::logError("The package $package==$version is not executable");
-                exit(255);
+                exit(1);
             }
 
             $PPM_HolderPath = $PackageLockItem->getPackagePath($version) . DIRECTORY_SEPARATOR . ".ppm";
@@ -75,7 +75,7 @@
             if(file_exists($ExecutionPath) == false)
             {
                 CLI::logError("The main executable '" . $ExecutionPath . "' does not exist");
-                exit(255);
+                exit(1);
             }
 
             $exit_code = 0;

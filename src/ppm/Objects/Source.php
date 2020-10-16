@@ -83,7 +83,7 @@
                         else
                         {
                             CLI::logError("Cannot compile " . $component->File . ", " . json_last_error_msg());
-                            exit(255);
+                            exit(1);
                         }
                     }
                     else
@@ -107,7 +107,7 @@
                     {
                         CLI::logError("Cannot compile " . $component->File, $e);
                         CLI::logWarning("To ignore these compiler errors, pass on the option '--cwarning', aborting.");
-                        exit(255);
+                        exit(1);
                     }
                 }
             }

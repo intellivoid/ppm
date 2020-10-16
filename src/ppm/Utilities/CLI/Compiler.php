@@ -103,7 +103,7 @@
             catch (Exception $e)
             {
                 CLI::logError("There was an error while trying to load from source", $e);
-                exit(255);
+                exit(1);
             }
 
             CLI::logEvent("Validating package");
@@ -141,7 +141,7 @@
                 if(file_exists($Component->getPath()) == false)
                 {
                     CLI::logError("Cannot find PostInstallation script '" . $Component->getPath() . "'");
-                    exit(255);
+                    exit(1);
                 }
 
                 $file_hash = hash("sha1", $script);
@@ -164,7 +164,7 @@
                 if(file_exists($Component->getPath()) == false)
                 {
                     CLI::logError("Cannot find PreInstallation script '" . $Component->getPath() . "'");
-                    exit(255);
+                    exit(1);
                 }
 
                 $file_hash = hash("sha1", $script);
@@ -188,7 +188,7 @@
                 if(file_exists($Component->getPath()) == false)
                 {
                     CLI::logError("Cannot find the main execution pointer file '" . $Component->getPath() . "'");
-                    exit(255);
+                    exit(1);
                 }
 
                 $MainFile = file_get_contents($Component->getPath());;
@@ -204,7 +204,7 @@
                     if(file_exists($file_path) == false)
                     {
                         CLI::logError("Cannot find the file '" . $file_path . "'");
-                        exit(255);
+                        exit(1);
                     }
 
                     $PackedFiles[$file] = file_get_contents($file_path);
@@ -247,7 +247,7 @@
                 if(file_exists($output_directory) == false)
                 {
                     CLI::logError("The directory " . $output_directory . " cannot be created");
-                    exit(255);
+                    exit(1);
                 }
 
                 $output_file = $output_directory . DIRECTORY_SEPARATOR . $compiled_file;
@@ -324,7 +324,7 @@
             }
 
             CLI::logError("Cannot locate package.json file, is this repo built for ppm?");
-            exit(255);
+            exit(1);
         }
 
         /**
@@ -338,21 +338,21 @@
             if(Validate::PackageName($package->Metadata->PackageName) == false)
             {
                 CLI::logError("The package name is invalid, it must follow the convention as follows; 'com.example.package_name'");
-                exit(255);
+                exit(1);
             }
 
             CLI::logVerboseEvent("Validating metadata entry 'name'");
             if(Validate::UserFriendlyPackageName($package->Metadata->Name) == false)
             {
                 CLI::logError("The package friendly name is invalid, it must be 64 characters or less");
-                exit(255);
+                exit(1);
             }
 
             CLI::logVerboseEvent("Validating metadata entry 'version'");
             if(Validate::Version($package->Metadata->Version) == false)
             {
                 CLI::logError("The package name is invalid, it must follow the convention as follows; 'Major.Minor.Build.Revision'");
-                exit(255);
+                exit(1);
             }
 
             CLI::logVerboseEvent("Validating metadata entry 'description'");
@@ -366,7 +366,7 @@
                 if(Validate::Description($package->Metadata->Description) == false)
                 {
                     CLI::logError("The package description is invalid, it must be 1256 characters or less");
-                    exit(255);
+                    exit(1);
                 }
             }
 
@@ -381,7 +381,7 @@
                 if(Validate::Author($package->Metadata->Author) == false)
                 {
                     CLI::logError("The package author is invalid, it must be 1256 characters or less");
-                    exit(255);
+                    exit(1);
                 }
             }
 
@@ -395,7 +395,7 @@
                 if(Validate::Organization($package->Metadata->Organization) == false)
                 {
                     CLI::logError("The package organization is invalid, it must be 1256 characters or less");
-                    exit(255);
+                    exit(1);
                 }
             }
 
@@ -410,7 +410,7 @@
                 if(Validate::Url($package->Metadata->URL) == false)
                 {
                     CLI::logError("The package URL is invalid");
-                    exit(255);
+                    exit(1);
                 }
             }
         }

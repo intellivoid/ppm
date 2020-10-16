@@ -47,7 +47,7 @@
                     if($recreate == false)
                     {
                         CLI::logError("The existing package.json file contains invalid/missing components, correct the error or pass the --recreate parameter", $e);
-                        exit(255);
+                        exit(1);
                     }
                 }
                 catch (InvalidConfigurationException $e)
@@ -55,7 +55,7 @@
                     if($recreate == false)
                     {
                         CLI::logError("The existing package.json file contains a invalid/missing configuration, correct the error or pass the --recreate parameter", $e);
-                        exit(255);
+                        exit(1);
                     }
                 }
                 catch (InvalidDependencyException $e)
@@ -63,7 +63,7 @@
                     if($recreate == false)
                     {
                         CLI::logError("The existing package.json file contains invalid/missing dependencies, correct the error or pass the --recreate parameter", $e);
-                        exit(255);
+                        exit(1);
                     }
                 }
                 catch (InvalidPackageException $e)
@@ -71,7 +71,7 @@
                     if($recreate == false)
                     {
                         CLI::logError("The existing package.json file contains invalid/missing package information, correct the error or pass the --recreate parameter", $e);
-                        exit(255);
+                        exit(1);
                     }
                 }
                 catch (MissingPackagePropertyException $e)
@@ -79,7 +79,7 @@
                     if($recreate == false)
                     {
                         CLI::logError("The existing package.json file is missing essential properties, correct the error or pass the --recreate parameter", $e);
-                        exit(255);
+                        exit(1);
                     }
                 }
             }
@@ -269,13 +269,13 @@
             if(System::isRoot() == false)
             {
                 CLI::logError("This operation requires root privileges, please run ppm with 'sudo -H'");
-                exit(255);
+                exit(1);
             }
 
             if(IO::writeTest(PathFinder::getMainPath(true)) == false)
             {
                 CLI::logError("Write test failed, cannot write to the PPM installation directory");
-                exit(255);
+                exit(1);
             }
 
             CLI::logEvent("Clearing indexed cache");

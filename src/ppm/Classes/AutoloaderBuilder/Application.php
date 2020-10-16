@@ -263,7 +263,7 @@
                 if(CLI\Compiler::getLintingFlag() == CompilerFlags::LintingError)
                 {
                     CLI::logError("Syntax errors during lint: " . str_replace('in - on line', 'in generated code on line', $stderr));
-                    exit(255);
+                    exit(1);
                 }
                 else
                 {

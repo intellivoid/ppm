@@ -21,13 +21,13 @@
             if(System::isRoot() == false)
             {
                 CLI::logError("This operation requires root privileges, please run ppm with 'sudo -H'");
-                exit(255);
+                exit(1);
             }
 
             if(IO::writeTest(PathFinder::getMainPath(true)) == false)
             {
                 CLI::logError("Write test failed, cannot write to the PPM installation directory");
-                exit(255);
+                exit(1);
             }
 
             $github_vault = new \ppm\Objects\GithubVault();
@@ -41,7 +41,7 @@
             catch (GithubPersonalAccessTokenNotFoundException $e)
             {
                 CLI::logError("Alias not registered in vault, aborting.");
-                exit(255);
+                exit(1);
             }
 
             $github_vault->save();
@@ -56,13 +56,13 @@
             if(System::isRoot() == false)
             {
                 CLI::logError("This operation requires root privileges, please run ppm with 'sudo -H'");
-                exit(255);
+                exit(1);
             }
 
             if(IO::writeTest(PathFinder::getMainPath(true)) == false)
             {
                 CLI::logError("Write test failed, cannot write to the PPM installation directory");
-                exit(255);
+                exit(1);
             }
 
             $github_vault = new \ppm\Objects\GithubVault();
@@ -78,7 +78,7 @@
             catch (GithubPersonalAccessTokenAlreadyExistsException $e)
             {
                 CLI::logError("Personal Access Token already defined in the Github vault, aborting.");
-                exit(255);
+                exit(1);
             }
 
             $github_vault->save();

@@ -106,7 +106,7 @@
                 if($require_parameter)
                 {
                     self::logError("The required parameter '$name' is missing");
-                    exit(255);
+                    exit(1);
                 }
             }
 
@@ -438,7 +438,7 @@
                 catch (InvalidPackageLockException $e)
                 {
                     self::logError("There was an error while installing the package", $e);
-                    exit(255);
+                    exit(1);
                 }
 
                 return;
@@ -461,12 +461,12 @@
                 catch (InvalidPackageLockException $e)
                 {
                     self::logError("Failed to uninstall package, Invalid Package Lock Error", $e);
-                    exit(255);
+                    exit(1);
                 }
                 catch (VersionNotFoundException $e)
                 {
                     self::logError("Failed to uninstall package, Version not found", $e);
-                    exit(255);
+                    exit(1);
                 }
 
                 return;
@@ -488,12 +488,12 @@
                 catch (InvalidPackageLockException $e)
                 {
                     self::logError("Failed to update package, Invalid Package Lock Error", $e);
-                    exit(255);
+                    exit(1);
                 }
                 catch (VersionNotFoundException $e)
                 {
                     self::logError("Failed to update package (probably a bug), Version not found", $e);
-                    exit(255);
+                    exit(1);
                 }
 
                 return;
@@ -508,7 +508,7 @@
                 catch (InvalidPackageLockException $e)
                 {
                     self::logError("Failed to list installed packages, Invalid Package Lock Error", $e);
-                    exit(255);
+                    exit(1);
                 }
 
                 return;
@@ -536,12 +536,12 @@
                 catch (InvalidPackageLockException $e)
                 {
                     self::logError("Failed to execute, invalid Package Lock Error", $e);
-                    exit(255);
+                    exit(1);
                 }
                 catch (VersionNotFoundException $e)
                 {
                     self::logError("Failed to execute, version not found", $e);
-                    exit(255);
+                    exit(1);
                 }
 
                 return;
