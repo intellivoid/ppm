@@ -3,6 +3,7 @@
 
     namespace ppm\Utilities\CLI;
 
+    use ppm\Classes\Composer\Wrapper;
     use ppm\Exceptions\InvalidComponentException;
     use ppm\Exceptions\InvalidConfigurationException;
     use ppm\Exceptions\InvalidDependencyException;
@@ -176,7 +177,7 @@
 
             CLI::logEvent("Validating package");
             Compiler::validatePackage($Package);
-            $Package->Configuration->AutoLoadMethod = "indexed";
+            $Package->Configuration->AutoLoadMethod = "generated_spl";
 
             CLI::logEvent("Discovering components");
             $Package->Components = [];
@@ -194,7 +195,7 @@
             $Package->Files = [];
             foreach(self::discoverFiles($path) as $file)
             {
-                CLI::logVerboseEvent("Found " . $file_path);
+                CLI::logVerboseEvent("Found " . $file);
                 $Package->Files[] = $file;
             }
 
@@ -286,6 +287,28 @@
 
             CLI::logEvent("Clearing repo cache");
             IO::deleteDirectory(PathFinder::getRemoteRepoPath(false));
+
+            CLI::logEvent("Clearing composer cache");
+            IO::deleteDirectory(PathFinder::getComposerTemporaryPath(false));
+
+            $wrapper = Wrapper::create(__DIR__);
+            $arguments = array(
+                "clear-cache", // Clear the cache
+                "--no-interaction" // No interaction
+            );
+
+            // Construct additional arguments
+            if(CLI::$VerboseMode)
+            {
+                $arguments[] = "--verbose";
+            }
+
+            // Execute the clear cache process for composer
+            CLI::logVerboseEvent("Executing " . implode(" ", $arguments));
+
+            CLI::logEvent("Running composer");
+            $exit_code = $wrapper->run(implode(" ", $arguments));
+            CLI::logVerboseEvent("Composer exit code '$exit_code'");
 
             CLI::logEvent("Success");
         }

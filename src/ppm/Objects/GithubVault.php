@@ -22,6 +22,39 @@
         public $AccessTokens;
 
         /**
+         * The default profile used for Github Vault (default@)
+         *
+         * @var string
+         */
+        public $DefaultProfile;
+
+        /**
+         * @return PersonalAccessToken
+         * @throws GithubPersonalAccessTokenNotFoundException
+         */
+        public function getDefaultProfile(): PersonalAccessToken
+        {
+            if($this->DefaultProfile !== null)
+            {
+                $this->get($this->DefaultProfile);
+            }
+
+            /** @var PersonalAccessToken $accessToken */
+            foreach($this->AccessTokens as $accessToken)
+            {
+                if($this->DefaultProfile == null)
+                {
+                    // Set the first profile as the default profile
+                    $this->DefaultProfile = $accessToken->Alias;
+                    $data["default_profile"] = $this->DefaultProfile;
+                    break;
+                }
+            }
+
+            return $this->get($this->DefaultProfile);
+        }
+
+        /**
          * Gets an existing personal access token from the vault
          *
          * @param string $alias
@@ -30,6 +63,11 @@
          */
         public function get(string $alias): PersonalAccessToken
         {
+            if(strtolower($alias) == "default")
+            {
+                return $this->getDefaultProfile();
+            }
+
             if(isset($this->AccessTokens[$alias]) == false)
             {
                 throw new GithubPersonalAccessTokenNotFoundException();
@@ -99,12 +137,23 @@
         public function save(): bool
         {
             $path = PathFinder::getGithubVaultPath(true);
-            $data = array();
+
+            $data = array(
+                "default_profile" => $this->DefaultProfile,
+                "profiles" => [],
+            );
 
             /** @var PersonalAccessToken $accessToken */
             foreach($this->AccessTokens as $accessToken)
             {
-                $data[$accessToken->Alias] = $accessToken->toArray();
+                if($this->DefaultProfile == null)
+                {
+                    // Set the first profile as the default profile
+                    $this->DefaultProfile = $accessToken->Alias;
+                    $data["default_profile"] = $this->DefaultProfile;
+                }
+
+                $data["profiles"][$accessToken->Alias] = $accessToken->toArray();
             }
 
             file_put_contents($path, ZiProto::encode($data));
@@ -127,12 +176,46 @@
             }
 
             $loaded_data = ZiProto::decode(file_get_contents($path));
-            $this->AccessTokens = array();
 
-            foreach($loaded_data as $datum)
+            // Backwards compatibility
+            if(isset($loaded_data["profiles"]))
             {
-                $personal_access_token = PersonalAccessToken::fromArray($datum);
-                $this->AccessTokens[$personal_access_token->Alias] = $personal_access_token;
+                $this->AccessTokens = array();
+
+                if(isset($loaded_data["default_profile"]))
+                {
+                    $this->DefaultProfile = $loaded_data["default_profile"];
+                }
+
+                foreach($loaded_data["profiles"] as $datum)
+                {
+                    $personal_access_token = PersonalAccessToken::fromArray($datum);
+                    $this->AccessTokens[$personal_access_token->Alias] = $personal_access_token;
+
+                    // If the default profile wasn't loaded, set it as the first profile.
+                    if($this->DefaultProfile == null)
+                    {
+                        $this->DefaultProfile = $personal_access_token->Alias;
+                    }
+                }
+            }
+            else
+            {
+                $this->AccessTokens = array();
+                $this->DefaultProfile = null;
+
+                foreach($loaded_data as $datum)
+                {
+                    $personal_access_token = PersonalAccessToken::fromArray($datum);
+                    $this->AccessTokens[$personal_access_token->Alias] = $personal_access_token;
+
+                    if($this->DefaultProfile == null)
+                    {
+                        // Set the first profile as the default profile
+                        $this->DefaultProfile = $personal_access_token->Alias;
+                        $data["default_profile"] = $this->DefaultProfile;
+                    }
+                }
             }
 
             return true;

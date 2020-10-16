@@ -61,6 +61,26 @@
         }
 
         /**
+         * Gets the general compiler flag
+         *
+         * @return int
+         */
+        public static function getCompilerFlag(): int
+        {
+            if(in_array(CompilerFlags::CompilerError, CLI::$CompilerFlags))
+            {
+                return CompilerFlags::CompilerError;
+            }
+
+            if(in_array(CompilerFlags::CompilerWarning, CLI::$CompilerFlags))
+            {
+                return CompilerFlags::CompilerWarning;
+            }
+
+            return CompilerFlags::CompilerError;
+        }
+
+        /**
          * Compiles package from source
          *
          * @param string $path
@@ -90,7 +110,15 @@
             self::validatePackage($Source->Package);
 
             CLI::logEvent("Compiling components");
-            $CompiledComponents = $Source->compileComponents();
+
+            $cwarning_flag = false;
+            if(self::getCompilerFlag() == CompilerFlags::CompilerWarning)
+            {
+                CLI::logVerboseEvent("All compiler errors will be treated as warnings");
+                $cwarning_flag = true;
+            }
+
+            $CompiledComponents = $Source->compileComponents($cwarning_flag);
 
             CLI::logEvent("Packing extras");
             $PostInstallation = array();
@@ -190,6 +218,7 @@
                 "package" => $Source->Package->toArray(),
                 "compiled_components" => $CompiledComponents["compiled_components"],
                 "byte_compiled" => $CompiledComponents["byte_compiled"],
+                "raw" => $CompiledComponents["raw"],
                 "files" => $PackedFiles,
                 "post_install" => $PostInstallation,
                 "pre_install" => $PreInstallation,
@@ -359,7 +388,6 @@
             CLI::logVerboseEvent("Validating metadata entry 'organization'");
             if(strlen($package->Metadata->Organization) == 0)
             {
-                CLI::logWarning("The package metadata contains no organization");
                 $package->Metadata->Organization = null;
             }
             else

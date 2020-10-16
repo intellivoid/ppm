@@ -76,11 +76,12 @@
                 "v",
                 "fix-conflict",
                 "clear-cache",
-
+                "native",
                 "lerror",
                 "lwarning",
                 "bcerror",
-                "bcwarning"
+                "bcwarning",
+                "cwarning",
             );
 
             return getopt($options, $long_opts);
@@ -183,6 +184,20 @@
             {
                 self::$CompilerFlags[] = CompilerFlags::ByteCompilerWarning;
             }
+
+            // General compiling flags
+            if(isset(CLI::options()["cerror"]))
+            {
+                self::$CompilerFlags[] = CompilerFlags::CompilerError;
+            }
+            elseif(isset(CLI::options()["cwarning"]))
+            {
+                self::$CompilerFlags[] = CompilerFlags::CompilerWarning;
+            }
+            else
+            {
+                self::$CompilerFlags[] = CompilerFlags::CompilerError;
+            }
         }
 
         /**
@@ -242,6 +257,10 @@
             print("\033[37m     Installs a .ppm package to the system and uninstalls the conflicting package" . PHP_EOL);
             print("\033[37m \033[33m--install\033[37m=\"<alias>@github/<organization>/<repo>\" \e[33m--branch\e[37m=\"<optional_branch>\"" . PHP_EOL);
             print("\033[37m     Compiles and installs from a GitHub repo" . PHP_EOL);
+            print("\033[37m \033[33m--install\033[37m=\"<vendor>@composer/<package>\"" . PHP_EOL);
+            print("\033[37m     Compiles and installs from composer" . PHP_EOL);
+            print("\033[37m \033[33m--install\033[37m=\"<vendor>@composer/<package>\" \e[33m--native" . PHP_EOL);
+            print("\033[37m     Compiles and installs from composer and it's dependencies as native packages (unstable)" . PHP_EOL);
             print("\033[37m \033[33m--uninstall\033[37m=\"<package_name>\"" . PHP_EOL);
             print("\033[37m     Completely uninstalls a installed package from the system" . PHP_EOL);
             print("\033[37m \033[33m--uninstall\033[37m=\"<package_name>\" \e[33m--version\e[37m=\"<version>\"" . PHP_EOL);
@@ -289,6 +308,10 @@
             print("\033[37m     Treats failure to compile as an error instead of falling to byte compiling" . PHP_EOL);
             print("\033[37m \033[33m--bcwarning" . PHP_EOL);
             print("\033[37m     Treats failure to compile as a warning and falls to byte compiling instead" . PHP_EOL);
+            print("\033[37m \033[33m--cwarning" . PHP_EOL);
+            print("\033[37m     Treats compiling errors as warnings, this can still package the component but might not be able to generate a proper autoloader" . PHP_EOL);
+            print("\033[37m \033[33m--cerror" . PHP_EOL);
+            print("\033[37m     Treats compiling errors as errors and halts the operation (default)" . PHP_EOL);
         }
 
         /**
@@ -322,8 +345,6 @@
          */
         public static function logVerboseEvent(string $message, bool $newline=true)
         {
-            self::setCompilerFlags();
-
             if(self::$Stdout == false)
             {
                 return;
@@ -346,7 +367,7 @@
 
         /**
          * @param string $message
-         * @param Exception $exception
+         * @param Exception|null $exception
          */
         public static function logError(string $message, Exception $exception=null)
         {
@@ -382,6 +403,7 @@
         public static function start()
         {
             self::$Stdout = true;
+            self::setCompilerFlags();
 
             if(isset(self::options()["verbose"]))
             {

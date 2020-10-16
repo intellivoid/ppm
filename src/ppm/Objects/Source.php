@@ -12,6 +12,7 @@
     use ppm\Exceptions\PathNotFoundException;
     use ppm\Objects\Package\Component;
     use ppm\Utilities\CLI;
+    use PpmParser\Error;
     use PpmZiProto\ZiProto;
 
     /**
@@ -41,12 +42,14 @@
         /**
          * Compiles the components and returns an array of compiled assets
          *
+         * @param bool $ignoreCompilerErrors
          * @return array
          */
-        public function compileComponents(): array
+        public function compileComponents(bool $ignoreCompilerErrors=false): array
         {
             $CompiledComponents = array();
             $ByteCompiledComponents = array();
+            $RawComponents = array();
 
             if(CLI\Compiler::getByteCompilingFlag() == CompilerFlags::ByteCompilerError)
             {
@@ -56,47 +59,67 @@
             /** @var Component $component */
             foreach($this->Package->Components as $component)
             {
-                CLI::logEvent("Compiling " . $component->File . "...", false);
+                CLI::logVerboseEvent("Compiling " . $component->File . "...", false);
 
-                $ParsedComponent = $component->parse();
-                $Structure = json_encode($ParsedComponent);
-
-                if($Structure == false)
+                try
                 {
-                    CLI::logEvent("Failed");
+                    $ParsedComponent = $component->parse();
+                    $Structure = json_encode($ParsedComponent);
 
-                    if(CLI\Compiler::getByteCompilingFlag() == CompilerFlags::ByteCompilerWarning)
+                    if($Structure == false)
                     {
-                        CLI::logWarning("Cannot compile " . $component->File . ", " . json_last_error_msg() . ". Will byte-compile instead");
-                        CLI::logEvent("Byte-compiling " . $component->File . "...", false);
+                        CLI::logVerboseEvent("Failed");
 
-                        $ByteCompiledComponents[$component->File] = serialize($ParsedComponent);
+                        if(CLI\Compiler::getByteCompilingFlag() == CompilerFlags::ByteCompilerWarning)
+                        {
+                            CLI::logWarning("Cannot compile " . $component->File . ", " . json_last_error_msg() . ". Will byte-compile instead");
+                            CLI::logVerboseEvent("Byte-compiling " . $component->File . "...", false);
 
-                        CLI::logEvent("Success");
-                        CLI::logVerboseEvent("Original: " . strlen(file_get_contents($component->getPath())) . " bytes / Byte compiled: " . strlen($ByteCompiledComponents[$component->File]) . " bytes");
+                            $ByteCompiledComponents[$component->File] = serialize($ParsedComponent);
+
+                            CLI::logVerboseEvent("Success");
+                            CLI::logVerboseEvent("Original: " . strlen(file_get_contents($component->getPath())) . " bytes / Byte compiled: " . strlen($ByteCompiledComponents[$component->File]) . " bytes");
+                        }
+                        else
+                        {
+                            CLI::logError("Cannot compile " . $component->File . ", " . json_last_error_msg());
+                            exit(255);
+                        }
                     }
                     else
                     {
-                        CLI::logError("Cannot compile " . $component->File . ", " . json_last_error_msg());
-                        exit(255);
+                        $Compiled = ZiProto::encode(json_decode($Structure, true));
+                        $CompiledComponents[$component->File] = $Compiled;
+
+                        CLI::logVerboseEvent("Success");
+                        CLI::logVerboseEvent("Original: " . strlen(file_get_contents($component->getPath())) . " bytes / Compiled: " . strlen($CompiledComponents[$component->File]) . " bytes");
                     }
                 }
-                else
+                catch(Error $e)
                 {
-                    $Compiled = ZiProto::encode(json_decode($Structure, true));
-                    $CompiledComponents[$component->File] = $Compiled;
-
-                    CLI::logEvent("Success");
-                    CLI::logVerboseEvent("Original: " . strlen(file_get_contents($component->getPath())) . " bytes / Compiled: " . strlen($CompiledComponents[$component->File]) . " bytes");
+                    if($ignoreCompilerErrors)
+                    {
+                        CLI::logWarning("Cannot compile " . $component->File . ", " . $e->getMessage());
+                        CLI::logWarning($component->File . " will be packed without being compiled");
+                        $RawComponents[$component->File] = file_get_contents($component->getPath());
+                    }
+                    else
+                    {
+                        CLI::logError("Cannot compile " . $component->File, $e);
+                        CLI::logWarning("To ignore these compiler errors, pass on the option '--cwarning', aborting.");
+                        exit(255);
+                    }
                 }
             }
 
             CLI::logVerboseEvent("Compiled components: " . count($CompiledComponents));
             CLI::logVerboseEvent("Byte compiled components: " . count($ByteCompiledComponents));
+            CLI::logVerboseEvent("Raw components: " . count($RawComponents));
 
             return array(
                 "compiled_components" => $CompiledComponents,
-                "byte_compiled" => $ByteCompiledComponents
+                "byte_compiled" => $ByteCompiledComponents,
+                "raw" => $RawComponents
             );
         }
 

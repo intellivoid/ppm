@@ -27,14 +27,22 @@
         public $Required;
 
         /**
+         * Optional source install that tells PPM where and how to install the package
+         *
+         * @var string|null
+         */
+        public $Source;
+
+        /**
          * @return array
          */
         public function toArray(): array
         {
             return array(
-                'package' => $this->Package,
-                'version' => $this->Version,
-                'required' => $this->Required
+                "package" => $this->Package,
+                "version" => $this->Version,
+                "source" => $this->Source,
+                "required" => $this->Required
             );
         }
 
@@ -47,27 +55,32 @@
         {
             $DependencyObject = new Dependency();
 
-            if(isset($data['package']))
+            if(isset($data["package"]))
             {
-                $DependencyObject->Package = $data['package'];
+                $DependencyObject->Package = $data["package"];
             }
             else
             {
                 throw new InvalidDependencyException("The property 'package' is missing from the dependency");
             }
 
-            if(isset($data['version']))
+            if(isset($data["version"]))
             {
-                $DependencyObject->Version = $data['version'];
+                $DependencyObject->Version = $data["version"];
             }
             else
             {
                 throw new InvalidDependencyException("The property 'version' is missing from the dependency");
             }
 
-            if(isset($data['required']))
+            if(isset($data["source"]))
             {
-                $DependencyObject->Required = (bool)$data['required'];
+                $DependencyObject->Source = $data["source"];
+            }
+
+            if(isset($data["required"]))
+            {
+                $DependencyObject->Required = (bool)$data["required"];
             }
             else
             {

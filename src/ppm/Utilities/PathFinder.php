@@ -98,6 +98,19 @@
             return self::getMainPath($create) . DIRECTORY_SEPARATOR . "repos";
         }
 
+        public static function getComposerTemporaryPath(bool $create=false): string
+        {
+            if($create)
+            {
+                if(file_exists(self::getMainPath($create) . DIRECTORY_SEPARATOR . "composer") == false)
+                {
+                    mkdir(self::getMainPath($create) . DIRECTORY_SEPARATOR . "composer");
+                }
+            }
+
+            return self::getMainPath($create) . DIRECTORY_SEPARATOR . "composer";
+        }
+
         public static function getBuildPath(bool $create=false): string
         {
             if($create)

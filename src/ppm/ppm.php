@@ -12,6 +12,31 @@
     use ppm\Utilities\System;
     use PpmZiProto\ZiProto;
 
+    // Composer
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "Composer" . DIRECTORY_SEPARATOR . "Service" . DIRECTORY_SEPARATOR . "IsThisEmpty.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "Composer" . DIRECTORY_SEPARATOR . "Service" . DIRECTORY_SEPARATOR . "AbstractMap.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "Composer" . DIRECTORY_SEPARATOR . "Service" . DIRECTORY_SEPARATOR . "AbstractClass.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "Composer" . DIRECTORY_SEPARATOR . "Service" . DIRECTORY_SEPARATOR . "NamespaceMap.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "Composer" . DIRECTORY_SEPARATOR . "Service" . DIRECTORY_SEPARATOR . "PackageMap.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "Composer" . DIRECTORY_SEPARATOR . "Service" . DIRECTORY_SEPARATOR . "PropertyHelper.php");
+
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "Composer" . DIRECTORY_SEPARATOR . "Json" . DIRECTORY_SEPARATOR . "Archive.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "Composer" . DIRECTORY_SEPARATOR . "Json" . DIRECTORY_SEPARATOR . "Author.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "Composer" . DIRECTORY_SEPARATOR . "Json" . DIRECTORY_SEPARATOR . "Autoload.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "Composer" . DIRECTORY_SEPARATOR . "Json" . DIRECTORY_SEPARATOR . "Config.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "Composer" . DIRECTORY_SEPARATOR . "Json" . DIRECTORY_SEPARATOR . "Scripts.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "Composer" . DIRECTORY_SEPARATOR . "Json" . DIRECTORY_SEPARATOR . "Support.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "Composer" . DIRECTORY_SEPARATOR . "ComposerJson.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "Composer" . DIRECTORY_SEPARATOR . "Json" . DIRECTORY_SEPARATOR . "Repository.php");
+
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "Composer" . DIRECTORY_SEPARATOR . "Lockfile" . DIRECTORY_SEPARATOR . "Source.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "Composer" . DIRECTORY_SEPARATOR . "Lockfile" . DIRECTORY_SEPARATOR . "Dist.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "Composer" . DIRECTORY_SEPARATOR . "Lockfile" . DIRECTORY_SEPARATOR . "Source.php");
+
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "Composer" . DIRECTORY_SEPARATOR . "Lockfile.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "Composer" . DIRECTORY_SEPARATOR . "Factory.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "Composer" . DIRECTORY_SEPARATOR . "Wrapper.php");
+
     // Core
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Interfaces" . DIRECTORY_SEPARATOR . "HtmlString.php");
 
@@ -65,6 +90,7 @@
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Objects" . DIRECTORY_SEPARATOR . "Package" . DIRECTORY_SEPARATOR . "Metadata.php");
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Objects" . DIRECTORY_SEPARATOR . "PackageLock" . DIRECTORY_SEPARATOR . "PackageLockItem.php");
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Objects" . DIRECTORY_SEPARATOR . "PackageLock" . DIRECTORY_SEPARATOR . "VersionConfiguration.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Objects" . DIRECTORY_SEPARATOR . "Sources" . DIRECTORY_SEPARATOR . "ComposerSource.php");
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Objects" . DIRECTORY_SEPARATOR . "Sources" . DIRECTORY_SEPARATOR . "GithubSource.php");
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Objects" . DIRECTORY_SEPARATOR . "GithubVault.php");
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Objects" . DIRECTORY_SEPARATOR . "GitRepo.php");
@@ -82,6 +108,7 @@
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Utilities" . DIRECTORY_SEPARATOR . "CLI" . DIRECTORY_SEPARATOR . "Tools.php");
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Utilities" . DIRECTORY_SEPARATOR . "Autoloader.php");
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Utilities" . DIRECTORY_SEPARATOR . "CLI.php");
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . "Utilities" . DIRECTORY_SEPARATOR . "Compatibility.php");
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Utilities" . DIRECTORY_SEPARATOR . "DateTime.php");
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Utilities" . DIRECTORY_SEPARATOR . "Helpers.php");
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Utilities" . DIRECTORY_SEPARATOR . "IO.php");
@@ -302,7 +329,14 @@
                     }
                     else
                     {
-                        self::import($dependency->Package, $dependency->Version, $import_dependencies, false);
+                        try
+                        {
+                            self::import($dependency->Package, $dependency->Version, $import_dependencies, false);
+                        }
+                        catch(PackageNotFoundException $e)
+                        {
+                            unset($e);
+                        }
                     }
                 }
             }

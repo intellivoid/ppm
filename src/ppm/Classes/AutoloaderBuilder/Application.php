@@ -43,7 +43,7 @@
             $result = $this->runCollector();
             if (!$result->hasUnits())
             {
-                throw new ApplicationException('No units were found - process aborted.', ApplicationException::NoUnitsFound);
+                #throw new ApplicationException('No units were found - process aborted.', ApplicationException::NoUnitsFound);
             }
             if ($result->hasDuplicates())
             {

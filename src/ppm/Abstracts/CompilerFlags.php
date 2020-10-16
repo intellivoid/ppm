@@ -16,4 +16,8 @@
         const ByteCompilerError = 12;
 
         const ByteCompilerWarning = 13;
+
+        const CompilerError = 14;
+
+        const CompilerWarning = 15;
     }

@@ -142,6 +142,18 @@
                     Autoloader::loadIndexedLoader($this->getPackagePath($version));
                     return true;
 
+                case AutoloadMethod::ComposerGenerator:
+                    $composer_autoloader_path = $this->getPackagePath($version) . DIRECTORY_SEPARATOR . "autoload.php";
+
+                    if(file_exists($composer_autoloader_path) == false)
+                    {
+                        throw new AutoloaderException("The autoloading method 'ComposerGenerator' failed because the file '" . $composer_autoloader_path . "' does not exist.");
+                    }
+
+                    /** @noinspection PhpIncludeInspection */
+                    require_once($composer_autoloader_path);
+                    return true;
+
                 case AutoloadMethod::GeneratedStatic:
                 case AutoloadMethod::StandardPhpLibrary:
                     $DataPath = $this->getPackagePath($version) . DIRECTORY_SEPARATOR . '.ppm';
@@ -159,6 +171,7 @@
                         /** @noinspection PhpIncludeInspection */
                         require_once(sprintf("%s%sAUTOLOADER_UNITS", $DataPath, DIRECTORY_SEPARATOR));
                     }
+
                     return true;
 
                 default:

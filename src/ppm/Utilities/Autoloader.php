@@ -93,6 +93,7 @@
             $config->setStaticMode(true);
             $config->setLintMode(true);
             $config->setOnceMode(true);
+            $config->setTolerantMode(true);
             $alb_factory->setConfig($config);
 
             // Execute the autoload generator
@@ -121,6 +122,7 @@
             $config->setStaticMode(false);
             $config->setLintMode(true);
             $config->setOnceMode(true);
+            $config->setTolerantMode(true);
             $alb_factory->setConfig($config);
 
             // Execute the autoload generator

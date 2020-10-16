@@ -148,12 +148,23 @@
                 return false;
             }
 
-            if((bool)preg_match("/^([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/", $input) == false)
+            // Added compatibility for composer package versions
+            if((bool)preg_match("/^([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/", $input))
             {
-                return false;
+                return true;
             }
 
-            return true;
+            if((bool)preg_match("/^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/", $input))
+            {
+                return true;
+            }
+
+            if((bool)preg_match("/^([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/", $input))
+            {
+                return true;
+            }
+
+            return false;
         }
 
         /**

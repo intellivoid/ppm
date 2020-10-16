@@ -6,20 +6,26 @@
 
     use Exception;
     use ppm\Abstracts\AutoloadMethod;
+    use ppm\Classes\Composer\Factory;
+    use ppm\Classes\Composer\Lockfile;
+    use ppm\Classes\Composer\Wrapper;
     use ppm\Classes\GitManager;
     use ppm\Exceptions\ApplicationException;
     use ppm\Exceptions\CollectorException;
     use ppm\Exceptions\GithubPersonalAccessTokenNotFoundException;
     use ppm\Exceptions\InvalidPackageLockException;
+    use ppm\Exceptions\PackageNotFoundException;
     use ppm\Exceptions\VersionNotFoundException;
     use ppm\Objects\GithubVault;
     use ppm\Objects\Package;
     use ppm\Objects\PackageLock\PackageLockItem;
     use ppm\Objects\PackageLock\VersionConfiguration;
+    use ppm\Objects\Sources\ComposerSource;
     use ppm\Objects\Sources\GithubSource;
     use ppm\ppm;
     use ppm\Utilities\Autoloader;
     use ppm\Utilities\CLI;
+    use ppm\Utilities\Compatibility;
     use ppm\Utilities\IO;
     use ppm\Utilities\PathFinder;
     use ppm\Utilities\System;
@@ -34,6 +40,21 @@
      */
     class PackageManager
     {
+        /**
+         * A private static variable to keep track of the installed sources during the current runtime
+         * so that the package manager won't repeatedly update from the same sources
+         *
+         * @var string[]
+         */
+        private static $installedSources = array();
+
+        /**
+         * Checks if an option is set in the options variable
+         *
+         * @param array $options
+         * @param string $option
+         * @return bool
+         */
         private static function optionIsSet(array $options, string $option): bool
         {
             if(isset($options[$option]))
@@ -50,33 +71,81 @@
          * @param string $path
          * @param array $options
          * @throws InvalidPackageLockException
+         * @throws PackageNotFoundException
          */
         public static function installPackage(string $path, array $options=array())
         {
             // Install remotely from Github
             if(stripos($path, "@github") !== false)
             {
-                try
+                if(in_array(strtolower($path), self::$installedSources))
                 {
-                    $github_source = GithubSource::parse($path);
-                }
-                catch (Exception $e)
-                {
-                    CLI::logError("Remote source parsing failed", $e);
-                    exit(255);
-                }
-
-                if(isset(CLI::options()["branch"]))
-                {
-                    self::installGithubPackage($github_source, CLI::options()["branch"]);
-
+                    CLI::logWarning("Skipping $path because it was already updated");
                 }
                 else
                 {
-                    self::installGithubPackage($github_source);
-                }
+                    try
+                    {
+                        $github_source = GithubSource::parse($path);
+                    }
+                    catch (Exception $e)
+                    {
+                        CLI::logError("Remote source parsing failed", $e);
+                        exit(255);
+                    }
 
-                exit(1);
+                    self::$installedSources[] = strtolower($path);
+                    if(isset(CLI::options()["branch"]))
+                    {
+                        self::installGithubPackage($github_source, CLI::options()["branch"], $options);
+
+                    }
+                    else
+                    {
+                        self::installGithubPackage($github_source, "master", $options);
+                    }
+
+                    if(self::optionIsSet($options, "no_exit") == false)
+                    {
+                        exit(1);
+                    }
+                    else
+                    {
+                        return;
+                    }
+                }
+            }
+
+            if(stripos($path, "@composer") !== false)
+            {
+                if(in_array(strtolower($path), self::$installedSources))
+                {
+                    CLI::logWarning("Skipping $path because it was already updated");
+                }
+                else
+                {
+                    try
+                    {
+                        $composer_source = ComposerSource::parse($path);
+                    }
+                    catch (Exception $e)
+                    {
+                        CLI::logError("Remote source parsing failed", $e);
+                        exit(255);
+                    }
+
+                    self::$installedSources[] = strtolower($path);
+                    self::installComposerPackage($composer_source, $options);
+
+                    if(self::optionIsSet($options, "no_exit") == false)
+                    {
+                        exit(1);
+                    }
+                    else
+                    {
+                        return;
+                    }
+                }
             }
 
             if(file_exists($path) == false)
@@ -193,19 +262,88 @@
             }
 
             // Check dependencies
-            /** @var Package\Dependency $dependency */
-            foreach($PackageInformation->Dependencies as $dependency)
+            if(self::optionIsSet($options, "skip_dependency_check"))
             {
-                if($PackageLock->packageExists($dependency->Package, $dependency->Version) == false)
+                CLI::logVerboseEvent("Skipping dependency check");
+            }
+            else
+            {
+                /** @var Package\Dependency $dependency */
+                foreach($PackageInformation->Dependencies as $dependency)
                 {
-                    if($dependency->Required)
+                    $dependency_missing = true;
+                    $require_install = false;
+
+                    if($PackageLock->packageExists($dependency->Package, "latest") == false)
                     {
-                        CLI::logError("Installation failed, This package requires the dependency '\e[37m" . $dependency->Package . "==\e[32m" .  $dependency->Version . "\e[91m' which is not installed");
-                        exit(255);
+                        if($dependency->Source !== null)
+                        {
+                            // Require the installation of the remote package
+                            $require_install = true;
+                        }
                     }
                     else
                     {
-                        CLI::logWarning("This package uses a non-required dependency '" . $dependency->Package . "==\e[32m" .  $dependency->Version . "\e[37m' which is not installed");
+                        if($dependency->Version == "latest")
+                        {
+                            // Update anyways
+                            $dependency_missing = false;
+                            $require_install = true;
+                        }
+                        else
+                        {
+                            // Update if the required version is outdated
+                            $latest_version = $PackageLock->getPackage($dependency->Package)->getLatestVersion();
+                            if(version_compare($dependency->Version, $latest_version, "<"))
+                            {
+                                CLI::logWarning("The installed package " . $dependency->Package . "==" . $latest_version . " is outdated, " . $package_name . " requires " . $dependency->Version . " or greater, will attempt to update from source.");
+                                $require_install = true;
+                                $dependency_missing = true;
+                            }
+                        }
+                    }
+
+                    if(strlen($dependency->Source) == 0)
+                    {
+                        $require_install = false;
+                    }
+
+                    if($require_install)
+                    {
+                        // Install the package from a source
+                        CLI::logEvent("Fetching dependency '" . $dependency->Package . "' from '" . $dependency->Source . "'");
+
+                        $temporary_install_options = $options;
+                        $temporary_install_options["fix_conflict"] = true;
+                        $temporary_install_options["no_prompt"] = true;
+                        $temporary_install_options["no_details"] = true;
+                        $temporary_install_options["no_exit"] = true;
+                        $temporary_install_options["update_source"] = $dependency->Source;
+
+                        self::installPackage($dependency->Source, $temporary_install_options);
+                        $dependency_missing = false;
+                    }
+
+                    // Load an updated version of the PackageLock
+                    $PackageLock = ppm::getPackageLock(true);
+
+                    // Check if the required version is installed
+                    if($PackageLock->packageExists($dependency->Package, $dependency->Version) == false)
+                    {
+                        $dependency_missing = true;
+                    }
+
+                    if($dependency_missing)
+                    {
+                        if($dependency->Required)
+                        {
+                            CLI::logError("Installation failed, This package requires the dependency '\e[37m" . $dependency->Package . "==\e[32m" .  $dependency->Version . "\e[91m' which is not installed");
+                            exit(255);
+                        }
+                        else
+                        {
+                            CLI::logWarning("This package uses a non-required dependency '" . $dependency->Package . "==\e[32m" .  $dependency->Version . "\e[37m' which is not installed");
+                        }
                     }
                 }
             }
@@ -292,6 +430,35 @@
                     $prettyPrinter = new Standard;
                     $AST = unserialize($component);
                     file_put_contents($file_path, $prettyPrinter->prettyPrintFile($AST));
+                    System::setPermissions($file_path, 0744);
+                }
+            }
+
+            // New: Components that failed to compile will be treated as raw components
+            if(isset($PackageContents["raw"]))
+            {
+                foreach($PackageContents["raw"] as $component_name => $component)
+                {
+                    /** @noinspection DuplicatedCode */
+                    if(stripos($component_name, "/"))
+                    {
+                        $pieces = explode("/", $component_name);
+                        $file_path = $InstallationPath . DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, $pieces);
+                        array_pop($pieces);
+                        $path = $InstallationPath . DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, $pieces);
+
+                        if(file_exists($path) == false)
+                        {
+                            mkdir($path, 775, true);
+                            System::setPermissions($path, 775);
+                        }
+                    }
+                    else
+                    {
+                        $file_path = $InstallationPath . DIRECTORY_SEPARATOR . $component_name;
+                    }
+
+                    file_put_contents($file_path, $component);
                     System::setPermissions($file_path, 0744);
                 }
             }
@@ -437,6 +604,12 @@
                 file_put_contents($UpdateSourcePath, $options["update_source"]);
             }
 
+            if(self::optionIsSet($options, "update_natively") == true)
+            {
+                $UpdateSourcePath = $PackageDataPath . DIRECTORY_SEPARATOR . 'UPDATE_NATIVELY';
+                file_put_contents($UpdateSourcePath, "1");
+            }
+
             if(self::optionIsSet($options, "update_branch") == true)
             {
                 $UpdateBranchPath = $PackageDataPath . DIRECTORY_SEPARATOR . 'UPDATE_BRANCH';
@@ -470,6 +643,192 @@
             $PackageLock->addPackage($PackageInformation);
             ppm::savePackageLock($PackageLock);
             ppm::getAutoIndexer();
+        }
+
+        /**
+         * Installs a package from composer
+         *
+         * @param ComposerSource $composerSource
+         * @param array $options
+         * @throws InvalidPackageLockException
+         */
+        public static function installComposerPackage(ComposerSource  $composerSource, array $options=array())
+        {
+            if(System::isRoot() == false)
+            {
+                CLI::logError("This operation requires root privileges, please run ppm with 'sudo -H'");
+                exit(255);
+            }
+
+            if(IO::writeTest(PathFinder::getMainPath(true)) == false)
+            {
+                CLI::logError("Write test failed, cannot write to the PPM installation directory");
+                exit(255);
+            }
+
+            $wrapper = Wrapper::create(__DIR__);
+            $install_destination = PathFinder::getComposerTemporaryPath(true) . DIRECTORY_SEPARATOR . $composerSource->toHash();
+
+            if(file_exists($install_destination))
+            {
+                IO::deleteDirectory($install_destination);
+            }
+
+            mkdir($install_destination);
+
+            CLI::logVerboseEvent("Working composer directory '$install_destination'");
+            CLI::logVerboseEvent("Composer package hash '" . $composerSource->toHash() . "'");
+
+            // Construct the main arguments
+            $arguments = array(
+                "require", // Require a package
+                "--no-interaction", // No interaction
+                //"--cache-dir=" . escapeshellarg(PathFinder::getCachePath(true)), // Set the cache directory
+                "--working-dir=" . escapeshellarg($install_destination) // The current working directory
+            );
+
+            // Construct additional arguments
+            if(CLI::$VerboseMode)
+            {
+                $arguments[] = "--verbose";
+            }
+
+            // Finally specify the package to install
+            $arguments[] = escapeshellcmd($composerSource->getPackageName());
+
+            // Execute the install process for composer
+            CLI::logVerboseEvent("Executing " . implode(" ", $arguments));
+
+            CLI::logEvent("Running composer");
+            $exit_code = $wrapper->run(implode(" ", $arguments));
+            CLI::logEvent("Success");
+            CLI::logVerboseEvent("Composer exit code '$exit_code'");
+
+            CLI::logEvent("Parsing composer.lock");
+            $composer_lock_path = $install_destination . DIRECTORY_SEPARATOR . "composer.lock";
+
+            if(file_exists($composer_lock_path) == false)
+            {
+                CLI::logError("The composer.lock file cannot be found, aborting operation");
+                exit(255);
+            }
+
+            $composer_lock = Factory::parse($composer_lock_path);
+
+            if(isset(CLI::options()["native"]) || self::optionIsSet($options, "update_natively"))
+            {
+                // Install all composer packages as a native package
+                self::installComposerPackageNatively($composer_lock, $install_destination, $options);
+            }
+            else
+            {
+                // Install using composer's autoloader instead
+                self::installComposerPackageSemiNatively($composer_lock, $composerSource, $install_destination, $options);
+            }
+
+            CLI::logEvent("The composer package '" . $composerSource->getPackageName() . "' has been installed successfully as '" . Compatibility::composerPackageToPpm($composerSource->getPackageName()) . "'");
+            exit(0);
+        }
+
+        /**
+         * @param Lockfile $lockfile
+         * @param ComposerSource $composerSource
+         * @param string $install_destination
+         * @param array $options
+         * @throws InvalidPackageLockException
+         */
+        public static function installComposerPackageSemiNatively(Lockfile $lockfile, ComposerSource $composerSource, string $install_destination, array $options=[])
+        {
+            CLI::logEvent("Finding " . $composerSource->getPackageName() . " in composer lockfile");
+
+            $packageLockItem = null;
+
+            foreach($lockfile->getPackages() as $package)
+            {
+                if($composerSource->comparePackageName($package["version"]["name"]))
+                {
+                    $packageLockItem = $package["version"];
+                    break;
+                }
+            }
+
+            if($packageLockItem == null)
+            {
+                foreach($lockfile->getPackagesDev() as $package)
+                {
+                    if($composerSource->comparePackageName($package["version"]["name"]))
+                    {
+                        $packageLockItem = $package["version"];
+                        break;
+                    }
+                }
+            }
+
+            if($packageLockItem == null)
+            {
+                CLI::logError("The installation failed because the composer.lock file does not contain information about '" . $composerSource->getPackageName() . "'");
+                exit(255);
+            }
+
+            CLI::logEvent("Generating package");
+            $source_path = Compatibility::generatePackageFromComposerLockEntry($install_destination, $package["version"], true);
+
+            CLI::logEvent("Compiling and installing package");
+            $source_directory = Compiler::findSource($source_path);
+            $compiled_file_path = Compiler::compilePackage($source_directory, PathFinder::getBuildPath(true), false);
+
+            $options = array_merge($options, [
+                "update_source" => $composerSource
+            ]);
+
+            CLI::logEvent("Installing " . $composerSource->getPackageName());
+            self::installPackage($compiled_file_path, $options);
+        }
+
+        /**
+         * Installs all composer packages as a native package
+         *
+         * @param Lockfile $lockfile
+         * @param string $install_destination
+         * @param array $options
+         * @throws InvalidPackageLockException
+         */
+        public static function installComposerPackageNatively(Lockfile $lockfile, string $install_destination, array $options=[])
+        {
+            $packages = array();
+
+            CLI::logEvent("Processing packages");
+            foreach ($lockfile->getPackages() as $package)
+            {
+                CLI::logEvent("Processing " . $package["version"]["name"] . "==" . $package["version"]["version"]);
+                $generated_package = Compatibility::generatePackageFromComposerLockEntry($install_destination, $package["version"]);
+                $packages[$package["version"]["name"]] = $generated_package;
+            }
+
+            CLI::logEvent("Processing dev packages");
+            foreach ($lockfile->getPackagesDev() as $package)
+            {
+                CLI::logEvent("Processing " . $package["version"]["name"] . "==" . $package["version"]["version"]);
+                $generated_package = Compatibility::generatePackageFromComposerLockEntry($install_destination, $package["version"]);
+                $packages[$package["version"]["name"]] = $generated_package;
+            }
+
+            CLI::logEvent("Compiling and installing packages");
+            foreach($packages as $package_name => $source_path)
+            {
+                CLI::logEvent("Compiling '" . $package_name . "'");
+                $source_directory = Compiler::findSource($source_path);
+                $compiled_file_path = Compiler::compilePackage($source_directory, PathFinder::getBuildPath(true), false);
+
+                $options = array_merge($options, [
+                    "skip_dependency_check" => true,
+                    "update_source" => str_ireplace("/", "@composer/", $package_name["version"]["name"]),
+                    "update_natively" => true
+                ]);
+
+                CLI::logEvent("Installing '" . $package_name . "'");
+                self::installPackage($compiled_file_path, $options);
+            }
         }
 
         /**
@@ -644,6 +1003,7 @@
 
             $UpdateSourcePath = null;
             $UpdateBranchPath = null;
+            $UpdateNatively = false;
 
             // Find the update source path
             $PackageLockItem = $PackageLock->Packages[$package];
@@ -659,6 +1019,14 @@
                 if(file_exists($ppm_path . DIRECTORY_SEPARATOR . "UPDATE_BRANCH"))
                 {
                     $UpdateBranchPath = $ppm_path . DIRECTORY_SEPARATOR . "UPDATE_BRANCH";
+                }
+
+                if(file_exists($ppm_path . DIRECTORY_SEPARATOR . "UPDATE_NATIVELY"))
+                {
+                    if(file_get_contents($ppm_path . DIRECTORY_SEPARATOR . "UPDATE_BRANCH") == "1")
+                    {
+                        $UpdateNatively = true;
+                    }
                 }
 
                 if($UpdateSourcePath !== null)
@@ -681,45 +1049,88 @@
                 }
             }
 
-            if($UpdateBranchPath == null)
-            {
-                CLI::logWarning("The update source of '$package' contains no branch, assuming master branch");
-                $UpdateBranch = "master";
-            }
-            else
-            {
-                $UpdateBranch = file_get_contents($UpdateBranchPath);
-            }
-
             $UpdateSource = file_get_contents($UpdateSourcePath);
 
             if(stripos($UpdateSource, "@github") !== false)
             {
-                try
+                if(in_array(strtolower($UpdateSource), self::$installedSources))
                 {
-                    $github_source = GithubSource::parse($UpdateSource);
-                }
-                catch (Exception $e)
-                {
-                    CLI::logError("Remote source parsing failed (Assumed github)", $e);
-                    exit(255);
-                }
-
-                if($UpdateBranch !== null)
-                {
-                    self::installGithubPackage($github_source, $UpdateBranch, [
-                        "fix_conflict" => true,
-                        "no_prompt" => true,
-                        "no_details" => true
-                    ]);
+                    CLI::logWarning("Skipping $UpdateSource because it was already updated");
                 }
                 else
                 {
-                    self::installGithubPackage($github_source, "master", [
+                    if($UpdateBranchPath == null)
+                    {
+                        CLI::logWarning("The update source of '$package' contains no branch, assuming master branch");
+                        $UpdateBranch = "master";
+                    }
+                    else
+                    {
+                        $UpdateBranch = file_get_contents($UpdateBranchPath);
+                    }
+
+                    try
+                    {
+                        $github_source = GithubSource::parse($UpdateSource);
+                    }
+                    catch (Exception $e)
+                    {
+                        CLI::logError("Remote source parsing failed (Assumed github)", $e);
+                        exit(255);
+                    }
+
+                    self::$installedSources[] = strtolower($UpdateSource);
+
+                    if($UpdateBranch !== null)
+                    {
+                        self::installGithubPackage($github_source, $UpdateBranch, [
+                            "fix_conflict" => true,
+                            "no_prompt" => true,
+                            "no_details" => true
+                        ]);
+                    }
+                    else
+                    {
+                        self::installGithubPackage($github_source, "master", [
+                            "fix_conflict" => true,
+                            "no_prompt" => true,
+                            "no_details" => true
+                        ]);
+                    }
+                }
+            }
+
+            if(stripos($UpdateSource, "@composer") !== false)
+            {
+                if(in_array(strtolower($UpdateSource), self::$installedSources))
+                {
+                    CLI::logWarning("Skipping $UpdateSource because it was already updated");
+                }
+                else
+                {
+                    try
+                    {
+                        $composer_source = ComposerSource::parse($UpdateSource);
+                    }
+                    catch (Exception $e)
+                    {
+                        CLI::logError("Remote source parsing failed", $e);
+                        exit(255);
+                    }
+
+                    $options = [
                         "fix_conflict" => true,
                         "no_prompt" => true,
                         "no_details" => true
-                    ]);
+                    ];
+
+                    if($UpdateNatively)
+                    {
+                        $options["install_natively"] = true;
+                    }
+
+                    self::$installedSources[] = strtolower($UpdateSource);
+                    self::installComposerPackage($composer_source, $options);
                 }
             }
         }
