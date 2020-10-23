@@ -51,6 +51,7 @@
                 "no-prompt",
                 "github-add-pat",
                 "github-remove-pat",
+                "github-set-default",
                 "installed",
                 "compile::",
                 "main::",
@@ -289,6 +290,8 @@
             print("\033[37m     Adds a GitHub personal access key to be used with the GitHub API (Secured)" . PHP_EOL);
             print("\033[37m \033[33m--github-remove-pat \e[33m--alias\e[37m=\"<alias>\"" . PHP_EOL);
             print("\033[37m     Removes a GitHub personal access key" . PHP_EOL . PHP_EOL);
+            print("\033[37m \033[33m--github-set-default \e[33m--alias\e[37m=\"<alias>\"" . PHP_EOL);
+            print("\033[37m     Updates the current default profile to the one specified by alias" . PHP_EOL . PHP_EOL);
 
             print("\033[37m \033[33m--clear-cache" . PHP_EOL);
             print("\033[37m     Clears PPM cache from disk" . PHP_EOL);
@@ -577,6 +580,12 @@
             if(isset(self::options()["github-remove-pat"]))
             {
                 GithubVault::githubRemovePersonalAccessKey();
+                return;
+            }
+
+            if(isset(self::options()["github-set-default"]))
+            {
+                GithubVault::githubSetDefaultProfile();
                 return;
             }
 

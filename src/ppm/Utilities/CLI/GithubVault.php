@@ -49,6 +49,42 @@
         }
 
         /**
+         * Removes a personal access key from the Github vault
+         */
+        public static function githubSetDefaultProfile()
+        {
+            if(System::isRoot() == false)
+            {
+                CLI::logError("This operation requires root privileges, please run ppm with 'sudo -H'");
+                exit(1);
+            }
+
+            if(IO::writeTest(PathFinder::getMainPath(true)) == false)
+            {
+                CLI::logError("Write test failed, cannot write to the PPM installation directory");
+                exit(1);
+            }
+
+            $github_vault = new \ppm\Objects\GithubVault();
+            $github_vault->load();
+
+            try
+            {
+                $github_vault->get(CLI::getParameter("alias", "Alias", false));
+                $github_vault->DefaultProfile = CLI::getParameter("alias", "Alias", false);
+            }
+            catch (GithubPersonalAccessTokenNotFoundException $e)
+            {
+                CLI::logError("Alias not registered in vault, aborting.");
+                exit(1);
+            }
+
+
+            $github_vault->save();
+            print("Default profile updated." . PHP_EOL);
+        }
+
+        /**
          * Adds a personal access token to the Github vault
          */
         public static function githubAddPersonalAccessKey()

@@ -1,3 +1,4 @@
 This update introduces minor bug fixes and addition to missing features
 
  - Corrected Composer package name to PPM package name converter
+ - Added option "--github-set-default" to change the default GitHub profile
