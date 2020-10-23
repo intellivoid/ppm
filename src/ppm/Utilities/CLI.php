@@ -330,13 +330,15 @@
                 return;
             }
 
+            $timestamp = gmdate("[y:m:d h:i:s]");
+
             if($newline)
             {
-                print("\033[33m > \e[37m $message" . PHP_EOL);
+                print("\e[37m$message" . PHP_EOL);
             }
             else
             {
-                print("\033[33m > \e[37m $message");
+                print("\e[37m$message");
             }
         }
 
@@ -358,13 +360,15 @@
                 return;
             }
 
+            $timestamp = gmdate("[y:m:d h:i:s]");
+
             if($newline)
             {
-                print("\e[96m > \e[37m $message" . PHP_EOL);
+                print("\e[37m$message" . PHP_EOL);
             }
             else
             {
-                print("\e[96m > \e[37m $message");
+                print("\e[37m$message");
             }
         }
 
@@ -379,10 +383,10 @@
                 return;
             }
 
-            print("\e[91m " . $message . "\e[37m" . PHP_EOL);
+            print("\e[91m" . $message . "\e[37m" . PHP_EOL);
             if(is_null($exception) == false)
             {
-                print("\e[91m " . $exception->getMessage() . "\e[37m" . PHP_EOL);
+                print("\e[91m" . $exception->getMessage() . "\e[37m" . PHP_EOL);
             }
         }
 
@@ -396,7 +400,7 @@
                 return;
             }
 
-            print("\e[33m WARNING: \e[37m " . $message . "\e[37m" . PHP_EOL);
+            print("\e[33mWARNING: \e[37m" . $message . "\e[37m" . PHP_EOL);
 
         }
 

@@ -4,3 +4,4 @@ This update introduces minor bug fixes and addition to missing features
  - Added option "--github-set-default" to change the default GitHub profile
  - Bug fix in PackageManager when installing a dependency that has already been satisfied results in a "Path does not exist"
    error because of a missing return statement.
+ - Updated logging styles to be more basic
