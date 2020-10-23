@@ -1,0 +1,3 @@
+This update introduces minor bug fixes and addition to missing features
+
+ - Corrected Composer package name to PPM package name converter

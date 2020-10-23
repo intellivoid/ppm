@@ -39,7 +39,7 @@
             $parsed_input = explode("/", $input);
             if(count($parsed_input) == 2)
             {
-                return str_ireplace("-", "_", $domain . "." . $parsed_input[1] . "." . $parsed_input[0]);
+                return str_ireplace("-", "_", $domain . "." . $parsed_input[0] . "." . $parsed_input[1]);
             }
 
             throw new InvalidArgumentException("The input isn't valid");
