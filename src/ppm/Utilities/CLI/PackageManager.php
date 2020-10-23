@@ -81,6 +81,7 @@
                 if(in_array(strtolower($path), self::$installedSources))
                 {
                     CLI::logWarning("Skipping $path because it was already updated");
+                    return;
                 }
                 else
                 {
@@ -121,6 +122,7 @@
                 if(in_array(strtolower($path), self::$installedSources))
                 {
                     CLI::logWarning("Skipping $path because it was already updated");
+                    return;
                 }
                 else
                 {
