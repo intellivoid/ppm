@@ -5,8 +5,11 @@
 
     use Exception;
     use ppm\Abstracts\CompilerFlags;
+    use ppm\Classes\GitManager;
+    use ppm\Exceptions\GithubPersonalAccessTokenNotFoundException;
     use ppm\Exceptions\InvalidPackageLockException;
     use ppm\Exceptions\VersionNotFoundException;
+    use ppm\Objects\Sources\GithubSource;
     use ppm\Utilities\CLI\Compiler;
     use ppm\Utilities\CLI\GithubVault;
     use ppm\Utilities\CLI\PackageManager;
@@ -62,6 +65,7 @@
                 "token::",
                 "install::",
                 "update::",
+                "update-ppm",
                 "branch::",
                 "uninstall::",
                 "generate-package::",
@@ -298,6 +302,8 @@
 
             print("\033[37m \033[33m--clear-cache" . PHP_EOL);
             print("\033[37m     Clears PPM cache from disk" . PHP_EOL);
+            print("\033[37m \033[33m--update-ppm" . PHP_EOL);
+            print("\033[37m     Updates PPM to the latest production version" . PHP_EOL);
 
             print("Extra options" . PHP_EOL);
             print("\033[37m \033[33m--verbose -v" . PHP_EOL);
@@ -333,8 +339,6 @@
                 return;
             }
 
-            $timestamp = gmdate("[y:m:d h:i:s]");
-
             if($newline)
             {
                 print("\e[37m$message" . PHP_EOL);
@@ -362,8 +366,6 @@
             {
                 return;
             }
-
-            $timestamp = gmdate("[y:m:d h:i:s]");
 
             if($newline)
             {
@@ -457,6 +459,12 @@
                     exit(1);
                 }
 
+                return;
+            }
+
+            if(isset(self::options()['update-ppm']))
+            {
+                self::updatePPM();
                 return;
             }
 
@@ -609,5 +617,94 @@
             }
 
             self::displayHelpMenu();
+        }
+
+
+        public static function updatePPM()
+        {
+            if(System::isRoot() == false)
+            {
+                CLI::logError("This operation requires root privileges, please run ppm with 'sudo -H'");
+                exit(1);
+            }
+
+            if(IO::writeTest(PathFinder::getMainPath(true)) == false)
+            {
+                CLI::logError("Write test failed, cannot write to the PPM installation directory");
+                exit(1);
+            }
+
+            self::logEvent("Preparing to update PPM");
+
+            // Prepare the GitHub vault
+            try
+            {
+                $github_vault = new \ppm\Objects\GithubVault();
+                if($github_vault->load() == false)
+                {
+                    self::logError("PPM cannot be updated because it requires a GitHub vault to be configured");
+                    exit(1);
+                }
+                $personal_access_token = $github_vault->getDefaultProfile();
+            }
+            catch (GithubPersonalAccessTokenNotFoundException $e)
+            {
+                CLI::logError("The default alias is not registered in the Github vault, run 'ppm --github-add-pat'");
+                exit(1);
+            }
+
+            // Prepare the path
+            if(file_exists(PathFinder::getTemporaryUpdatePath(false)))
+            {
+                IO::deleteDirectory(PathFinder::getTemporaryUpdatePath(false));
+            }
+
+            $clone_destination = PathFinder::getTemporaryUpdatePath(false);
+
+            $github_source = new GithubSource();
+            $github_source->Alias = "default";
+            $github_source->Organization = PPM_ORGANIZATION;
+            $github_source->Repository = "ppm";
+
+            try
+            {
+                CLI::logEvent("Cloning PPM repository from " . PPM_ORGANIZATION);
+                mkdir($clone_destination);
+                $repository = GitManager::clone_remote($clone_destination, $github_source->toUri($personal_access_token));
+            }
+            catch (Exception $e)
+            {
+                CLI::logError("Clone failed", $e);
+                exit(1);
+            }
+
+            try
+            {
+                CLI::logEvent("Checking out " . PPM_STATE);
+                $repository->checkout(PPM_STATE);
+            }
+            catch (Exception $e)
+            {
+                CLI::logError("Checkout failed", $e);
+                exit(1);
+            }
+
+            self::logEvent("Preparing installer");
+            $installer_path = $clone_destination . DIRECTORY_SEPARATOR . "install";
+            if(file_exists($installer_path) == false)
+            {
+                CLI::logError("This update cannot be installed because the file '$installer_path' does not exist, try installing the update manually");
+                exit(1);
+            }
+
+            $exit_code = 0;
+            chmod($installer_path, 0755);
+            chdir($clone_destination);
+            passthru($installer_path,  $exit_code);
+
+            self::logEvent("Cleaning up");
+            IO::deleteDirectory($clone_destination);
+            
+            exit($exit_code);
         }
     }

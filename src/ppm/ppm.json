@@ -1,6 +1,7 @@
 {
-  "VERSION": "1.1.0.2",
+  "VERSION": "1.1.0.3",
   "AUTHOR": "Zi Xing Narrakas",
   "URL": "https://github.com/Intellivoid/ppm",
+  "ORGANIZATION": "intellivoid",
   "STATE": "production"
 }

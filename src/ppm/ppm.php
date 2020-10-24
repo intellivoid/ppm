@@ -176,6 +176,7 @@
             define("PPM_VERSION", $ppm_info["VERSION"]);
             define("PPM_AUTHOR", $ppm_info["AUTHOR"]);
             define("PPM_URL", $ppm_info["URL"]);
+            define("PPM_ORGANIZATION", $ppm_info["ORGANIZATION"]);
             define("PPM_STATE", $ppm_info["STATE"]);
         }
 

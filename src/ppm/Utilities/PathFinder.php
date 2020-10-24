@@ -9,6 +9,8 @@
     class PathFinder
     {
         /**
+         * The main PPM data path
+         *
          * @param bool $create
          * @return string
          */
@@ -38,6 +40,8 @@
         }
 
         /**
+         * Attempts to locate the path to a installed package
+         *
          * @param string $package
          * @param string $version
          * @param bool $create
@@ -65,26 +69,47 @@
         }
 
         /**
+         * Returns the .ppm data path for a installed package
+         *
          * @param string $package
          * @param string $version
          * @param bool $create
          * @return string
+         * @noinspection PhpUnused
          */
         public static function getPackageDataPath(string $package, string $version, bool $create=false): string
         {
             return self::getPackagePath($package, $version, $create) . DIRECTORY_SEPARATOR . '.ppm';
         }
 
+        /**
+         * Returns the main package lock file path
+         *
+         * @param bool $create
+         * @return string
+         */
         public static function getPackageLockPath(bool $create=false): string
         {
             return self::getMainPath($create) . DIRECTORY_SEPARATOR . "ppm.lock";
         }
 
+        /**
+         * Returns the main GitHub vault file path
+         *
+         * @param bool $create
+         * @return string
+         */
         public static function getGithubVaultPath(bool $create=false): string
         {
             return self::getMainPath($create) . DIRECTORY_SEPARATOR . "github.vault";
         }
 
+        /**
+         * Returns the path for storing cloned repositories
+         *
+         * @param bool $create
+         * @return string
+         */
         public static function getRemoteRepoPath(bool $create=false): string
         {
             if($create)
@@ -98,6 +123,31 @@
             return self::getMainPath($create) . DIRECTORY_SEPARATOR . "repos";
         }
 
+        /**
+         * Returns a temporary update path for PPM
+         *
+         * @param bool $create
+         * @return string
+         */
+        public static function getTemporaryUpdatePath(bool $create=false): string
+        {
+            if($create)
+            {
+                if(file_exists(self::getMainPath($create) . DIRECTORY_SEPARATOR . "ppm_update") == false)
+                {
+                    mkdir(self::getMainPath($create) . DIRECTORY_SEPARATOR . "ppm_update");
+                }
+            }
+
+            return self::getMainPath($create) . DIRECTORY_SEPARATOR . "ppm_update";
+        }
+
+        /**
+         * Returns the path for storing temporary working directories for composer
+         *
+         * @param bool $create
+         * @return string
+         */
         public static function getComposerTemporaryPath(bool $create=false): string
         {
             if($create)
@@ -111,6 +161,12 @@
             return self::getMainPath($create) . DIRECTORY_SEPARATOR . "composer";
         }
 
+        /**
+         * Returns the path for temporarily storing builds
+         *
+         * @param bool $create
+         * @return string
+         */
         public static function getBuildPath(bool $create=false): string
         {
             if($create)
@@ -125,6 +181,12 @@
             return self::getMainPath($create) . DIRECTORY_SEPARATOR . "builds";
         }
 
+        /**
+         * Returns the main cache path
+         *
+         * @param bool $create
+         * @return string
+         */
         public static function getCachePath(bool $create=false): string
         {
             if($create)
@@ -139,6 +201,12 @@
             return self::getMainPath($create) . DIRECTORY_SEPARATOR . "cache";
         }
 
+        /**
+         * Returns the path for storing symlinks
+         *
+         * @param bool $create
+         * @return string
+         */
         public static function getLinksPath(bool $create=false): string
         {
             if($create)

@@ -653,6 +653,8 @@
          * @param ComposerSource $composerSource
          * @param array $options
          * @throws InvalidPackageLockException
+         * @throws PackageNotFoundException
+         * @throws PackageNotFoundException
          */
         public static function installComposerPackage(ComposerSource  $composerSource, array $options=array())
         {
@@ -737,7 +739,7 @@
          * @param ComposerSource $composerSource
          * @param string $install_destination
          * @param array $options
-         * @throws InvalidPackageLockException
+         * @throws InvalidPackageLockException|PackageNotFoundException
          */
         public static function installComposerPackageSemiNatively(Lockfile $lockfile, ComposerSource $composerSource, string $install_destination, array $options=[])
         {
@@ -793,7 +795,7 @@
          * @param Lockfile $lockfile
          * @param string $install_destination
          * @param array $options
-         * @throws InvalidPackageLockException
+         * @throws InvalidPackageLockException|PackageNotFoundException
          */
         public static function installComposerPackageNatively(Lockfile $lockfile, string $install_destination, array $options=[])
         {
@@ -837,7 +839,7 @@
          * @param GithubSource $githubSource
          * @param string $branch
          * @param array $options
-         * @throws InvalidPackageLockException
+         * @throws InvalidPackageLockException|PackageNotFoundException
          * @noinspection PhpUnused
          */
         public static function installGithubPackage(GithubSource $githubSource, string $branch="master", array $options=array())
@@ -980,6 +982,8 @@
          * @param bool $hard_failure
          * @throws InvalidPackageLockException
          * @throws VersionNotFoundException
+         * @throws PackageNotFoundException
+         * @throws PackageNotFoundException
          */
         public static function updatePackage(string $package, bool $hard_failure=true)
         {
