@@ -36,7 +36,7 @@
         public $Files;
 
         /**
-         * @var array|Dependency
+         * @var Dependency[]
          */
         public $Dependencies;
 

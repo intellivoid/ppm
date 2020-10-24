@@ -54,6 +54,7 @@
                 "github-set-default",
                 "installed",
                 "compile::",
+                "sdc::",
                 "main::",
                 "args::",
                 "directory::",
@@ -252,6 +253,8 @@
             print("\033[37m     Compiles the current PHP library/program from source to a .ppm file" . PHP_EOL);
             print("\033[37m \033[33m--compile\033[37m=\"<path>\"" . PHP_EOL);
             print("\033[37m     Compiles a PHP library/program from source to a .ppm file" . PHP_EOL);
+            print("\033[37m \033[33m--sdc\033[37m=\"<path>\"" . PHP_EOL);
+            print("\033[37m     Semi-decompiles a compiled package (.ppm) and prints out all the available information" . PHP_EOL);
             print("\033[37m \033[33m--install\033[37m=\"<path>\"" . PHP_EOL);
             print("\033[37m     Installs a .ppm package to the system" . PHP_EOL);
             print("\033[37m \033[33m--install\033[37m=\"<path>\" \e[33m--fix-conflict" . PHP_EOL);
@@ -433,6 +436,12 @@
                     Compiler::compilePackage(self::options()['compile']);
                 }
 
+                return;
+            }
+
+            if(isset(self::options()['sdc']))
+            {
+                Compiler::semiDecompilePackage(self::options()['sdc']);
                 return;
             }
 

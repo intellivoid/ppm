@@ -81,6 +81,319 @@
         }
 
         /**
+         * Prints out detailed information about a compiled package
+         *
+         * @param string $path
+         */
+        public static function semiDecompilePackage(string $path)
+        {
+            try
+            {
+                $PackageContents = ZiProto::decode(file_get_contents($path));
+            }
+            catch(Exception $e)
+            {
+                CLI::logError("The package cannot be opened correctly, the file may corrupted");
+                exit(1);
+            }
+
+            if(isset($PackageContents['package']) == false)
+            {
+                CLI::logError("This package is missing information, is this a ppm package?");
+                exit(1);
+            }
+
+            try
+            {
+                $PackageInformation = Package::fromArray($PackageContents['package']);
+            }
+            catch (Exception $e)
+            {
+                CLI::logError("There was an error while trying to read the package information", $e);
+                exit(1);
+            }
+
+            print($PackageInformation->Metadata->PackageName . " v" . $PackageInformation->Metadata->Version . PHP_EOL);
+
+            print("==== STRUCTURE ====" . PHP_EOL);
+            foreach($PackageContents as $key => $value)
+            {
+                print(" [" . $key . "]::" . gettype($value) . PHP_EOL);
+            }
+            print(PHP_EOL);
+
+            print("==== METADATA ====" . PHP_EOL);
+            foreach($PackageInformation->Metadata->toArray() as $key => $value)
+            {
+                print(" $key: " . json_encode($value, JSON_UNESCAPED_SLASHES) . PHP_EOL);
+            }
+            print(PHP_EOL);
+
+            print("==== DEPENDENCIES ====" . PHP_EOL);
+            if(count($PackageInformation->Dependencies) > 0)
+            {
+                foreach($PackageInformation->Dependencies as $dependency)
+                {
+                    foreach($dependency->toArray() as $key => $value)
+                    {
+                        print(" $key: " . json_encode($value, JSON_UNESCAPED_SLASHES) . PHP_EOL);
+                    }
+
+                    print(PHP_EOL);
+                }
+            }
+            else
+            {
+                print("No dependencies specified" . PHP_EOL);
+            }
+            print(PHP_EOL);
+
+            print("==== CONFIGURATION ====" . PHP_EOL);
+            if($PackageInformation->Configuration->Main !== null)
+            {
+                print("main.name: " . json_encode($PackageInformation->Configuration->Main->Name, JSON_UNESCAPED_SLASHES) . PHP_EOL);
+                print("main.create_symlink: " . json_encode($PackageInformation->Configuration->Main->CreateSymlink, JSON_UNESCAPED_SLASHES) . PHP_EOL);
+                print("main.execution_point: " . json_encode($PackageInformation->Configuration->Main->ExecutionPoint, JSON_UNESCAPED_SLASHES) . PHP_EOL);
+            }
+            else
+            {
+                print("No main execution specified" . PHP_EOL);
+            }
+
+            if($PackageInformation->Configuration->AutoLoadMethod !== null)
+            {
+                print("Autoload Method: " . json_encode($PackageInformation->Configuration->AutoLoadMethod, JSON_UNESCAPED_SLASHES) . PHP_EOL);
+            }
+            else
+            {
+                print("No autoload method specified" . PHP_EOL);
+            }
+
+            if($PackageInformation->Configuration->PostInstallation !== null)
+            {
+                if(count($PackageInformation->Configuration->PostInstallation) > 0)
+                {
+                    print("Post installation scripts: " . json_encode($PackageInformation->Configuration->PostInstallation, JSON_UNESCAPED_SLASHES) . PHP_EOL);
+                }
+                else
+                {
+                    print("No post installation scripts specified" . PHP_EOL);
+                }
+            }
+            else
+            {
+                print("No post installation field available" . PHP_EOL);
+            }
+
+            if($PackageInformation->Configuration->PreInstallation !== null)
+            {
+                if(count($PackageInformation->Configuration->PreInstallation) > 0)
+                {
+                    print("Pre installation scripts: " . json_encode($PackageInformation->Configuration->PreInstallation, JSON_UNESCAPED_SLASHES) . PHP_EOL);
+                }
+                else
+                {
+                    print("No pre installation scripts specified" . PHP_EOL);
+                }
+            }
+            else
+            {
+                print("No pre installation field available" . PHP_EOL);
+            }
+
+            print(PHP_EOL . json_encode($PackageInformation->Configuration->toArray(), JSON_UNESCAPED_SLASHES) . PHP_EOL);
+            print(PHP_EOL);
+
+            print("==== COMPONENTS ====" . PHP_EOL);
+            if(isset($PackageContents["compiled_components"]))
+            {
+                if(count($PackageContents["compiled_components"]) > 0)
+                {
+                    foreach($PackageContents["compiled_components"] as $key => $value)
+                    {
+                        print(json_encode($key, JSON_UNESCAPED_SLASHES) . " " . strlen($value) . " byte(s)" . PHP_EOL);
+                    }
+                }
+                else
+                {
+                    print("No items" . PHP_EOL);
+                }
+            }
+            else
+            {
+                print("Header not present" . PHP_EOL);
+            }
+
+            print(PHP_EOL);
+
+            print("==== BYTE COMPILED ====" . PHP_EOL);
+            if(isset($PackageContents["byte_compiled"]))
+            {
+                if(count($PackageContents["byte_compiled"]) > 0)
+                {
+                    foreach($PackageContents["byte_compiled"] as $key => $value)
+                    {
+                        print(json_encode($key, JSON_UNESCAPED_SLASHES) . " " . strlen($value) . " byte(s)" . PHP_EOL);
+                    }
+                }
+                else
+                {
+                    print("No items" . PHP_EOL);
+                }
+            }
+            else
+            {
+                print("Header not present" . PHP_EOL);
+            }
+            print(PHP_EOL);
+
+            print("==== RAW ASSETS ====" . PHP_EOL);
+            if(isset($PackageContents["raw"]))
+            {
+                if(count($PackageContents["raw"]) > 0)
+                {
+                    foreach($PackageContents["raw"] as $key => $value)
+                    {
+                        print(json_encode($key, JSON_UNESCAPED_SLASHES) . " " . strlen($value) . " byte(s)" . PHP_EOL);
+                    }
+                }
+                else
+                {
+                    print("No items" . PHP_EOL);
+                }
+            }
+            else
+            {
+                print("Header not present" . PHP_EOL);
+            }
+            print(PHP_EOL);
+
+            print("==== FILE ASSETS ====" . PHP_EOL);
+            if(isset($PackageContents["file"]))
+            {
+                if(count($PackageContents["file"]) > 0)
+                {
+                    foreach($PackageContents["file"] as $key => $value)
+                    {
+                        print(json_encode($key, JSON_UNESCAPED_SLASHES) . " " . strlen($value) . " byte(s)" . PHP_EOL);
+                    }
+                }
+                else
+                {
+                    print("No items" . PHP_EOL);
+                }
+            }
+            else
+            {
+                print("Header not present" . PHP_EOL);
+            }
+            print(PHP_EOL);
+
+            print("==== COMPILER INFO ====" . PHP_EOL);
+            print("Size: " . strlen(file_get_contents($path)) . " byte(s)" . PHP_EOL);
+
+            if(isset($PackageContents["type"]))
+            {
+                print("Type: " . $PackageContents["type"] . PHP_EOL);
+            }
+            else
+            {
+                print("Type: Not available" . PHP_EOL);
+            }
+
+            if(isset($PackageContents["ppm_version"]))
+            {
+                print("PPM Version: " . $PackageContents["ppm_version"] . PHP_EOL);
+            }
+            else
+            {
+                print("PPM Version: Not available" . PHP_EOL);
+            }
+
+            if(isset($PackageContents["compiler"]))
+            {
+                print("Compiler Flags: " . json_encode($PackageContents["compiler"], JSON_UNESCAPED_SLASHES) . PHP_EOL);
+            }
+            else
+            {
+                print("Compiler Flags: Not available" . PHP_EOL);
+            }
+
+            if(isset($PackageContents["package"]))
+            {
+                print("Package header size: " . strlen(ZiProto::encode($PackageContents["package"])) . " byte(s)" . PHP_EOL);
+            }
+            else
+            {
+                print("Package header size: 0 byte(s)" . PHP_EOL);
+            }
+
+            if(isset($PackageContents["compiled_components"]))
+            {
+                print("Compiled components size: " . strlen(ZiProto::encode($PackageContents["compiled_components"])) . " byte(s)" . PHP_EOL);
+                print("Compiled components count: " . count($PackageContents["compiled_components"]) . PHP_EOL);
+            }
+            else
+            {
+                print("Compiled components size: 0 byte(s)" . PHP_EOL);
+                print("Compiled components count: 0" . PHP_EOL);
+            }
+
+            if(isset($PackageContents["byte_compiled"]))
+            {
+                print("Byte compiled size: " . strlen(ZiProto::encode($PackageContents["byte_compiled"])) . " byte(s)" . PHP_EOL);
+                print("Byte compiled count: " . count($PackageContents["byte_compiled"]) . PHP_EOL);
+            }
+            else
+            {
+                print("Byte compiled size: 0 byte(s)" . PHP_EOL);
+                print("Byte compiled count: 0" . PHP_EOL);
+            }
+
+            if(isset($PackageContents["raw"]))
+            {
+                print("Raw (none-compiled components) size: " . strlen(ZiProto::encode($PackageContents["raw"])) . " byte(s)" . PHP_EOL);
+                print("Raw (none-compiled components) count: " . count($PackageContents["raw"]) . PHP_EOL);
+            }
+            else
+            {
+                print("Raw (none-compiled components) size: 0 byte(s)" . PHP_EOL);
+                print("Raw (none-compiled components) count: 0" . PHP_EOL);
+            }
+
+            if(isset($PackageContents["files"]))
+            {
+                print("Files size: " . strlen(ZiProto::encode($PackageContents["files"])) . " byte(s)" . PHP_EOL);
+                print("Files count: " . count($PackageContents["files"]) . PHP_EOL);
+            }
+            else
+            {
+                print("Files size: 0 byte(s)" . PHP_EOL);
+                print("Files count: 0" . PHP_EOL);
+            }
+
+            if(isset($PackageContents["post_install"]))
+            {
+                print("Post install size: " . strlen(ZiProto::encode($PackageContents["post_install"])) . " byte(s)" . PHP_EOL);
+            }
+            else
+            {
+                print("Post install size: 0 byte(s)" . PHP_EOL);
+            }
+
+            if(isset($PackageContents["pre_install"]))
+            {
+                print("Pre install size: " . strlen(ZiProto::encode($PackageContents["pre_install"])) . " byte(s)" . PHP_EOL);
+            }
+            else
+            {
+                print("Pre install size: 0 byte(s)" . PHP_EOL);
+            }
+
+            exit(0);
+        }
+
+        /**
          * Compiles package from source
          *
          * @param string $path
@@ -191,7 +504,7 @@
                     exit(1);
                 }
 
-                $MainFile = file_get_contents($Component->getPath());;
+                $MainFile = file_get_contents($Component->getPath());
             }
 
             $PackedFiles = array();
@@ -211,10 +524,18 @@
                 }
             }
 
+            // Pack compiler data (new)
+            $CompilerData = array(
+                "linting_flag" => self::getLintingFlag(),
+                "byte_compiling_flag" => self::getByteCompilingFlag(),
+                "compiler_flag" => self::getCompilerFlag(),
+            );
+
             CLI::logEvent("Packing package contents");
             $Contents = array(
                 "type" => "ppm_package",
                 "ppm_version" => PPM_VERSION,
+                "compiler" => $CompilerData,
                 "package" => $Source->Package->toArray(),
                 "compiled_components" => $CompiledComponents["compiled_components"],
                 "byte_compiled" => $CompiledComponents["byte_compiled"],
