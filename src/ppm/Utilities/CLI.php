@@ -704,7 +704,7 @@
 
             self::logEvent("Cleaning up");
             IO::deleteDirectory($clone_destination);
-            
+
             exit($exit_code);
         }
     }
