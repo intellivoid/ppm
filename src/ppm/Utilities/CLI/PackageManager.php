@@ -72,6 +72,7 @@
          * @param array $options
          * @throws InvalidPackageLockException
          * @throws PackageNotFoundException
+         * @noinspection DuplicatedCode
          */
         public static function installPackage(string $path, array $options=array())
         {
@@ -731,6 +732,12 @@
             }
 
             CLI::logEvent("The composer package '" . $composerSource->getPackageName() . "' has been installed successfully as '" . Compatibility::composerPackageToPpm($composerSource->getPackageName()) . "'");
+
+            if(self::optionIsSet($options, "no_exit"))
+            {
+                return;
+            }
+
             exit(0);
         }
 
@@ -775,6 +782,7 @@
             }
 
             CLI::logEvent("Generating package");
+            /** @noinspection PhpUndefinedVariableInspection */
             $source_path = Compatibility::generatePackageFromComposerLockEntry($install_destination, $package["version"], true);
 
             CLI::logEvent("Compiling and installing package");
@@ -957,12 +965,22 @@
                 exit(1);
             }
 
+            $UpdatedCount = 0;
+            $SkipCount = 0;
+
             /** @var PackageLockItem $packageLockItem */
             foreach($PackageLock->Packages as $packageLockItem)
             {
                 try
                 {
-                    self::updatePackage($packageLockItem->PackageName, false);
+                    if(self::updatePackage($packageLockItem->PackageName, false))
+                    {
+                        $UpdatedCount += 1;
+                    }
+                    else
+                    {
+                        $SkipCount += 1;
+                    }
                 }
                 catch (InvalidPackageLockException $e)
                 {
@@ -974,25 +992,34 @@
                     CLI::logError("Unexpected error, probably a bug. The package manager reports that a version of the package " . $packageLockItem->PackageName . " wasn't found.", $e);
                     exit(1);
                 }
+                catch (PackageNotFoundException $e)
+                {
+                    CLI::logError("Unexpected error, probably a bug. The package manager reports that the package " . $packageLockItem->PackageName . " wasn't found.", $e);
+                    exit(1);
+                }
             }
+
+            CLI::logEvent($UpdatedCount . " packages has been updated, " . $SkipCount . " skipped");
+            exit(0);
         }
 
         /**
          * @param string $package
          * @param bool $hard_failure
+         * @return bool
          * @throws InvalidPackageLockException
          * @throws VersionNotFoundException
          * @throws PackageNotFoundException
          * @throws PackageNotFoundException
          */
-        public static function updatePackage(string $package, bool $hard_failure=true)
+        public static function updatePackage(string $package, bool $hard_failure=true): bool
         {
             $PackageLock = ppm::getPackageLock();
 
             if($PackageLock->packageExists($package, "latest") == false)
             {
                 CLI::logError("The package $package is not installed");
-                exit(1);
+                return false;
             }
 
             if(System::isRoot() == false)
@@ -1051,10 +1078,11 @@
                 else
                 {
                     CLI::logWarning("The package '$package' cannot be updated (No remote source)");
-                    return;
+                    return false;
                 }
             }
 
+            CLI::logEvent("Updating '$package'");
             $UpdateSource = file_get_contents($UpdateSourcePath);
 
             if(stripos($UpdateSource, "@github") !== false)
@@ -1082,7 +1110,7 @@
                     catch (Exception $e)
                     {
                         CLI::logError("Remote source parsing failed (Assumed github)", $e);
-                        exit(1);
+                        return false;
                     }
 
                     self::$installedSources[] = strtolower($UpdateSource);
@@ -1121,13 +1149,14 @@
                     catch (Exception $e)
                     {
                         CLI::logError("Remote source parsing failed", $e);
-                        exit(1);
+                        return false;
                     }
 
                     $options = [
                         "fix_conflict" => true,
                         "no_prompt" => true,
-                        "no_details" => true
+                        "no_details" => true,
+                        "no_exit" => true
                     ];
 
                     if($UpdateNatively)
@@ -1139,6 +1168,8 @@
                     self::installComposerPackage($composer_source, $options);
                 }
             }
+
+            return true;
         }
 
         /**

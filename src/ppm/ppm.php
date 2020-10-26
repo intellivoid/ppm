@@ -168,7 +168,8 @@
 
         if(file_exists($ppm_info_path) == false)
         {
-            trigger_error("The file '$ppm_info_path' does not exist" , E_USER_WARNING);
+            /** @noinspection PhpUnhandledExceptionInspection */
+            throw new Exception("The file '$ppm_info_path' does not exist" , E_USER_WARNING);
         }
         else
         {

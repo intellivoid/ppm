@@ -1,0 +1,4 @@
+This update introduces a minor bug fixes
+
+ - Corrected updating from different sources bug
+ - Updated help menu format
