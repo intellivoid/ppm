@@ -1,0 +1,3 @@
+This update introduces a minor bug fix
+
+ - Minor correction in PackageLockItem where versions would be treated as object-arrays than list-arrays

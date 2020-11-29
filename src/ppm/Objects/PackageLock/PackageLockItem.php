@@ -6,7 +6,6 @@
 
     use ppm\Abstracts\AutoloadMethod;
     use ppm\Exceptions\AutoloaderException;
-    use ppm\Exceptions\InvalidComponentException;
     use ppm\Exceptions\InvalidPackageLockException;
     use ppm\Exceptions\VersionNotFoundException;
     use ppm\Utilities\Autoloader;
@@ -118,7 +117,6 @@
          * @return bool
          * @throws AutoloaderException
          * @throws VersionNotFoundException
-         * @throws InvalidComponentException
          */
         public function import(string $version="latest"): bool
         {
@@ -211,6 +209,18 @@
                 $version_configurations[$versionName] = $versionConfiguration->toArray();
             }
 
+            if(isset($this->Versions[0]) == false)
+            {
+                $FixedResults = array();
+
+                foreach($this->Versions as $key=>$value)
+                {
+                    $FixedResults[] = $value;
+                }
+
+                $this->Versions = $FixedResults;
+            }
+
             return array(
                 'versions' => $this->Versions,
                 'version_configurations' => $version_configurations
@@ -231,6 +241,18 @@
             if(isset($data['versions']))
             {
                 $PackageLockItem->Versions = $data['versions'];
+
+                if(isset($PackageLockItem->Versions[0]) == false)
+                {
+                    $FixedResults = array();
+
+                    foreach($PackageLockItem->Versions as $key=>$value)
+                    {
+                        $FixedResults[] = $value;
+                    }
+
+                    $PackageLockItem->Versions = $FixedResults;
+                }
             }
             else
             {
