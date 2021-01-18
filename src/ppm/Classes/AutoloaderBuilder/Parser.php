@@ -172,7 +172,9 @@
                         break;
 
 
+                    /** @noinspection PhpElementIsNotAvailableInCurrentPhpVersionInspection */ 
                     case T_NAME_FULLY_QUALIFIED:
+                    /** @noinspection PhpElementIsNotAvailableInCurrentPhpVersionInspection */
                     case T_NAME_QUALIFIED:
                     case T_STRING:
                         $$mode .= $tok[1];
