@@ -254,18 +254,15 @@
          *
          * @return string
          */
-        public function render($template)
-        {
+        public function render($template) {
             $entries = array();
-            foreach($this->classes as $class => $file)
-            {
+            foreach($this->classes as $class => $file) {
                 $fname = $this->resolvePath($file);
                 $entries[] = "'". addslashes($class). "' => '$fname'";
             }
 
             $baseDir = '';
-            if ($this->baseDir)
-            {
+            if ($this->baseDir) {
                 $baseDir = $this->compat ? 'dirname(__FILE__) . ' : '__DIR__ . ';
             }
 
@@ -273,7 +270,7 @@
                 '___CREATED___'   => date( $this->dateformat, $this->timestamp ? $this->timestamp : time()),
                 '___CLASSLIST___' => join( ',' . $this->linebreak . $this->indent, $entries),
                 '___BASEDIR___'   => $baseDir,
-                '___AUTOLOAD___'  => 'ppm' . md5(serialize($entries)),
+                '___AUTOLOAD___'  => 'autoload' . md5(serialize($entries)),
                 '___EXCEPTION___' => $this->throwExceptions ? 'true' : 'false',
                 '___PREPEND___'   => $this->usePrepend ? 'true' : 'false'
             ));

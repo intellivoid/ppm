@@ -70,24 +70,17 @@
             $filename = $file->getRealPath();
             $this->seenFiles[$filename] = true;
 
-            foreach($result->getUnits() as $unit)
-            {
-                if (!$this->accept($unit))
-                {
+            foreach($result->getUnits() as $unit) {
+                if (!$this->accept($unit)) {
                     continue;
                 }
-
-                if (isset($this->units[$unit]))
-                {
-                    if (!isset($this->duplicates[$unit]))
-                    {
-                        $this->duplicates[$unit] = array($this->units[$unit]);
+                if (isset($this->units[$unit])) {
+                    if (!isset($this->duplicates[$unit])) {
+                        $this->duplicates[$unit] = array( $this->units[$unit] );
                     }
-
                     $this->duplicates[$unit][] = $filename;
                     continue;
                 }
-
                 $this->units[$unit] = $filename;
                 $this->dependencies[$unit] = $result->getDependenciesForUnit($unit);
             }

@@ -177,7 +177,8 @@
 
             CLI::logEvent("Validating package");
             Compiler::validatePackage($Package);
-            $Package->Configuration->AutoLoadMethod = "generated_spl";
+            if($Package->Configuration->AutoLoadMethod == null)
+                $Package->Configuration->AutoLoadMethod = "generated_spl";
 
             CLI::logEvent("Discovering components");
             $Package->Components = [];
