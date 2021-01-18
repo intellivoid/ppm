@@ -5,6 +5,7 @@ namespace PpmParser\Node\Expr;
 use PpmParser\Node\Expr;
 use PpmParser\Node\Identifier;
 use PpmParser\Node\Name;
+use function is_string;
 
 class ClassConstFetch extends Expr
 {
@@ -23,7 +24,7 @@ class ClassConstFetch extends Expr
     public function __construct($class, $name, array $attributes = []) {
         $this->attributes = $attributes;
         $this->class = $class;
-        $this->name = \is_string($name) ? new Identifier($name) : $name;
+        $this->name = is_string($name) ? new Identifier($name) : $name;
     }
 
     public function getSubNodeNames() : array {

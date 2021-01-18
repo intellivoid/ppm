@@ -3,16 +3,18 @@
 namespace PpmParser\Lexer\TokenEmulator;
 
 use PpmParser\Lexer\Emulative;
+use function is_array;
+use const PHP_VERSION;
 
-final class CoaleseEqualTokenEmulator extends TokenEmulator
+final class CoaleseEqualTokenEmulator implements TokenEmulatorInterface
 {
-    public function getPhpVersion(): string
+    public function isEmulationNeeded(string $code) : bool
     {
-        return Emulative::PHP_7_4;
-    }
+        // skip version where this is supported
+        if (version_compare(PHP_VERSION, Emulative::PHP_7_4, '>=')) {
+            return false;
+        }
 
-    public function isEmulationNeeded(string $code): bool
-    {
         return strpos($code, '??=') !== false;
     }
 
@@ -25,23 +27,17 @@ final class CoaleseEqualTokenEmulator extends TokenEmulator
             if (isset($tokens[$i + 1])) {
                 if ($tokens[$i][0] === T_COALESCE && $tokens[$i + 1] === '=') {
                     array_splice($tokens, $i, 2, [
-                        [\T_COALESCE_EQUAL, '??=', $line]
+                        [Emulative::T_COALESCE_EQUAL, '??=', $line]
                     ]);
                     $c--;
                     continue;
                 }
             }
-            if (\is_array($tokens[$i])) {
+            if (is_array($tokens[$i])) {
                 $line += substr_count($tokens[$i][1], "\n");
             }
         }
 
-        return $tokens;
-    }
-
-    public function reverseEmulate(string $code, array $tokens): array
-    {
-        // ??= was not valid code previously, don't bother.
         return $tokens;
     }
 }

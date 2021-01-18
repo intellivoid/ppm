@@ -3,6 +3,7 @@
 namespace PpmParser\Node;
 
 use PpmParser\NodeAbstract;
+use function is_string;
 
 class NullableType extends NodeAbstract
 {
@@ -17,7 +18,7 @@ class NullableType extends NodeAbstract
      */
     public function __construct($type, array $attributes = []) {
         $this->attributes = $attributes;
-        $this->type = \is_string($type) ? new Identifier($type) : $type;
+        $this->type = is_string($type) ? new Identifier($type) : $type;
     }
 
     public function getSubNodeNames() : array {

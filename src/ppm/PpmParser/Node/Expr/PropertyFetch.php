@@ -4,6 +4,7 @@ namespace PpmParser\Node\Expr;
 
 use PpmParser\Node\Expr;
 use PpmParser\Node\Identifier;
+use function is_string;
 
 class PropertyFetch extends Expr
 {
@@ -22,7 +23,7 @@ class PropertyFetch extends Expr
     public function __construct(Expr $var, $name, array $attributes = []) {
         $this->attributes = $attributes;
         $this->var = $var;
-        $this->name = \is_string($name) ? new Identifier($name) : $name;
+        $this->name = is_string($name) ? new Identifier($name) : $name;
     }
 
     public function getSubNodeNames() : array {

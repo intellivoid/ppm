@@ -4,6 +4,7 @@ namespace PpmParser\Node\Stmt;
 
 use PpmParser\Node\Identifier;
 use PpmParser\Node\Stmt;
+use function is_string;
 
 class Goto_ extends Stmt
 {
@@ -18,7 +19,7 @@ class Goto_ extends Stmt
      */
     public function __construct($name, array $attributes = []) {
         $this->attributes = $attributes;
-        $this->name = \is_string($name) ? new Identifier($name) : $name;
+        $this->name = is_string($name) ? new Identifier($name) : $name;
     }
 
     public function getSubNodeNames() : array {

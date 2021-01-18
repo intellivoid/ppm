@@ -2,7 +2,9 @@
 
 namespace PpmParser\Node\Name;
 
-class Relative extends \PpmParser\Node\Name
+use PpmParser\Node\Name;
+
+class Relative extends Name
 {
     /**
      * Checks whether the name is unqualified. (E.g. Name)

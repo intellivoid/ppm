@@ -1,74 +1,85 @@
 <?php declare(strict_types=1);
 
-namespace PpmParser\Builder;
+    namespace PpmParser\Builder;
 
-use PpmParser\BuilderHelpers;
-use PpmParser\Node;
-
-abstract class FunctionLike extends Declaration
-{
-    protected $returnByRef = false;
-    protected $params = [];
-
-    /** @var string|Node\Name|Node\NullableType|null */
-    protected $returnType = null;
+    use LogicException;
+    use PpmParser\BuilderHelpers;
+    use PpmParser\Node;
 
     /**
-     * Make the function return by reference.
-     *
-     * @return $this The builder instance (for fluid interface)
+     * Class FunctionLike
+     * @package PpmParser\Builder
      */
-    public function makeReturnByRef() {
-        $this->returnByRef = true;
+    abstract class FunctionLike extends Declaration
+    {
+        protected $returnByRef = false;
+        protected $params = [];
 
-        return $this;
-    }
+        /** @var string|Node\Name|Node\NullableType|null */
+        protected $returnType = null;
 
-    /**
-     * Adds a parameter.
-     *
-     * @param Node\Param|Param $param The parameter to add
-     *
-     * @return $this The builder instance (for fluid interface)
-     */
-    public function addParam($param) {
-        $param = BuilderHelpers::normalizeNode($param);
+        /**
+         * Make the function return by reference.
+         *
+         * @return $this The builder instance (for fluid interface)
+         */
+        public function makeReturnByRef()
+        {
+            $this->returnByRef = true;
 
-        if (!$param instanceof Node\Param) {
-            throw new \LogicException(sprintf('Expected parameter node, got "%s"', $param->getType()));
+            return $this;
         }
 
-        $this->params[] = $param;
+        /**
+         * Adds a parameter.
+         *
+         * @param Node\Param|Param $param The parameter to add
+         *
+         * @return $this The builder instance (for fluid interface)
+         */
+        public function addParam($param)
+        {
+            $param = BuilderHelpers::normalizeNode($param);
 
-        return $this;
-    }
+            if (!$param instanceof Node\Param)
+            {
+                throw new LogicException(sprintf('Expected parameter node, got "%s"', $param->getType()));
+            }
 
-    /**
-     * Adds multiple parameters.
-     *
-     * @param array $params The parameters to add
-     *
-     * @return $this The builder instance (for fluid interface)
-     */
-    public function addParams(array $params) {
-        foreach ($params as $param) {
-            $this->addParam($param);
+            $this->params[] = $param;
+
+            return $this;
         }
 
-        return $this;
-    }
+        /**
+         * Adds multiple parameters.
+         *
+         * @param array $params The parameters to add
+         *
+         * @return $this The builder instance (for fluid interface)
+         */
+        public function addParams(array $params)
+        {
+            foreach ($params as $param)
+            {
+                $this->addParam($param);
+            }
 
-    /**
-     * Sets the return type for PHP 7.
-     *
-     * @param string|Node\Name|Node\NullableType $type One of array, callable, string, int, float,
-     *                                                 bool, iterable, or a class/interface name.
-     *
-     * @return $this The builder instance (for fluid interface)
-     */
-    public function setReturnType($type) {
-        $this->returnType = BuilderHelpers::normalizeType($type);
+            return $this;
+        }
 
-        return $this;
+        /**
+         * Sets the return type for PHP 7.
+         *
+         * @param string|Node\Name|Node\NullableType $type One of array, callable, string, int, float,
+         *                                                 bool, iterable, or a class/interface name.
+         *
+         * @return $this The builder instance (for fluid interface)
+         */
+        public function setReturnType($type)
+        {
+            $this->returnType = BuilderHelpers::normalizeType($type);
+
+            return $this;
+        }
     }
-}

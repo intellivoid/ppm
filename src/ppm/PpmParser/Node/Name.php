@@ -2,7 +2,11 @@
 
 namespace PpmParser\Node;
 
+use InvalidArgumentException;
+use OutOfBoundsException;
 use PpmParser\NodeAbstract;
+use function is_array;
+use function is_string;
 
 class Name extends NodeAbstract
 {
@@ -85,7 +89,7 @@ class Name extends NodeAbstract
     }
 
     /**
-     * Returns a string representation of the name itself, without taking the name type into
+     * Returns a string representation of the name itself, without taking taking the name type into
      * account (e.g., not including a leading backslash for fully qualified names).
      *
      * @return string String representation
@@ -155,7 +159,7 @@ class Name extends NodeAbstract
 
         $realOffset = $offset < 0 ? $offset + $numParts : $offset;
         if ($realOffset < 0 || $realOffset > $numParts) {
-            throw new \OutOfBoundsException(sprintf('Offset %d is out of bounds', $offset));
+            throw new OutOfBoundsException(sprintf('Offset %d is out of bounds', $offset));
         }
 
         if (null === $length) {
@@ -163,7 +167,7 @@ class Name extends NodeAbstract
         } else {
             $realLength = $length < 0 ? $length + $numParts - $realOffset : $length;
             if ($realLength < 0 || $realLength > $numParts) {
-                throw new \OutOfBoundsException(sprintf('Length %d is out of bounds', $length));
+                throw new OutOfBoundsException(sprintf('Length %d is out of bounds', $length));
             }
         }
 
@@ -215,15 +219,15 @@ class Name extends NodeAbstract
      * @return string[] Prepared name
      */
     private static function prepareName($name) : array {
-        if (\is_string($name)) {
+        if (is_string($name)) {
             if ('' === $name) {
-                throw new \InvalidArgumentException('Name cannot be empty');
+                throw new InvalidArgumentException('Name cannot be empty');
             }
 
             return explode('\\', $name);
-        } elseif (\is_array($name)) {
+        } elseif (is_array($name)) {
             if (empty($name)) {
-                throw new \InvalidArgumentException('Name cannot be empty');
+                throw new InvalidArgumentException('Name cannot be empty');
             }
 
             return $name;
@@ -231,7 +235,7 @@ class Name extends NodeAbstract
             return $name->parts;
         }
 
-        throw new \InvalidArgumentException(
+        throw new InvalidArgumentException(
             'Expected string, array of parts or Name instance'
         );
     }

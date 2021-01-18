@@ -6,6 +6,9 @@ namespace PpmParser;
  * This parser is based on a skeleton written by Moriyoshi Koizumi, which in
  * turn is based on work by Masato Bito.
  */
+
+use Exception;
+use LogicException;
 use PpmParser\Node\Expr;
 use PpmParser\Node\Expr\Cast\Double;
 use PpmParser\Node\Name;
@@ -22,6 +25,11 @@ use PpmParser\Node\Stmt\Property;
 use PpmParser\Node\Stmt\TryCatch;
 use PpmParser\Node\Stmt\UseUse;
 use PpmParser\Node\VarLikeIdentifier;
+use RangeException;
+use RuntimeException;
+use function count;
+use function is_string;
+use function strlen;
 
 abstract class ParserAbstract implements Parser
 {
@@ -131,7 +139,7 @@ abstract class ParserAbstract implements Parser
         $this->lexer = $lexer;
 
         if (isset($options['throwOnError'])) {
-            throw new \LogicException(
+            throw new LogicException(
                 '"throwOnError" is no longer supported, use "errorHandler" instead');
         }
 
@@ -213,13 +221,16 @@ abstract class ParserAbstract implements Parser
                         : $this->invalidSymbol;
 
                     if ($symbol === $this->invalidSymbol) {
-                        throw new \RangeException(sprintf(
+                        throw new RangeException(sprintf(
                             'The lexer returned an invalid token (id=%d, value=%s)',
                             $tokenId, $tokenValue
                         ));
                     }
 
-                    // Allow productions to access the start attributes of the lookahead token.
+                    // This is necessary to assign some meaningful attributes to /* empty */ productions. They'll get
+                    // the attributes of the next token, even though they don't contain it themselves.
+                    $this->startAttributeStack[$stackPos+1] = $startAttributes;
+                    $this->endAttributeStack[$stackPos+1] = $endAttributes;
                     $this->lookaheadStartAttributes = $startAttributes;
 
                     //$this->traceRead($symbol);
@@ -291,8 +302,7 @@ abstract class ParserAbstract implements Parser
 
                     /* Goto - shift nonterminal */
                     $lastEndAttributes = $this->endAttributeStack[$stackPos];
-                    $ruleLength = $this->ruleToLength[$rule];
-                    $stackPos -= $ruleLength;
+                    $stackPos -= $this->ruleToLength[$rule];
                     $nonTerminal = $this->ruleToNonTerminal[$rule];
                     $idx = $this->gotoBase[$nonTerminal] + $stateStack[$stackPos];
                     if ($idx >= 0 && $idx < $this->gotoTableSize && $this->gotoCheck[$idx] === $nonTerminal) {
@@ -305,10 +315,6 @@ abstract class ParserAbstract implements Parser
                     $stateStack[$stackPos]     = $state;
                     $this->semStack[$stackPos] = $this->semValue;
                     $this->endAttributeStack[$stackPos] = $lastEndAttributes;
-                    if ($ruleLength === 0) {
-                        // Empty productions use the start attributes of the lookahead token.
-                        $this->startAttributeStack[$stackPos] = $this->lookaheadStartAttributes;
-                    }
                 } else {
                     /* error */
                     switch ($this->errorState) {
@@ -342,7 +348,6 @@ abstract class ParserAbstract implements Parser
 
                             // We treat the error symbol as being empty, so we reset the end attributes
                             // to the end attributes of the last non-error symbol
-                            $this->startAttributeStack[$stackPos] = $this->lookaheadStartAttributes;
                             $this->endAttributeStack[$stackPos] = $this->endAttributeStack[$stackPos - 1];
                             $this->endAttributes = $this->endAttributeStack[$stackPos - 1];
                             break;
@@ -368,7 +373,7 @@ abstract class ParserAbstract implements Parser
             }
         }
 
-        throw new \RuntimeException('Reached end of parser loop');
+        throw new RuntimeException('Reached end of parser loop');
     }
 
     protected function emitError(Error $error) {
@@ -637,7 +642,7 @@ abstract class ParserAbstract implements Parser
             $tmp->var = new Expr\Variable($name, $staticProp->name->getAttributes());
             return new Expr\StaticCall($staticProp->class, $prop, $args, $attributes);
         } else {
-            throw new \Exception;
+            throw new Exception;
         }
     }
 
@@ -651,7 +656,7 @@ abstract class ParserAbstract implements Parser
     }
 
     protected function handleBuiltinTypes(Name $name) {
-        $builtinTypes = [
+        $scalarTypes = [
             'bool'     => true,
             'int'      => true,
             'float'    => true,
@@ -661,7 +666,6 @@ abstract class ParserAbstract implements Parser
             'object'   => true,
             'null'     => true,
             'false'    => true,
-            'mixed'    => true,
         ];
 
         if (!$name->isUnqualified()) {
@@ -669,7 +673,7 @@ abstract class ParserAbstract implements Parser
         }
 
         $lowerName = $name->toLowerString();
-        if (!isset($builtinTypes[$lowerName])) {
+        if (!isset($scalarTypes[$lowerName])) {
             return $name;
         }
 
@@ -796,10 +800,10 @@ abstract class ParserAbstract implements Parser
             $indentation = '';
         }
 
-        $indentLen = \strlen($indentation);
+        $indentLen = strlen($indentation);
         $indentChar = $indentHasSpaces ? " " : "\t";
 
-        if (\is_string($contents)) {
+        if (is_string($contents)) {
             if ($contents === '') {
                 return new String_('', $attributes);
             }
@@ -826,7 +830,7 @@ abstract class ParserAbstract implements Parser
             $newContents = [];
             foreach ($contents as $i => $part) {
                 if ($part instanceof Node\Scalar\EncapsedStringPart) {
-                    $isLast = $i === \count($contents) - 1;
+                    $isLast = $i === count($contents) - 1;
                     $part->value = $this->stripIndentation(
                         $part->value, $indentLen, $indentChar,
                         $i === 0, $isLast, $part->getAttributes()
@@ -901,6 +905,13 @@ abstract class ParserAbstract implements Parser
     }
 
     protected function checkNamespace(Namespace_ $node) {
+        if ($node->name && $node->name->isSpecialClassName()) {
+            $this->emitError(new Error(
+                sprintf('Cannot use \'%s\' as namespace name', $node->name),
+                $node->name->getAttributes()
+            ));
+        }
+
         if (null !== $node->stmts) {
             foreach ($node->stmts as $stmt) {
                 if ($stmt instanceof Namespace_) {

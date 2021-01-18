@@ -13,12 +13,6 @@
     use ppm\Utilities\System;
     use PpmZiProto\ZiProto;
 
-    // Dependencies
-    if(class_exists("PpmParser\Parser") == false)
-    {
-        include_once(__DIR__ . DIRECTORY_SEPARATOR . "PpmParser" . DIRECTORY_SEPARATOR . "PpmParser.php");
-    }
-
     // Composer
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "Composer" . DIRECTORY_SEPARATOR . "Service" . DIRECTORY_SEPARATOR . "IsThisEmpty.php");
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "Classes" . DIRECTORY_SEPARATOR . "Composer" . DIRECTORY_SEPARATOR . "Service" . DIRECTORY_SEPARATOR . "AbstractMap.php");
@@ -156,6 +150,11 @@
     // API
     include_once(__DIR__ . DIRECTORY_SEPARATOR . "functions.php");
 
+    // Dependencies
+    if(class_exists("PpmParser\Parser") == false)
+    {
+        include_once(__DIR__ . DIRECTORY_SEPARATOR . "PpmParser" . DIRECTORY_SEPARATOR . "PpmParser.php");
+    }
 
     if(class_exists("PpmZiProto\ZiProto") == false)
     {

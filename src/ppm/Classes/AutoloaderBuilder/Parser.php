@@ -7,20 +7,15 @@
     // PHP 5.3 compat
     use ppm\Exceptions\ParserException;
 
-    // PHP 5.3 compat
     define('T_TRAIT_53', 10355);
-    if (!defined('T_TRAIT')) {
+    if (!defined('T_TRAIT'))
+    {
         define('T_TRAIT', -1);
     }
 
-    // PHP 8.0 forward compat
-    if (!defined('T_NAME_FULLY_QUALIFIED')) {
-        define('T_NAME_FULLY_QUALIFIED', -1);
-        define('T_NAME_QUALIFIED', -1);
-    }
-
     /**
-     * Namespace aware parser to find and extract defined classes within php source files
+     * Class Parser
+     * @package ppm\Exceptions
      */
     class Parser implements ParserInterface
     {
@@ -62,13 +57,17 @@
         private $dependencies = array();
         private $redeclarations = array();
 
+        /**
+         * Parser constructor.
+         * @param bool $caseInsensitive
+         */
         public function __construct($caseInsensitive = true)
         {
             $this->caseInsensitive = $caseInsensitive;
         }
 
         /**
-         * Parse a given file for defintions of classes, traits and interfaces
+         * Parse a given file for definitions of classes, traits and interfaces
          *
          * @param SourceFile $source file to process
          *
@@ -111,6 +110,7 @@
         /**
          * @param $pos
          * @return int
+         * @noinspection PhpUnusedPrivateMethodInspection
          */
         private function processBracketOpen($pos)
         {
@@ -121,10 +121,12 @@
         /**
          * @param $pos
          * @return int
+         * @noinspection PhpUnusedPrivateMethodInspection
          */
         private function processBracketClose($pos)
         {
             $this->bracketLevel--;
+
             if ($this->nsBracket !== 0 && $this->bracketLevel < $this->nsBracket)
             {
                 $this->inNamespace = '';
@@ -145,6 +147,7 @@
          * @param $pos
          * @return int
          * @throws ParserException
+         * @noinspection PhpUnusedPrivateMethodInspection
          */
         private function processClass($pos)
         {
@@ -152,6 +155,7 @@
             {
                 return $pos;
             }
+
             $list = array('{');
             $stack = $this->getTokensTill($pos, $list);
             $stackSize = count($stack);
@@ -162,20 +166,15 @@
             $implementsList = array();
             $implements = '';
             $mode = 'classname';
+
             foreach(array_slice($stack, 1, -1) as $tok)
             {
-                switch ($tok[0])
-                {
+                switch ($tok[0]) {
                     case T_COMMENT:
                     case T_DOC_COMMENT:
                     case T_WHITESPACE:
                         break;
 
-
-                    /** @noinspection PhpElementIsNotAvailableInCurrentPhpVersionInspection */
-                    case T_NAME_FULLY_QUALIFIED:
-                    /** @noinspection PhpElementIsNotAvailableInCurrentPhpVersionInspection */
-                    case T_NAME_QUALIFIED:
                     case T_STRING:
                         $$mode .= $tok[1];
                         break;
@@ -194,9 +193,9 @@
                         $mode = 'implements';
                         break;
 
-
                     case ',':
-                        if ($mode === 'implements') {
+                        if ($mode === 'implements')
+                        {
                             $implementsList[] = $this->resolveDependencyName($implements);
                             $implements = '';
                         }
@@ -204,8 +203,7 @@
 
                     default:
                         throw new ParserException(sprintf(
-                            'Parse error while trying to process class definition (unexpected token "%s" in name).',
-                            \token_name($tok[0])
+                            'Parse error while trying to process class definition (unexpected token in name).'
                         ), ParserException::ParseError
                         );
 
@@ -216,7 +214,8 @@
             {
                 $implementsList[] = $this->resolveDependencyName($implements);
             }
-            if ($implementsFound && count($implementsList)==0)
+
+            if ($implementsFound && count($implementsList) ==0 )
             {
                 throw new ParserException(sprintf(
                     'Parse error while trying to process class definition (extends or implements).'
@@ -224,13 +223,14 @@
                 );
             }
 
-            $classname                      = $this->registerUnit($classname, $stack[0][0]);
+            $classname = $this->registerUnit($classname, $stack[0][0]);
             $this->dependencies[$classname] = $implementsList;
 
             if ($extendsFound)
             {
                 $this->dependencies[$classname][] = $this->resolveDependencyName($extends);
             }
+
             $this->inUnit = $classname;
             $this->classBracket = $this->bracketLevel + 1;
             return $pos + $stackSize - 1;
@@ -240,6 +240,7 @@
          * @param $pos
          * @return int
          * @throws ParserException
+         * @noinspection PhpUnusedPrivateMethodInspection
          */
         private function processInterface($pos)
         {
@@ -247,6 +248,7 @@
             $stack = $this->getTokensTill($pos, $list);
             $stackSize = count($stack);
             $next = $stack[1];
+
             if (is_array($next) && $next[0] === '(')
             {
                 // sort of inline use - ignore
@@ -262,8 +264,6 @@
                 switch ($tok[0])
                 {
                     case T_NS_SEPARATOR:
-                    case T_NAME_QUALIFIED:
-                    case T_NAME_FULLY_QUALIFIED:
                     case T_STRING:
                         $$mode .= $tok[1];
                         break;
@@ -281,8 +281,8 @@
 
                 }
             }
-            $name = $this->registerUnit($name, T_INTERFACE);
 
+            $name = $this->registerUnit($name, T_INTERFACE);
             if ($extends != '')
             {
                 $extendsList[] = $this->resolveDependencyName($extends);
@@ -304,10 +304,8 @@
             {
                 throw new ParserException(sprintf(
                     'Parse error while trying to process class definition (extends or implements).'
-                ), ParserException::ParseError
-                );
+                ), ParserException::ParseError);
             }
-
             if ($name[0] == '\\')
             {
                 $name = substr($name, 1);
@@ -330,7 +328,6 @@
                     }
                 }
             }
-
             if ($this->caseInsensitive)
             {
                 $name = strtolower($name);
@@ -341,13 +338,12 @@
         /**
          * @param $name
          * @param $type
-         * @return mixed|string
+         * @return string
          * @throws ParserException
          */
         private function registerUnit($name, $type)
         {
-            if ($name == '' || substr($name, -1) == '\\')
-            {
+            if ($name == '' || substr($name, -1) == '\\') {
                 throw new ParserException(sprintf(
                     'Parse error while trying to process %s definition.',
                     $this->typeMap[$type]
@@ -372,6 +368,7 @@
         /**
          * @param $pos
          * @return int
+         * @noinspection PhpUnusedPrivateMethodInspection
          */
         private function processNamespace($pos)
         {
@@ -379,11 +376,14 @@
             $stack = $this->getTokensTill($pos, $list);
             $stackSize = count($stack);
             $newpos = $pos + $stackSize;
-            if ($stackSize < 3) { // empty namespace defintion == root namespace
+
+            if ($stackSize < 3)
+            { // empty namespace definition == root namespace
                 $this->inNamespace = '';
                 $this->aliases = array();
                 return $newpos - 1;
             }
+
             $next = $stack[1];
             if (is_array($next) && ($next[0] === T_NS_SEPARATOR || $next[0] === '('))
             {
@@ -404,6 +404,8 @@
         /**
          * @param $pos
          * @return int
+         * @throws ParserException
+         * @noinspection PhpUnusedPrivateMethodInspection
          */
         private function processUse($pos)
         {
@@ -415,6 +417,7 @@
                 T_CONST, // use const foo\bar;
                 T_FUNCTION // use function foo\bar;
             );
+
             if (in_array($stack[1][0], $ignore))
             {
                 return $pos + $stackSize - 1;
@@ -442,11 +445,7 @@
         {
             $list = (array)$list;
             $stack = array();
-            $skip = array(
-                T_WHITESPACE,
-                T_COMMENT,
-                T_DOC_COMMENT
-            );
+            $skip = array(T_WHITESPACE, T_COMMENT, T_DOC_COMMENT);
             $limit = count($this->tokenArray);
             for ($t=$start; $t<$limit; $t++)
             {
@@ -455,6 +454,7 @@
                 {
                     continue;
                 }
+
                 $stack[] = $current;
                 if (in_array($current[0], $list))
                 {
@@ -467,6 +467,8 @@
         /**
          * @param $stackSize
          * @param $stack
+         * @throws ParserException
+         * @throws ParserException
          */
         private function parseUseOfTrait($stackSize, $stack)
         {
@@ -496,11 +498,10 @@
                         break;
 
                     case T_NS_SEPARATOR:
-                    case T_NAME_QUALIFIED:
-                    case T_NAME_FULLY_QUALIFIED:
                     case T_STRING:
                         $use .= $current[1];
                         break;
+
                 }
             }
         }
@@ -545,6 +546,7 @@
                                     $alias = $use;
                                 }
                             }
+
                             if ($this->caseInsensitive)
                             {
                                 $alias = strtolower($alias);
@@ -558,8 +560,6 @@
                         break;
 
                     case T_NS_SEPARATOR:
-                    case T_NAME_QUALIFIED:
-                    case T_NAME_FULLY_QUALIFIED:
                     case T_STRING:
                         $$mode .= $current[1];
                         break;

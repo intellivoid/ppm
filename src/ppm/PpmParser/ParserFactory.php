@@ -2,6 +2,8 @@
 
 namespace PpmParser;
 
+use LogicException;
+
 class ParserFactory
 {
     const PREFER_PHP7 = 1;
@@ -36,7 +38,7 @@ class ParserFactory
             case self::ONLY_PHP5:
                 return new Parser\Php5($lexer, $parserOptions);
             default:
-                throw new \LogicException(
+                throw new LogicException(
                     'Kind must be one of ::PREFER_PHP7, ::PREFER_PHP5, ::ONLY_PHP7 or ::ONLY_PHP5'
                 );
         }

@@ -2,6 +2,7 @@
 
 namespace PpmParser;
 
+use LogicException;
 use PpmParser\Node\Arg;
 use PpmParser\Node\Expr;
 use PpmParser\Node\Expr\BinaryOp\Concat;
@@ -9,6 +10,7 @@ use PpmParser\Node\Identifier;
 use PpmParser\Node\Name;
 use PpmParser\Node\Scalar\String_;
 use PpmParser\Node\Stmt\Use_;
+use function is_string;
 
 class BuilderFactory
 {
@@ -180,8 +182,8 @@ class BuilderFactory
      * @return Expr\Variable
      */
     public function var($name) : Expr\Variable {
-        if (!\is_string($name) && !$name instanceof Expr) {
-            throw new \LogicException('Variable name must be string or Expr');
+        if (!is_string($name) && !$name instanceof Expr) {
+            throw new LogicException('Variable name must be string or Expr');
         }
 
         return new Expr\Variable($name);
@@ -320,7 +322,7 @@ class BuilderFactory
     public function concat(...$exprs) : Concat {
         $numExprs = count($exprs);
         if ($numExprs < 2) {
-            throw new \LogicException('Expected at least two expressions');
+            throw new LogicException('Expected at least two expressions');
         }
 
         $lastConcat = $this->normalizeStringExpr($exprs[0]);
@@ -339,10 +341,10 @@ class BuilderFactory
             return $expr;
         }
 
-        if (\is_string($expr)) {
+        if (is_string($expr)) {
             return new String_($expr);
         }
 
-        throw new \LogicException('Expected string or Expr');
+        throw new LogicException('Expected string or Expr');
     }
 }

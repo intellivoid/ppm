@@ -3,6 +3,7 @@
 namespace PpmParser\Node\Stmt;
 
 use PpmParser\Node;
+use function is_string;
 
 class Trait_ extends ClassLike
 {
@@ -11,19 +12,17 @@ class Trait_ extends ClassLike
      *
      * @param string|Node\Identifier $name Name
      * @param array  $subNodes   Array of the following optional subnodes:
-     *                           'stmts'      => array(): Statements
-     *                           'attrGroups' => array(): PHP attribute groups
+     *                           'stmts' => array(): Statements
      * @param array  $attributes Additional attributes
      */
     public function __construct($name, array $subNodes = [], array $attributes = []) {
         $this->attributes = $attributes;
-        $this->name = \is_string($name) ? new Node\Identifier($name) : $name;
+        $this->name = is_string($name) ? new Node\Identifier($name) : $name;
         $this->stmts = $subNodes['stmts'] ?? [];
-        $this->attrGroups = $subNodes['attrGroups'] ?? [];
     }
 
     public function getSubNodeNames() : array {
-        return ['attrGroups', 'name', 'stmts'];
+        return ['name', 'stmts'];
     }
 
     public function getType() : string {

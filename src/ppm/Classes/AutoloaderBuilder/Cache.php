@@ -3,11 +3,9 @@
 
     namespace ppm\Classes\AutoloaderBuilder;
 
-    use ppm\Exceptions\CacheException;
-
     /**
      * Class Cache
-     * @package ppm\Classes\AutoloaderBuilder
+     * @package ppm\Exceptions
      */
     class Cache
     {
@@ -23,7 +21,8 @@
         private $usedEntries = array();
 
 
-        public function __construct(array $initialEntries) {
+        public function __construct(array $initialEntries)
+        {
             $this->loadedEntries = $initialEntries;
         }
 
@@ -32,16 +31,20 @@
          *
          * @return bool
          */
-        public function hasResult(SourceFile $file) {
+        public function hasResult(SourceFile $file)
+        {
             $pathname = $file->getPathname();
-            if (!isset($this->loadedEntries[$pathname])) {
+            if (!isset($this->loadedEntries[$pathname]))
+            {
                 return false;
             }
             return $this->loadedEntries[$pathname]->getTimestamp() === $file->getMTime();
         }
 
-        public function getResult(SourceFile $file) {
-            if (!$this->hasResult($file)) {
+        public function getResult(SourceFile $file)
+        {
+            if (!$this->hasResult($file))
+            {
                 throw new CacheException('Entry not found');
             }
             $pathname = $file->getPathname();
@@ -50,12 +53,15 @@
             return $entry->getResult();
         }
 
-        public function addResult(SourceFile $file, ParseResult $result) {
+        public function addResult(SourceFile $file, ParseResult $result)
+        {
             $this->usedEntries[$file->getPathname()] = new CacheEntry($file->getMTime(), $result);
         }
 
-        public function persist($fname) {
-            if (file_exists($fname)) {
+        public function persist($fname)
+        {
+            if (file_exists($fname))
+            {
                 unlink($fname);
             }
             file_put_contents($fname, serialize($this->usedEntries));

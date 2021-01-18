@@ -1,46 +1,50 @@
 <?php declare(strict_types=1);
 
-namespace PpmParser\ErrorHandler;
+    namespace PpmParser\ErrorHandler;
 
-use PpmParser\Error;
-use PpmParser\ErrorHandler;
-
-/**
- * Error handler that collects all errors into an array.
- *
- * This allows graceful handling of errors.
- */
-class Collecting implements ErrorHandler
-{
-    /** @var Error[] Collected errors */
-    private $errors = [];
-
-    public function handleError(Error $error) {
-        $this->errors[] = $error;
-    }
+    use PpmParser\Error;
+    use PpmParser\ErrorHandler;
 
     /**
-     * Get collected errors.
+     * Error handler that collects all errors into an array.
      *
-     * @return Error[]
+     * This allows graceful handling of errors.
      */
-    public function getErrors() : array {
-        return $this->errors;
-    }
+    class Collecting implements ErrorHandler
+    {
+        /** @var Error[] Collected errors */
+        private $errors = [];
 
-    /**
-     * Check whether there are any errors.
-     *
-     * @return bool
-     */
-    public function hasErrors() : bool {
-        return !empty($this->errors);
-    }
+        public function handleError(Error $error)
+        {
+            $this->errors[] = $error;
+        }
 
-    /**
-     * Reset/clear collected errors.
-     */
-    public function clearErrors() {
-        $this->errors = [];
+        /**
+         * Get collected errors.
+         *
+         * @return Error[]
+         */
+        public function getErrors() : array
+        {
+            return $this->errors;
+        }
+
+        /**
+         * Check whether there are any errors.
+         *
+         * @return bool
+         */
+        public function hasErrors() : bool
+        {
+            return !empty($this->errors);
+        }
+
+        /**
+         * Reset/clear collected errors.
+         */
+        public function clearErrors()
+        {
+            $this->errors = [];
+        }
     }
-}

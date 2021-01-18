@@ -7,6 +7,7 @@ use PpmParser\Node\Identifier;
 use PpmParser\Node\Name;
 use PpmParser\Node\NullableType;
 use PpmParser\Node\UnionType;
+use function is_string;
 
 class Property extends Node\Stmt
 {
@@ -16,8 +17,6 @@ class Property extends Node\Stmt
     public $props;
     /** @var null|Identifier|Name|NullableType|UnionType Type declaration */
     public $type;
-    /** @var Node\AttributeGroup[] PHP attribute groups */
-    public $attrGroups;
 
     /**
      * Constructs a class property list node.
@@ -26,18 +25,16 @@ class Property extends Node\Stmt
      * @param PropertyProperty[]                                 $props      Properties
      * @param array                                              $attributes Additional attributes
      * @param null|string|Identifier|Name|NullableType|UnionType $type       Type declaration
-     * @param Node\AttributeGroup[]                              $attrGroups PHP attribute groups
      */
-    public function __construct(int $flags, array $props, array $attributes = [], $type = null, array $attrGroups = []) {
+    public function __construct(int $flags, array $props, array $attributes = [], $type = null) {
         $this->attributes = $attributes;
         $this->flags = $flags;
         $this->props = $props;
-        $this->type = \is_string($type) ? new Identifier($type) : $type;
-        $this->attrGroups = $attrGroups;
+        $this->type = is_string($type) ? new Identifier($type) : $type;
     }
 
     public function getSubNodeNames() : array {
-        return ['attrGroups', 'flags', 'type', 'props'];
+        return ['flags', 'type', 'props'];
     }
 
     /**

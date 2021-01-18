@@ -1,50 +1,57 @@
 <?php declare(strict_types=1);
 
-namespace PpmParser\Builder;
+    namespace PpmParser\Builder;
 
-use PpmParser;
-use PpmParser\BuilderHelpers;
-use PpmParser\Node;
-use PpmParser\Node\Stmt;
-
-class Function_ extends FunctionLike
-{
-    protected $name;
-    protected $stmts = [];
+    use PpmParser;
+    use PpmParser\BuilderHelpers;
+    use PpmParser\Node;
+    use PpmParser\Node\Stmt;
 
     /**
-     * Creates a function builder.
-     *
-     * @param string $name Name of the function
+     * Class Function_
+     * @package PpmParser\Builder
      */
-    public function __construct(string $name) {
-        $this->name = $name;
-    }
+    class Function_ extends FunctionLike
+    {
+        protected $name;
+        protected $stmts = [];
 
-    /**
-     * Adds a statement.
-     *
-     * @param Node|PpmParser\Builder $stmt The statement to add
-     *
-     * @return $this The builder instance (for fluid interface)
-     */
-    public function addStmt($stmt) {
-        $this->stmts[] = BuilderHelpers::normalizeStmt($stmt);
+        /**
+         * Creates a function builder.
+         *
+         * @param string $name Name of the function
+         */
+        public function __construct(string $name)
+        {
+            $this->name = $name;
+        }
 
-        return $this;
-    }
+        /**
+         * Adds a statement.
+         *
+         * @param Node|PpmParser\Builder $stmt The statement to add
+         *
+         * @return $this The builder instance (for fluid interface)
+         */
+        public function addStmt($stmt)
+        {
+            $this->stmts[] = BuilderHelpers::normalizeStmt($stmt);
 
-    /**
-     * Returns the built function node.
-     *
-     * @return Stmt\Function_ The built function node
-     */
-    public function getNode() : Node {
-        return new Stmt\Function_($this->name, [
-            'byRef'      => $this->returnByRef,
-            'params'     => $this->params,
-            'returnType' => $this->returnType,
-            'stmts'      => $this->stmts,
-        ], $this->attributes);
+            return $this;
+        }
+
+        /**
+         * Returns the built function node.
+         *
+         * @return Stmt\Function_ The built function node
+         */
+        public function getNode() : Node
+        {
+            return new Stmt\Function_($this->name, [
+                'byRef'      => $this->returnByRef,
+                'params'     => $this->params,
+                'returnType' => $this->returnType,
+                'stmts'      => $this->stmts,
+            ], $this->attributes);
+        }
     }
-}

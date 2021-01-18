@@ -5,6 +5,7 @@ namespace PpmParser\Node\Expr;
 use PpmParser\Node\Arg;
 use PpmParser\Node\Expr;
 use PpmParser\Node\Identifier;
+use function is_string;
 
 class MethodCall extends Expr
 {
@@ -26,7 +27,7 @@ class MethodCall extends Expr
     public function __construct(Expr $var, $name, array $args = [], array $attributes = []) {
         $this->attributes = $attributes;
         $this->var = $var;
-        $this->name = \is_string($name) ? new Identifier($name) : $name;
+        $this->name = is_string($name) ? new Identifier($name) : $name;
         $this->args = $args;
     }
 

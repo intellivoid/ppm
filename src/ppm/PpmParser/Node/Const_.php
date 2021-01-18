@@ -3,9 +3,10 @@
 namespace PpmParser\Node;
 
 use PpmParser\NodeAbstract;
+use function is_string;
 
 /**
- * @property Name $namespacedName Namespaced name (for global constants, if using NameResolver)
+ * @property Name $namespacedName Namespaced name (for class constants, if using NameResolver)
  */
 class Const_ extends NodeAbstract
 {
@@ -23,7 +24,7 @@ class Const_ extends NodeAbstract
      */
     public function __construct($name, Expr $value, array $attributes = []) {
         $this->attributes = $attributes;
-        $this->name = \is_string($name) ? new Identifier($name) : $name;
+        $this->name = is_string($name) ? new Identifier($name) : $name;
         $this->value = $value;
     }
 
