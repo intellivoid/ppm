@@ -12,12 +12,7 @@
     if (!defined('T_TRAIT')) {
         define('T_TRAIT', -1);
     }
-
-    // PHP 8.0 forward compat
-    if (!defined('T_NAME_FULLY_QUALIFIED')) {
-        define('T_NAME_FULLY_QUALIFIED', 312);
-        define('T_NAME_QUALIFIED', 314);
-    }
+    
 
     /**
      * Namespace aware parser to find and extract defined classes within php source files
@@ -173,9 +168,9 @@
 
 
                     /** @noinspection PhpElementIsNotAvailableInCurrentPhpVersionInspection */
-                    case T_NAME_FULLY_QUALIFIED:
+                    case 312: // T_NAME_FULLY_QUALIFIED
                     /** @noinspection PhpElementIsNotAvailableInCurrentPhpVersionInspection */
-                    case T_NAME_QUALIFIED:
+                    case 314: // T_NAME_QUALIFIED
                     case T_STRING:
                         $$mode .= $tok[1];
                         break;
