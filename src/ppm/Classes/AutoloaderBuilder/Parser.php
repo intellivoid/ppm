@@ -172,7 +172,7 @@
                         break;
 
 
-                    /** @noinspection PhpElementIsNotAvailableInCurrentPhpVersionInspection */ 
+                    /** @noinspection PhpElementIsNotAvailableInCurrentPhpVersionInspection */
                     case T_NAME_FULLY_QUALIFIED:
                     /** @noinspection PhpElementIsNotAvailableInCurrentPhpVersionInspection */
                     case T_NAME_QUALIFIED:
