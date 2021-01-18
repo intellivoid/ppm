@@ -431,13 +431,13 @@ class Lexer
             if (\defined($token)) {
                 $tokenId = \constant($token);
                 $clashingToken = $usedTokenIds[$tokenId] ?? null;
-                //if ($clashingToken !== null) {
-                    //throw new \Error(sprintf(
-                    //    'Token %s has same ID as token %s, ' .
-                    //    'you may be using a library with broken token emulation',
-                    //    $token, $clashingToken
-                    //));
-                //}
+                if ($clashingToken !== null) {
+                    throw new \Error(sprintf(
+                        'Token %s has same ID as token %s, ' .
+                        'you may be using a library with broken token emulation',
+                        $token, $clashingToken
+                    ));
+                }
                 $usedTokenIds[$tokenId] = $token;
             }
         }
