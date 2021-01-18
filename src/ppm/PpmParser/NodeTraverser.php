@@ -2,9 +2,6 @@
 
 namespace PpmParser;
 
-use LogicException;
-use function is_array;
-
 class NodeTraverser implements NodeTraverserInterface
 {
     /**
@@ -113,7 +110,7 @@ class NodeTraverser implements NodeTraverserInterface
         foreach ($node->getSubNodeNames() as $name) {
             $subNode =& $node->$name;
 
-            if (is_array($subNode)) {
+            if (\is_array($subNode)) {
                 $subNode = $this->traverseArray($subNode);
                 if ($this->stopTraversal) {
                     break;
@@ -138,7 +135,7 @@ class NodeTraverser implements NodeTraverserInterface
                             $this->stopTraversal = true;
                             break 2;
                         } else {
-                            throw new LogicException(
+                            throw new \LogicException(
                                 'enterNode() returned invalid value of type ' . gettype($return)
                             );
                         }
@@ -162,13 +159,13 @@ class NodeTraverser implements NodeTraverserInterface
                         } elseif (self::STOP_TRAVERSAL === $return) {
                             $this->stopTraversal = true;
                             break 2;
-                        } elseif (is_array($return)) {
-                            throw new LogicException(
+                        } elseif (\is_array($return)) {
+                            throw new \LogicException(
                                 'leaveNode() may only return an array ' .
                                 'if the parent structure is an array'
                             );
                         } else {
-                            throw new LogicException(
+                            throw new \LogicException(
                                 'leaveNode() returned invalid value of type ' . gettype($return)
                             );
                         }
@@ -215,7 +212,7 @@ class NodeTraverser implements NodeTraverserInterface
                             $this->stopTraversal = true;
                             break 2;
                         } else {
-                            throw new LogicException(
+                            throw new \LogicException(
                                 'enterNode() returned invalid value of type ' . gettype($return)
                             );
                         }
@@ -236,7 +233,7 @@ class NodeTraverser implements NodeTraverserInterface
                         if ($return instanceof Node) {
                             $this->ensureReplacementReasonable($node, $return);
                             $node = $return;
-                        } elseif (is_array($return)) {
+                        } elseif (\is_array($return)) {
                             $doNodes[] = [$i, $return];
                             break;
                         } elseif (self::REMOVE_NODE === $return) {
@@ -246,12 +243,12 @@ class NodeTraverser implements NodeTraverserInterface
                             $this->stopTraversal = true;
                             break 2;
                         } elseif (false === $return) {
-                            throw new LogicException(
+                            throw new \LogicException(
                                 'bool(false) return from leaveNode() no longer supported. ' .
                                 'Return NodeTraverser::REMOVE_NODE instead'
                             );
                         } else {
-                            throw new LogicException(
+                            throw new \LogicException(
                                 'leaveNode() returned invalid value of type ' . gettype($return)
                             );
                         }
@@ -261,8 +258,8 @@ class NodeTraverser implements NodeTraverserInterface
                         break;
                     }
                 }
-            } elseif (is_array($node)) {
-                throw new LogicException('Invalid node structure: Contains nested arrays');
+            } elseif (\is_array($node)) {
+                throw new \LogicException('Invalid node structure: Contains nested arrays');
             }
         }
 
@@ -277,7 +274,7 @@ class NodeTraverser implements NodeTraverserInterface
 
     private function ensureReplacementReasonable($old, $new) {
         if ($old instanceof Node\Stmt && $new instanceof Node\Expr) {
-            throw new LogicException(
+            throw new \LogicException(
                 "Trying to replace statement ({$old->getType()}) " .
                 "with expression ({$new->getType()}). Are you missing a " .
                 "Stmt_Expression wrapper?"
@@ -285,7 +282,7 @@ class NodeTraverser implements NodeTraverserInterface
         }
 
         if ($old instanceof Node\Expr && $new instanceof Node\Stmt) {
-            throw new LogicException(
+            throw new \LogicException(
                 "Trying to replace expression ({$old->getType()}) " .
                 "with statement ({$new->getType()})"
             );

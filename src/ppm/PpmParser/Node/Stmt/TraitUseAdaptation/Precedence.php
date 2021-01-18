@@ -3,7 +3,6 @@
 namespace PpmParser\Node\Stmt\TraitUseAdaptation;
 
 use PpmParser\Node;
-use function is_string;
 
 class Precedence extends Node\Stmt\TraitUseAdaptation
 {
@@ -21,7 +20,7 @@ class Precedence extends Node\Stmt\TraitUseAdaptation
     public function __construct(Node\Name $trait, $method, array $insteadof, array $attributes = []) {
         $this->attributes = $attributes;
         $this->trait = $trait;
-        $this->method = is_string($method) ? new Node\Identifier($method) : $method;
+        $this->method = \is_string($method) ? new Node\Identifier($method) : $method;
         $this->insteadof = $insteadof;
     }
 
