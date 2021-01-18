@@ -5,7 +5,6 @@ namespace PpmParser;
 use PpmParser\Node\Name;
 use PpmParser\Node\Name\FullyQualified;
 use PpmParser\Node\Stmt;
-use const INF;
 
 class NameContext
 {
@@ -216,7 +215,7 @@ class NameContext
 
         // Find shortest name
         $shortestName = null;
-        $shortestLength = INF;
+        $shortestLength = \INF;
         foreach ($possibleNames as $possibleName) {
             $length = strlen($possibleName->toCodeString());
             if ($length < $shortestLength) {

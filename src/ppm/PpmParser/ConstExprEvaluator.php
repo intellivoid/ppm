@@ -2,11 +2,8 @@
 
 namespace PpmParser;
 
-use ErrorException;
-use Exception;
 use PpmParser\Node\Expr;
 use PpmParser\Node\Scalar;
-use Throwable;
 
 /**
  * Evaluates constant expressions.
@@ -66,12 +63,12 @@ class ConstExprEvaluator
      */
     public function evaluateSilently(Expr $expr) {
         set_error_handler(function($num, $str, $file, $line) {
-            throw new ErrorException($str, 0, $num, $file, $line);
+            throw new \ErrorException($str, 0, $num, $file, $line);
         });
 
         try {
             return $this->evaluate($expr);
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
             if (!$e instanceof ConstExprEvaluationException) {
                 $e = new ConstExprEvaluationException(
                     "An error occurred during constant expression evaluation", 0, $e);
@@ -213,7 +210,7 @@ class ConstExprEvaluator
             case '<=>': return $this->evaluate($l) <=> $this->evaluate($r);
         }
 
-        throw new Exception('Should not happen');
+        throw new \Exception('Should not happen');
     }
 
     private function evaluateConstFetch(Expr\ConstFetch $expr) {

@@ -1,13 +1,7 @@
 <?php declare(strict_types=1);
 
-    namespace PpmParser\Comment;
+namespace PpmParser\Comment;
 
-    use PpmParser\Comment;
-
-    /**
-     * Class Doc
-     * @package PpmParser\Comment
-     */
-    class Doc extends Comment
-    {
-    }
+class Doc extends \PpmParser\Comment
+{
+}

@@ -2,9 +2,7 @@
 
 namespace PpmParser\Node\Name;
 
-use PpmParser\Node\Name;
-
-class FullyQualified extends Name
+class FullyQualified extends \PpmParser\Node\Name
 {
     /**
      * Checks whether the name is unqualified. (E.g. Name)

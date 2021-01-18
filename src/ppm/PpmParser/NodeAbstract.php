@@ -2,9 +2,7 @@
 
 namespace PpmParser;
 
-use JsonSerializable;
-
-abstract class NodeAbstract implements Node, JsonSerializable
+abstract class NodeAbstract implements Node, \JsonSerializable
 {
     protected $attributes;
 

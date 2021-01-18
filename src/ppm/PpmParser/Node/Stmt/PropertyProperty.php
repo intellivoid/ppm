@@ -3,7 +3,6 @@
 namespace PpmParser\Node\Stmt;
 
 use PpmParser\Node;
-use function is_string;
 
 class PropertyProperty extends Node\Stmt
 {
@@ -21,7 +20,7 @@ class PropertyProperty extends Node\Stmt
      */
     public function __construct($name, Node\Expr $default = null, array $attributes = []) {
         $this->attributes = $attributes;
-        $this->name = is_string($name) ? new Node\VarLikeIdentifier($name) : $name;
+        $this->name = \is_string($name) ? new Node\VarLikeIdentifier($name) : $name;
         $this->default = $default;
     }
 
