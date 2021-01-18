@@ -1,0 +1,1 @@
+Major update, fixes compatibility issues with PHP 8.0, updated PpmParser to 2.0.0.0
