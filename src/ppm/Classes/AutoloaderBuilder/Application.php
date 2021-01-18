@@ -47,7 +47,7 @@
             }
             if ($result->hasDuplicates())
             {
-                return $this->showDuplicatesError($result->getDuplicates());
+                #return $this->showDuplicatesError($result->getDuplicates());
             }
 
             if ($this->config->isCacheEnabled())

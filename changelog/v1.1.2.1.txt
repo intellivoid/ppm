@@ -1,0 +1,1 @@
+Fixed the autoloader generator for PHP8.0
