@@ -14,10 +14,10 @@
     }
 
     // PHP 8.0 forward compat
-    if (!defined('T_NAME_FULLY_QUALIFIED')) {
-        define('T_NAME_FULLY_QUALIFIED', -1);
-        define('T_NAME_QUALIFIED', -1);
-    }
+    //if (!defined('T_NAME_FULLY_QUALIFIED')) {
+        //define('T_NAME_FULLY_QUALIFIED', -1);
+        //define('T_NAME_QUALIFIED', -1);
+    //}
 
     /**
      * Namespace aware parser to find and extract defined classes within php source files
