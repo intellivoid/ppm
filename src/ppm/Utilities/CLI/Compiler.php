@@ -516,11 +516,21 @@
 
                     if(file_exists($file_path) == false)
                     {
-                        CLI::logError("Cannot find the file '" . $file_path . "'");
-                        exit(1);
+                        if(is_link($file_path))
+                        {
+                            $Source->Package->Files = array_diff($Source->Package->Files, [$file]);
+                            CLI::logWarning("Cannot find the file '" . $file_path . "', ignoring since it's likely a broken link");
+                        }
+                        else
+                        {
+                            CLI::logError("Cannot find the file '" . $file_path . "'");
+                            exit(1);
+                        }
                     }
-
-                    $PackedFiles[$file] = file_get_contents($file_path);
+                    else
+                    {
+                        $PackedFiles[$file] = file_get_contents($file_path);
+                    }
                 }
             }
 
