@@ -1,3 +1,4 @@
 This update brings some minor improvements to the compiler
 
  - The ability to skip dependencies when installing a package
+ - Added option 'runtime-version' for --main to specify what PHP version to run

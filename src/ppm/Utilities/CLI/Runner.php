@@ -79,15 +79,19 @@
             }
 
             $exit_code = 0;
+            $php_path = "php";
             chdir($PackageLockItem->getPackagePath($version));
+
+            if(isset(CLI::options()["runtime-version"]))
+                $php_path .= CLI::options()["runtime-version"];
 
             if($arguments == null)
             {
-                passthru("php " . escapeshellarg($ExecutionPath),  $exit_code);
+                passthru($php_path . " " . escapeshellarg($ExecutionPath),  $exit_code);
             }
             else
             {
-                passthru("php " . escapeshellarg($ExecutionPath) . " " . escapeshellcmd($arguments),  $exit_code);
+                passthru($php_path . " " . escapeshellarg($ExecutionPath) . " " . escapeshellcmd($arguments),  $exit_code);
             }
 
             exit($exit_code);

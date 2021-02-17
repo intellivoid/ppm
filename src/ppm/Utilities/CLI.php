@@ -88,7 +88,8 @@
                 "bcerror",
                 "bcwarning",
                 "cwarning",
-                "skip-dependencies"
+                "skip-dependencies",
+                "runtime-version::"
             );
 
             return getopt($options, $long_opts);
