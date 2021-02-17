@@ -1,0 +1,3 @@
+This update brings some minor improvements to the compiler
+
+ - The ability to skip dependencies when installing a package

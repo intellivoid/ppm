@@ -265,7 +265,7 @@
             }
 
             // Check dependencies
-            if(self::optionIsSet($options, "skip_dependency_check"))
+            if(self::optionIsSet($options, "skip_dependency_check") || isset(CLI::options()["skip-dependencies"]))
             {
                 CLI::logVerboseEvent("Skipping dependency check");
             }
