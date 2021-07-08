@@ -14,6 +14,6 @@ added to this release
  - Builder methods for types now property handle never type.
  - PrettyPrinter now prints backing enum type.
  - NameResolver now handles enums.
- - An addAttribute() method accepting an Attribute or AttributeGroup has been adde to all builders that accept attributes, such as Builder\Class_.
+ - An addAttribute() method accepting an Attribute or AttributeGroup has been added to all builders that accept attributes, such as Builder\Class_.
  - BuilderFactory::attribute() has been added.
  - BuilderFactory::args() now accepts named arguments.
