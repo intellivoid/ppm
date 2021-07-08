@@ -4,4 +4,16 @@ added to this release
  - Reconstructed the PPM autoloader to load components depending on the runtime environment to optimize on performance,
    for instance; when using PPM in real-time only the core components will be loaded, when using PPM via the command-line
    the additional components including the compiler will be loaded in
-   
+ - Updated the PPM extension for pear (1.0.1) to use the new autoloader feature accordingly
+ - Optimized and corrected compiler issues for PHP 8.1 & Code handling
+ - Fixed precedence of arrow functions.
+ - Non-UTF-8 code units in strings will now be hex-encoded.
+ - [PHP 8.1] Added support for enums. These are represented using the Stmt\Enum_ and Stmt\EnumCase nodes.
+ - [PHP 8.1] Added support for never type. This type will now be returned as an Identifier rather than Name.
+ - Added ClassConst builder.
+ - Builder methods for types now property handle never type.
+ - PrettyPrinter now prints backing enum type.
+ - NameResolver now handles enums.
+ - An addAttribute() method accepting an Attribute or AttributeGroup has been adde to all builders that accept attributes, such as Builder\Class_.
+ - BuilderFactory::attribute() has been added.
+ - BuilderFactory::args() now accepts named arguments.
