@@ -1,0 +1,7 @@
+This update brings performance & optimization updates to PPM & The PPM Compiler, additional features are also
+added to this release
+
+ - Reconstructed the PPM autoloader to load components depending on the runtime environment to optimize on performance,
+   for instance; when using PPM in real-time only the core components will be loaded, when using PPM via the command-line
+   the additional components including the compiler will be loaded in
+   
