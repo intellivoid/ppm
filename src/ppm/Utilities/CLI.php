@@ -342,11 +342,11 @@
 
             if($newline)
             {
-                print("\e[37m$message" . PHP_EOL);
+                print("\e[39m$message" . PHP_EOL);
             }
             else
             {
-                print("\e[37m$message");
+                print("\e[39m$message");
             }
         }
 
@@ -370,11 +370,11 @@
 
             if($newline)
             {
-                print("\e[37m$message" . PHP_EOL);
+                print("\e[39m$message" . PHP_EOL);
             }
             else
             {
-                print("\e[37m$message");
+                print("\e[39m$message");
             }
         }
 

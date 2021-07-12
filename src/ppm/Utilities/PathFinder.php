@@ -124,6 +124,36 @@
         }
 
         /**
+         * Returns the main python venv lock file path
+         *
+         * @param bool $create
+         * @return string
+         */
+        public static function getPythonVenvLockPath(bool $create=false): string
+        {
+            return self::getMainPath($create) . DIRECTORY_SEPARATOR . "venv.lock";
+        }
+
+        /**
+         * Returns the path for storing cloned repositories
+         *
+         * @param bool $create
+         * @return string
+         */
+        public static function getPythonVenvPath(bool $create=false): string
+        {
+            if($create)
+            {
+                if(file_exists(self::getMainPath($create) . DIRECTORY_SEPARATOR . "venv") == false)
+                {
+                    mkdir(self::getMainPath($create) . DIRECTORY_SEPARATOR . "venv");
+                }
+            }
+
+            return self::getMainPath($create) . DIRECTORY_SEPARATOR . "venv";
+        }
+
+        /**
          * Returns a temporary update path for PPM
          *
          * @param bool $create

@@ -31,3 +31,9 @@
     {
         include_once(__DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "PpmParser" . DIRECTORY_SEPARATOR . "PpmParser.php");
     }
+
+    // Load python
+    if(class_exists("PpmPython\PpmPython") == false)
+    {
+        include_once(__DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "PpmPython" . DIRECTORY_SEPARATOR . "PpmPython.php");
+    }
