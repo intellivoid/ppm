@@ -1,0 +1,5 @@
+This update brings CI (GitHub only for now) to PPM.
+
+ - Added "--generate-ci" which generates ci scripts which runs a compiling test against your package, you can use
+   the traditional arguments such as "--branch" and "--runtime-version" to alter the environment
+ - Added "--generate-ci-release" which generates ci scripts that compiles your package and creates a .ppm release file
