@@ -69,6 +69,8 @@
                 "branch::",
                 "uninstall::",
                 "generate-package::",
+                "generate-ci::",
+                "get-version::",
                 "recreate",
                 "generate-autoloader::",
                 "version::",
@@ -294,6 +296,8 @@
             print("\033[37m     Generates a package.json file from your project's source code" . PHP_EOL);
             print("\033[37m \033[33m--generate-package\e[37m=\"<path>\" \e[33m--recreate" . PHP_EOL);
             print("\033[37m     Generates/recreates a package.json from scratch file from your project's source code" . PHP_EOL . PHP_EOL);
+            print("\033[37m \033[33m--generate-ci" . PHP_EOL);
+            print("\033[37m     Generates CI scripts for your program" . PHP_EOL);
 
             print("\033[37m \033[33m--github-add-pat \e[33m--alias\e[37m=\"<alias>\" \e[33m--token\e[37m=\"<personal_access_token>\"" . PHP_EOL);
             print("\033[37m     Adds a GitHub personal access key to be used with the GitHub API (Secured)" . PHP_EOL);
@@ -448,6 +452,12 @@
                 return;
             }
 
+            if(isset(self::options()['get-version']))
+            {
+                Compiler::getPackageVersion(self::options()['get-version']);
+                return;
+            }
+
             if(isset(self::options()['install']))
             {
                 try
@@ -588,6 +598,20 @@
                 else
                 {
                     Tools::generatePackageJson(self::options()['generate-package'], $recreate);
+                }
+
+                return;
+            }
+
+            if(isset(self::options()['generate-ci']))
+            {
+                if(strlen(self::options()['generate-ci']) == 0)
+                {
+                    Tools::generateCi(getcwd());
+                }
+                else
+                {
+                    Tools::generateCi(self::options()['generate-ci']);
                 }
 
                 return;

@@ -1,0 +1,37 @@
+name: PPM Compile %PACKAGE_NAME_SAFE%
+
+on:
+  push:
+    branches: [ %BRANCH% ]
+  pull_request:
+    branches: [ %BRANCH% ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Add repoistory for PHP %RUNTIME_VERSION%
+        run: sudo add-apt-repository ppa:ondrej/php
+      - name: Install PHP %RUNTIME_VERSION%
+        run: sudo apt-get install php%RUNTIME_VERSION% php%RUNTIME_VERSION%-curl php%RUNTIME_VERSION%-mbstring php%RUNTIME_VERSION%-tokenizer php%RUNTIME_VERSION%-fileinfo
+
+      - uses: actions/checkout@v2
+        with:
+          repository: intellivoid/ppm
+          ref: "%STATE%"
+          token: ${{ secrets.PPM_ACCESS_TOKEN }}
+      - name: Install PPM
+        run: sudo ./install
+      - name: Configuring PPM
+        run: sudo ppm --github-add-pat --alias="system" --token="${{ secrets.PPM_ACCESS_TOKEN }}"
+      - uses: actions/checkout@%BRANCH%
+      - name: Make build directory
+        run: mkdir build
+
+      - name: Prepare %PACKAGE_NAME_SAFE%
+        run: ppm --generate-package="%SRC%"
+      - name: Compile %PACKAGE_NAME_SAFE%
+        run: ppm --no-intro --verbose --compile="%SRC%" --directory="build"
+      - name: Install %PACKAGE_NAME_SAFE%
+        run: sudo -H ppm --no-prompt --fix-conflict --verbose --install="build/%PACKAGE_NAME%.ppm"

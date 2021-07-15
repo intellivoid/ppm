@@ -1,0 +1,39 @@
+{
+  "environment": {
+    "environment_name": "netc.intellivoid.fake_name",
+    "name": "Fake Name",
+    "version": "1.0.0.0",
+    "author": "Zi Xing Narrakas",
+    "organization": "Intellivoid",
+    "description": "Python environment for generating fake names",
+    "url": "https://github.com/intellivoid/Fake",
+    "configuration": {
+      "runtime": "python",
+      "runtime_version": "3.6"
+    },
+    "packages": [
+      {
+        "package": "python-dateutil",
+        "version": ">=2.4",
+        "source": "pip@pypi/python-dateutil",
+        "required": true
+      },
+      {
+        "package": "text-unidecode",
+        "version": "==1.3",
+        "source": "pip@pypi/text-unidecode",
+        "required": true
+      },
+      {
+        "package": "Faker",
+        "version": "latest",
+        "source": "pip@pypi/Faker",
+        "required": true
+      }
+    ],
+    "files": [
+      "generator/__init__.py",
+      "generator/__main__.py"
+    ]
+  }
+}

@@ -394,10 +394,47 @@
         }
 
         /**
+         * Simply prints out the package version, this is used for automation purposes
+         *
+         * @param string $path
+         */
+        public static function getPackageVersion(string $path)
+        {
+            try
+            {
+                $PackageContents = ZiProto::decode(file_get_contents($path));
+            }
+            catch(Exception $e)
+            {
+                CLI::logError("The package cannot be opened correctly, the file may corrupted");
+                exit(1);
+            }
+
+            if(isset($PackageContents['package']) == false)
+            {
+                CLI::logError("This package is missing information, is this a ppm package?");
+                exit(1);
+            }
+
+            try
+            {
+                $PackageInformation = Package::fromArray($PackageContents['package']);
+            }
+            catch (Exception $e)
+            {
+                CLI::logError("There was an error while trying to read the package information", $e);
+                exit(1);
+            }
+
+            print($PackageInformation->Metadata->Version);
+            exit(0);
+        }
+
+        /**
          * Compiles package from source
          *
          * @param string $path
-         * @param string $output_directory
+         * @param string|null $output_directory
          * @param bool $exit
          * @return string|null
          * @noinspection PhpUnused
