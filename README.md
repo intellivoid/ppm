@@ -34,7 +34,8 @@ instead of locally unlike composer.
  - [v1.1.2.0](changelog/v1.1.2.0.txt)
  - [v1.1.2.1](changelog/v1.1.2.1.txt)
  - [v1.1.2.2](changelog/v1.1.2.2.txt)
- - [v1.1.2.3](changelog/v1.1.2.3.txt) Current`*
+ - [v1.1.3.0](changelog/v1.1.3.0.txt)
+ - [v1.1.3.1](changelog/v1.1.3.1.txt) Current`*
 
 
 ## License
