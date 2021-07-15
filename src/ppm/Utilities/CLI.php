@@ -71,6 +71,7 @@
                 "generate-package::",
                 "generate-ci::",
                 "get-version::",
+                "get-name::",
                 "recreate",
                 "generate-autoloader::",
                 "version::",
@@ -455,6 +456,12 @@
             if(isset(self::options()['get-version']))
             {
                 Compiler::getPackageVersion(self::options()['get-version']);
+                return;
+            }
+
+            if(isset(self::options()['get-name']))
+            {
+                Compiler::getPackageName(self::options()['get-name']);
                 return;
             }
 
