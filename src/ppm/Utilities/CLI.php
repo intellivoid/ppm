@@ -70,8 +70,10 @@
                 "uninstall::",
                 "generate-package::",
                 "generate-ci::",
+                "generate-ci-release::",
                 "get-version::",
                 "get-name::",
+                "get-hash::",
                 "recreate",
                 "generate-autoloader::",
                 "version::",
@@ -298,7 +300,9 @@
             print("\033[37m \033[33m--generate-package\e[37m=\"<path>\" \e[33m--recreate" . PHP_EOL);
             print("\033[37m     Generates/recreates a package.json from scratch file from your project's source code" . PHP_EOL . PHP_EOL);
             print("\033[37m \033[33m--generate-ci" . PHP_EOL);
-            print("\033[37m     Generates CI scripts for your program" . PHP_EOL);
+            print("\033[37m     Generates CI scripts that compiles your package" . PHP_EOL);
+            print("\033[37m \033[33m--generate-ci-release" . PHP_EOL);
+            print("\033[37m     Generates CI scripts that generates a release for your package" . PHP_EOL);
 
             print("\033[37m \033[33m--github-add-pat \e[33m--alias\e[37m=\"<alias>\" \e[33m--token\e[37m=\"<personal_access_token>\"" . PHP_EOL);
             print("\033[37m     Adds a GitHub personal access key to be used with the GitHub API (Secured)" . PHP_EOL);
@@ -465,6 +469,12 @@
                 return;
             }
 
+            if(isset(self::options()['get-hash']))
+            {
+                Compiler::getPackageHash(self::options()['get-hash']);
+                return;
+            }
+
             if(isset(self::options()['install']))
             {
                 try
@@ -619,6 +629,20 @@
                 else
                 {
                     Tools::generateCi(self::options()['generate-ci']);
+                }
+
+                return;
+            }
+
+            if(isset(self::options()['generate-ci-release']))
+            {
+                if(strlen(self::options()['generate-ci-release']) == 0)
+                {
+                    Tools::generateCiRelease(getcwd());
+                }
+                else
+                {
+                    Tools::generateCiRelease(self::options()['generate-ci-release']);
                 }
 
                 return;

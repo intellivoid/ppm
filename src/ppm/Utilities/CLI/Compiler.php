@@ -467,6 +467,32 @@
             exit(0);
         }
 
+        /**
+         * Returns the true hash of the package
+         *
+         * @param string $path
+         */
+        public static function getPackageHash(string $path)
+        {
+            try
+            {
+                $PackageContents = ZiProto::decode(file_get_contents($path));
+            }
+            catch(Exception $e)
+            {
+                CLI::logError("The package cannot be opened correctly, the file may corrupted");
+                exit(1);
+            }
+
+            if(isset($PackageContents['package']) == false)
+            {
+                CLI::logError("This package is missing information, is this a ppm package?");
+                exit(1);
+            }
+
+            print(hash("sha256", serialize($PackageContents)));
+            exit(0);
+        }
 
 
         /**

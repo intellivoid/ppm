@@ -1,4 +1,4 @@
-name: PPM Compile %PACKAGE_NAME_SAFE%
+name: PPM Release %PACKAGE_NAME_SAFE%
 
 on:
   push:
@@ -35,3 +35,15 @@ jobs:
         run: ppm --no-intro --verbose --compile="%SRC%" --directory="build"
       - name: Install %PACKAGE_NAME_SAFE%
         run: sudo -H ppm --no-prompt --fix-conflict --verbose --install="build/%PACKAGE_NAME%.ppm"
+
+      - name: Get Package Version
+        run: echo package_version=$(ppm --get-version="build/%PACKAGE_NAME%.ppm") >> $GITHUB_ENV
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: build/%PACKAGE_NAME%.ppm
+          name: "%PACKAGE_NAME_SAFE% v${{ env.package_version }}"
+          tag_name: "v${{ env.package_version }}"
+          body: "Compiled PPM package for %PACKAGE_NAME_SAFE%, version ${{ env.package_version }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

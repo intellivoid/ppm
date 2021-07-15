@@ -255,6 +255,49 @@
         }
 
         /**
+         * Generates an Continues Integration release builder script for the PPM package
+         *
+         * @param string $path
+         */
+        public static function generateCiRelease(string $path)
+        {
+            CLI::logEvent("Loading from source");
+
+            try
+            {
+                $source_path = Compiler::findSource($path);
+                CLI::logVerboseEvent("Source path => " . $source_path);
+                $source = Source::loadSource($source_path);
+            }
+            catch (Exception $e)
+            {
+                CLI::logError("There was an error while trying to load from source", $e);
+                exit(1);
+            }
+
+            CLI::logEvent("Validating package");
+            Compiler::validatePackage($source->Package);
+
+            CLI::logEvent("Creating CI files for " . $source->Package->Metadata->PackageName);
+
+            /**
+             * GITHUB WORKFLOW
+             */
+            CLI::logEvent("Generating GitHub Workflow");
+            CLI::logWarning("You must include 'PPM_ACCESS_TOKEN' in your repositories secrets with proper read access to intellivoid/ppm");
+
+            $GitHubWorkflow = self::applyBuildTemplate(__DIR__ . DIRECTORY_SEPARATOR . "Templates" . DIRECTORY_SEPARATOR . "github_release.yml", $path, $source);
+            self::smartMkdir($path . DIRECTORY_SEPARATOR . ".github");
+            self::smartMkdir($path . DIRECTORY_SEPARATOR . ".github" . DIRECTORY_SEPARATOR . "workflows");
+            self::smartWrite(
+                $path . DIRECTORY_SEPARATOR . ".github" . DIRECTORY_SEPARATOR . "workflows" .
+                DIRECTORY_SEPARATOR . $source->Package->Metadata->PackageName . ".ppm_release.yml", $GitHubWorkflow);
+
+            CLI::logEvent("Completed");
+            exit(0);
+        }
+
+        /**
          * Writes to a file (overwrites it if it exists)
          *
          * @param string $path
@@ -293,6 +336,7 @@
          * Applies a build template
          *
          * @param string $file
+         * @param string $path
          * @param Source $source
          * @return string
          */
