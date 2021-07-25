@@ -1,0 +1,1 @@
+Added function 'import' which acts like an alias for ppm\ppm::import()

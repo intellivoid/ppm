@@ -20,7 +20,7 @@ instead of locally unlike composer.
 ## Changelog
  - [v1.0.0.0](changelog/v1.0.0.0.txt)
  - [v1.0.0.1](changelog/v1.0.0.1.txt)
- - [v1.0.0.2](changelog/v1.0.0.2.txt) 
+ - [v1.0.0.2](changelog/v1.0.0.2.txt)
  - [v1.0.0.3](changelog/v1.0.0.3.txt)
  - [v1.0.0.4](changelog/v1.0.0.4.txt)
  - [v1.0.0.5](changelog/v1.0.0.5.txt)
@@ -35,7 +35,8 @@ instead of locally unlike composer.
  - [v1.1.2.1](changelog/v1.1.2.1.txt)
  - [v1.1.2.2](changelog/v1.1.2.2.txt)
  - [v1.1.3.0](changelog/v1.1.3.0.txt)
- - [v1.1.3.1](changelog/v1.1.3.1.txt) Current`*
+ - [v1.1.3.1](changelog/v1.1.3.1.txt)
+ - [v1.1.3.2](changelog/v1.1.3.2.txt) Current*
 
 
 ## License
