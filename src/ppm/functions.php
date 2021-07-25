@@ -26,6 +26,28 @@
         return ppm::import($package, $version, $import_dependencies, $throw_error);
     }
 
+    if(function_exists("import") == false)
+    {
+        /**
+         * Imports a package using PPM
+         *
+         * @param string $package
+         * @param string $version
+         * @param bool $import_dependencies
+         * @param bool $throw_error
+         * @return bool
+         * @throws AutoloaderException
+         * @throws InvalidComponentException
+         * @throws InvalidPackageLockException
+         * @throws PackageNotFoundException
+         * @throws VersionNotFoundException
+         */
+        function import(string $package, string $version="latest", bool $import_dependencies=true, bool $throw_error=true): bool
+        {
+            return ppm::import($package, $version, $import_dependencies, $throw_error);
+        }
+    }
+
     /**
      * Returns the definitions defined by PPM
      *
