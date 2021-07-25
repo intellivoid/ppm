@@ -138,32 +138,32 @@ This update introduces a minor bug fixes
 - Updated help menu format
 
 
-#v1.1.0.5
+# v1.1.0.5
 This update introduces a minor bug fix
 
 - Minor correction in PackageLockItem where versions would be treated as object-arrays than list-arrays
 
 
-#v1.1.2.0
+# v1.1.2.0
 Major update, fixes compatibility issues with PHP 8.0, updated PpmParser to 2.0.0.0
 
 
-#v1.1.2.1
+# v1.1.2.1
 Fixed the autoloader generator for PHP8.0
 
 
-#v1.1.2.2
+# v1.1.2.2
 Bug fix for broken symlinks
 
 
-#v1.1.2.3
+# v1.1.2.3
 This update brings some minor improvements to the compiler
 
 - The ability to skip dependencies when installing a package
 - Added option 'runtime-version' for --main to specify what PHP version to run
 
 
-#v1.1.3.0
+# v1.1.3.0
 This update brings performance & optimization updates to PPM & The PPM Compiler, additional features are also
 added to this release
 
@@ -185,7 +185,7 @@ added to this release
 - BuilderFactory::args() now accepts named arguments.
 
 
-#v1.1.3.1
+# v1.1.3.1
 This update brings CI (GitHub only for now) to PPM.
 
 - Added "--generate-ci" which generates ci scripts which runs a compiling test against your package, you can use
@@ -193,5 +193,5 @@ This update brings CI (GitHub only for now) to PPM.
 - Added "--generate-ci-release" which generates ci scripts that compiles your package and creates a .ppm release file
 
 
-#v1.1.3.2
+# v1.1.3.2
 Added function 'import' which acts like an alias for ppm\ppm::import()
