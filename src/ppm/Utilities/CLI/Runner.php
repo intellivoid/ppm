@@ -9,6 +9,8 @@
     use ppm\Objects\PackageLock\VersionConfiguration;
     use ppm\ppm;
     use ppm\Utilities\CLI;
+    use PpmProcLib\Process;
+    use PpmProcLib\Utilities\PhpExecutableFinder;
 
     /**
      * Class Runner
@@ -21,7 +23,7 @@
          *
          * @param string $package
          * @param string $version
-         * @param string $arguments
+         * @param string|null $arguments
          * @throws InvalidPackageLockException
          * @throws VersionNotFoundException
          */
@@ -78,22 +80,21 @@
                 exit(1);
             }
 
-            $exit_code = 0;
-            $php_path = "php";
-            chdir($PackageLockItem->getPackagePath($version));
+            $php_executable_finder = new PhpExecutableFinder();
+            $php_path = $php_executable_finder->find();
 
             if(isset(CLI::options()["runtime-version"]))
                 $php_path .= CLI::options()["runtime-version"];
 
-            if($arguments == null)
+            if(file_exists($php_path) == false)
             {
-                passthru($php_path . " " . escapeshellarg($ExecutionPath),  $exit_code);
-            }
-            else
-            {
-                passthru($php_path . " " . escapeshellarg($ExecutionPath) . " " . escapeshellcmd($arguments),  $exit_code);
+                CLI::logError("The runtime '" . $php_path . "' does not exist");
+                exit(1);
             }
 
-            exit($exit_code);
+            $process = new Process([$php_path, $ExecutionPath, $arguments], $PackageLockItem->getPackagePath($version));
+            $process->setTty(true);
+            $process->run();
+            exit($process->getExitCode());
         }
     }
