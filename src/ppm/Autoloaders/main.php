@@ -7,14 +7,14 @@
      */
     function ppm_load_full()
     {
-        if(defined("PPM_ENVIRONMENT"))
+        if(defined('PPM_ENVIRONMENT'))
             return;
 
-        require_once(__DIR__ . DIRECTORY_SEPARATOR . "runtime.php");
-        require_once(__DIR__ . DIRECTORY_SEPARATOR . "full.php");
-        require_once(__DIR__ . DIRECTORY_SEPARATOR . "definitions.php");
+        require_once(__DIR__ . DIRECTORY_SEPARATOR . 'runtime.php');
+        require_once(__DIR__ . DIRECTORY_SEPARATOR . 'full.php');
+        require_once(__DIR__ . DIRECTORY_SEPARATOR . 'definitions.php');
 
-        define("PPM_ENVIRONMENT", "FULL");
+        define('PPM_ENVIRONMENT', 'FULL');
     }
 
     /**
@@ -23,11 +23,11 @@
      */
     function ppm_load_runtime()
     {
-        if(defined("PPM_ENVIRONMENT"))
+        if(defined('PPM_ENVIRONMENT'))
             return;
 
-        require_once(__DIR__ . DIRECTORY_SEPARATOR . "runtime.php");
-        require_once(__DIR__ . DIRECTORY_SEPARATOR . "definitions.php");
+        require_once(__DIR__ . DIRECTORY_SEPARATOR . 'runtime.php');
+        require_once(__DIR__ . DIRECTORY_SEPARATOR . 'definitions.php');
 
-        define("PPM_ENVIRONMENT", "OPTIMIZED");
+        define('PPM_ENVIRONMENT', 'OPTIMIZED');
     }
