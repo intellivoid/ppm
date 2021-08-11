@@ -41,7 +41,7 @@
                 {
                     CLI::logError("The package $package==$version is not installed");
                 }
-                
+
                 exit(1);
             }
 
