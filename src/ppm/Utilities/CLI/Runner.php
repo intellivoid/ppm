@@ -48,7 +48,6 @@
             /** @var PackageLockItem $PackageLockItem */
             $PackageLockItem = $PackageLock->Packages[$package];
 
-
             if($version == "all")
             {
                 CLI::logError("The package version 'all' is not applicable to execution");
@@ -84,7 +83,17 @@
             $php_path = $php_executable_finder->find();
 
             if(isset(CLI::options()["runtime-version"]))
-                $php_path .= CLI::options()["runtime-version"];
+            {
+                $without_version_path = substr($php_path, -3);
+                if(file_exists($without_version_path))
+                {
+                    $php_path .= CLI::options()["runtime-version"];
+                }
+                else
+                {
+                    $php_path = substr($php_path, 0, -3) . CLI::options()["runtime-version"];
+                }
+            }
 
             if(file_exists($php_path) == false)
             {
