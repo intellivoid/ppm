@@ -36,13 +36,13 @@
                 if($version == "all" || $version == "latest")
                 {
                     CLI::logError("The package $package is not installed");
-                    exit(1);
                 }
                 else
                 {
                     CLI::logError("The package $package==$version is not installed");
-                    exit(1);
                 }
+                
+                exit(1);
             }
 
             /** @var PackageLockItem $PackageLockItem */
