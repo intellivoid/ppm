@@ -50,6 +50,20 @@
         private static $installedSources = array();
 
         /**
+         * A private static variable to keep track of files to remove after a completed operation
+         *
+         * @var string[]
+         */
+        private static $hangingFiles = array();
+
+        /**
+         * A private static variable to keep track of files to remove after a completed operation
+         *
+         * @var string[]
+         */
+        private static $hangingDirectories = array();
+
+        /**
          * Checks if an option is set in the options variable
          *
          * @param array $options
@@ -647,6 +661,25 @@
             $PackageLock->addPackage($PackageInformation);
             ppm::savePackageLock($PackageLock);
             ppm::getAutoIndexer();
+
+            CLI::logEvent('Cleaning up');
+            foreach(self::$hangingFiles as $hangingFile)
+            {
+                if(file_exists($hangingFile))
+                {
+                    CLI::logEvent('Deleting \'' . $hangingFile . '\'');
+                    unlink($hangingFile);
+                }
+            }
+
+            foreach(self::$hangingDirectories as $hangingDirectory)
+            {
+                if(file_exists($hangingDirectory))
+                {
+                    CLI::logEvent('Deleting \'' . $hangingDirectory . '\'');
+                    IO::deleteDirectory($hangingDirectory);
+                }
+            }
         }
 
         /**
@@ -794,6 +827,9 @@
                 "update_source" => $composerSource
             ]);
 
+            self::$hangingDirectories[] = $source_directory;
+            self::$hangingFiles[] = $compiled_file_path;
+
             CLI::logEvent("Installing " . $composerSource->getPackageName());
             self::installPackage($compiled_file_path, $options);
         }
@@ -832,6 +868,9 @@
                 CLI::logEvent("Compiling '" . $package_name . "'");
                 $source_directory = Compiler::findSource($source_path);
                 $compiled_file_path = Compiler::compilePackage($source_directory, PathFinder::getBuildPath(true), false);
+
+                self::$hangingDirectories[] = $source_directory;
+                self::$hangingFiles[] = $compiled_file_path;
 
                 $options = array_merge($options, [
                     "skip_dependency_check" => true,
@@ -915,19 +954,10 @@
                 "update_branch" => $branch
             ]);
 
+            self::$hangingFiles[] =  $compiled_file_path;
+            self::$hangingDirectories[] = $source_directory;
+
             self::installPackage($compiled_file_path, $options);
-
-            CLI::logEvent("Creating shared library");
-            $compiled_package_source = Source::loadSource($source_directory);
-            $shared_library_name = $compiled_package_source->Package->Metadata->PackageName . '==' . $compiled_package_source->Package->Metadata->Version . '.ppm';
-            $shared_library_path = PathFinder::getSharedLibrariesPath(true) . DIRECTORY_SEPARATOR . $shared_library_name;
-            if(file_exists($shared_library_path))
-                unlink($shared_library_path);
-            copy($compiled_file_path, $shared_library_path);
-
-            CLI::logEvent("Cleaning up");
-            IO::deleteDirectory($source_directory);
-            unlink($compiled_file_path);
         }
 
         /**
