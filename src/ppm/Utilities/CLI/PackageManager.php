@@ -1013,6 +1013,7 @@
 
             self::$hangingFiles[] =  $compiled_file_path;
             self::$hangingDirectories[] = $source_directory;
+            self::$hangingDirectories[] = $clone_destination;
 
             $shared_library_meta = Source::loadSource($source_directory)->Package->Metadata;
             $shared_library_name = $shared_library_meta->PackageName . '==' . $shared_library_meta->Version;
