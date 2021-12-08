@@ -64,6 +64,14 @@
         private static $hangingDirectories = array();
 
         /**
+         * A private static variable to keep track of shared libraries to install after the installation has been
+         * completed
+         *
+         * @var array
+         */
+        private static $sharedLibrariesInstall = array();
+
+        /**
          * Checks if an option is set in the options variable
          *
          * @param array $options
@@ -662,6 +670,26 @@
             ppm::savePackageLock($PackageLock);
             ppm::getAutoIndexer();
 
+            CLI::logEvent('Creating shared libraries');
+            foreach(self::$sharedLibrariesInstall as $library_name => $path)
+            {
+                $shared_library_path = PathFinder::getSharedLibrariesPath(true) . DIRECTORY_SEPARATOR . $library_name . '.so';
+                if(file_exists($shared_library_path))
+                {
+                    if(hash_file('sha256', $shared_library_path) == hash_file('sha256', $path))
+                    {
+                        unset(self::$sharedLibrariesInstall[$library_name]);
+                        continue;
+                    }
+
+                    unlink($shared_library_path);
+                }
+
+                copy($path, $shared_library_path);
+                CLI::logEvent('Added shared library ' . $library_name . '.so:' . hash_file('sha256', $shared_library_path));
+                unset(self::$sharedLibrariesInstall[$library_name]);
+            }
+
             CLI::logEvent('Cleaning up');
             foreach(self::$hangingFiles as $hangingFile)
             {
@@ -834,6 +862,10 @@
             self::$hangingDirectories[] = $source_directory;
             self::$hangingFiles[] = $compiled_file_path;
 
+            $shared_library_meta = Source::loadSource($source_directory)->Package->Metadata;
+            $shared_library_name = $shared_library_meta->PackageName . '==' . $shared_library_meta->Version;
+            self::$sharedLibrariesInstall[$shared_library_name] = $compiled_file_path;
+
             CLI::logEvent("Installing " . $composerSource->getPackageName());
             self::installPackage($compiled_file_path, $options);
         }
@@ -875,6 +907,10 @@
 
                 self::$hangingDirectories[] = $source_directory;
                 self::$hangingFiles[] = $compiled_file_path;
+
+                $shared_library_meta = Source::loadSource($source_directory)->Package->Metadata;
+                $shared_library_name = $shared_library_meta->PackageName . '==' . $shared_library_meta->Version;
+                self::$sharedLibrariesInstall[$shared_library_name] = $compiled_file_path;
 
                 $options = array_merge($options, [
                     "skip_dependency_check" => true,
@@ -960,6 +996,10 @@
 
             self::$hangingFiles[] =  $compiled_file_path;
             self::$hangingDirectories[] = $source_directory;
+
+            $shared_library_meta = Source::loadSource($source_directory)->Package->Metadata;
+            $shared_library_name = $shared_library_meta->PackageName . '==' . $shared_library_meta->Version;
+            self::$sharedLibrariesInstall[$shared_library_name] = $compiled_file_path;
 
             self::installPackage($compiled_file_path, $options);
         }
