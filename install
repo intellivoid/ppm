@@ -29,7 +29,7 @@ fi
 
 # Check if permissions are present
 if [ "$EUID" -ne 0 ]
-  then echo "This operation requires root privileges, run as sudo."
+  then echo "This operation requires root privileges"
   exit 1
 fi
 
@@ -67,7 +67,7 @@ php -r "unlink('composer-setup.php');"
 cd src/pear
 pear uninstall __uri/ppm || true
 tar -czvf ppm-$PPM_PEAR_VERSION.tgz package.xml ppm-$PPM_PEAR_VERSION/ppm
-sudo pear install ppm-$PPM_PEAR_VERSION.tgz
+pear install ppm-$PPM_PEAR_VERSION.tgz
 rm ppm-$PPM_PEAR_VERSION.tgz
 cd ../../
 

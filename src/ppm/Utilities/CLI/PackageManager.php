@@ -670,6 +670,8 @@
                     CLI::logEvent('Deleting \'' . $hangingFile . '\'');
                     unlink($hangingFile);
                 }
+
+                unset(self::$hangingFiles[$hangingFile]);
             }
 
             foreach(self::$hangingDirectories as $hangingDirectory)
@@ -679,6 +681,8 @@
                     CLI::logEvent('Deleting \'' . $hangingDirectory . '\'');
                     IO::deleteDirectory($hangingDirectory);
                 }
+
+                unset(self::$hangingDirectories[$hangingDirectory]);
             }
         }
 
