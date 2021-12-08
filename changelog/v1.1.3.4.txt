@@ -1,0 +1,13 @@
+This update various bug fixes and improvements to the runtime environment
+
+ - FIXED: PPM will now properly clean up left-over build files and downloads
+ - NEW: Shared Libraries have been added allowing PPM to collect pre-compiled binaries for static builds
+ - NEW: A custom include handler has been added, when running `require 'ppm'`, this will modify the runtimes
+   include configuration to use PPM's custom include handler allowing you to import packages using `require` instead
+   of PPM's builtin functions, example usages:
+
+   require 'net.intellivoid.ziproto';
+   require 'net.intellivoid.ziproto==latest';
+   require 'net.intellivoid.ziproto==1.0.0.0';
+
+   Missing packages or invalid versions will only result in the generic file not found error.
