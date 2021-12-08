@@ -526,6 +526,8 @@
             $PackageMainExecutionPath = $PackageDataPath . DIRECTORY_SEPARATOR . 'MAIN';
             $PackageAutoloaderPath = $PackageDataPath . DIRECTORY_SEPARATOR . 'COMPONENTS';
 
+            if(file_exists($PackageDataPath))
+                IO::deleteDirectory($PackageDataPath);
             mkdir($PackageDataPath);
             file_put_contents($PackageInformationPath, ZiProto::encode($PackageInformation->toArray()));
             file_put_contents($PackageAutoloaderPath, ZiProto::encode(array_keys($PackageContents["compiled_components"])));

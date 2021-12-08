@@ -258,16 +258,16 @@
 
             $rc = proc_close($process);
 
-            if ($rc == 255)
+            if ($rc == 255 && strlen($stderr) > 0)
             {
                 if(CLI\Compiler::getLintingFlag() == CompilerFlags::LintingError)
                 {
-                    CLI::logError("Syntax errors during lint: " . str_replace('in - on line', 'in generated code on line', $stderr));
+                    CLI::logError("Syntax errors during lint: " . $stderr);
                     exit(1);
                 }
                 else
                 {
-                    CLI::logWarning("Syntax errors during lint: " . str_replace('in - on line', 'in generated code on line', $stderr));
+                    CLI::logWarning("Syntax errors during lint: " . $stderr);
                 }
 
                 return 4;
