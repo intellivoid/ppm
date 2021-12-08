@@ -124,6 +124,25 @@
         }
 
         /**
+         * Returns the path for storing cloned repositories
+         *
+         * @param bool $create
+         * @return string
+         */
+        public static function getSharedLibrariesPath(bool $create=false): string
+        {
+            if($create)
+            {
+                if(file_exists(self::getMainPath($create) . DIRECTORY_SEPARATOR . "shared") == false)
+                {
+                    mkdir(self::getMainPath($create) . DIRECTORY_SEPARATOR . "shared");
+                }
+            }
+
+            return self::getMainPath($create) . DIRECTORY_SEPARATOR . "shared";
+        }
+
+        /**
          * Returns a temporary update path for PPM
          *
          * @param bool $create

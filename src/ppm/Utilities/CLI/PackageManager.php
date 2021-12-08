@@ -20,6 +20,7 @@
     use ppm\Objects\Package;
     use ppm\Objects\PackageLock\PackageLockItem;
     use ppm\Objects\PackageLock\VersionConfiguration;
+    use ppm\Objects\Source;
     use ppm\Objects\Sources\ComposerSource;
     use ppm\Objects\Sources\GithubSource;
     use ppm\ppm;
@@ -915,6 +916,14 @@
             ]);
 
             self::installPackage($compiled_file_path, $options);
+
+            CLI::logEvent("Creating shared library");
+            $compiled_package_source = Source::loadSource($source_directory);
+            $shared_library_name = $compiled_package_source->Package->Metadata->PackageName . '==' . $compiled_package_source->Package->Metadata->Version . '.ppm';
+            $shared_library_path = PathFinder::getSharedLibrariesPath(true) . DIRECTORY_SEPARATOR . $shared_library_name;
+            if(file_exists($shared_library_path))
+                unlink($shared_library_path);
+            copy($compiled_file_path, $shared_library_path);
 
             CLI::logEvent("Cleaning up");
             IO::deleteDirectory($source_directory);
