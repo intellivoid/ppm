@@ -16,7 +16,7 @@
 # Global Variables
 PPM_INSTALL_DIRECTORY="/var/ppm"
 PPM_SOURCE_DIRECTORY="./src/ppm"
-PPM_PEAR_VERSION="1.0.1"
+PPM_PEAR_VERSION="1.0.3"
 PPM_MAIN="./ppm.sh"
 USER_BIN="/usr/bin"
 

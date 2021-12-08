@@ -13,8 +13,8 @@
     <date>2020-08-01</date>
     <time>00:55:06</time>
     <version>
-        <release>1.0.1</release>
-        <api>1.0.1</api>
+        <release>1.0.3</release>
+        <api>1.0.3</api>
     </version>
     <stability>
         <release>stable</release>
@@ -24,7 +24,7 @@
     <notes>Make sure PPM is installed from source</notes>
     <contents>
         <dir baseinstalldir="/" name="/">
-            <file baseinstalldir="/" md5sum="8b5366a1fcce5c145aa88db0a782df4b" name="ppm" role="php" />
+            <file baseinstalldir="/" md5sum="60df790afd2a5c82afbe9896b186ed9b" name="ppm" role="php" />
         </dir>
     </contents>
     <dependencies>

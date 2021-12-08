@@ -1,0 +1,1 @@
+<?php import(explode('==', basename(__FILE__))[0], (count(explode('==', basename(__FILE__))) == 2 ? explode('==', basename(__FILE__))[1] : 'latest'));

@@ -672,6 +672,21 @@
             ppm::savePackageLock($PackageLock);
             ppm::getAutoIndexer();
 
+            CLI::logEvent('Creating include references');
+            $IncludeRefs = [
+                $PackageInformation->Metadata->PackageName,
+                $PackageInformation->Metadata->PackageName . '==' . $PackageInformation->Metadata->Version,
+                $PackageInformation->Metadata->PackageName . '==latest'
+            ];
+            foreach($IncludeRefs as $ref)
+            {
+                $ref_path = PathFinder::getIncludePath(true) . DIRECTORY_SEPARATOR . $ref;
+                if(file_exists($ref_path) == false)
+                {
+                    copy(__DIR__ . DIRECTORY_SEPARATOR . 'Templates' . DIRECTORY_SEPARATOR . 'include', $ref_path);
+                }
+            }
+
             CLI::logEvent('Creating shared libraries');
             foreach(self::$sharedLibrariesInstall as $library_name => $path)
             {

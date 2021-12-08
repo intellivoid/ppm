@@ -1,7 +1,7 @@
 <?php
 
     /**
-     * Version 1.0.0.2
+     * Version 1.0.0.3
      *
      * This script attempts to find and load PPM (PHP Package Manager) allowing your stand-alone
      * software to import PPM packages without needing to build one yourself.
@@ -48,6 +48,22 @@
 
         // Load PPM partially
         ppm_load_runtime();
+
+        // Modify the include path
+        if(function_exists('get_include_path') && function_exists('set_include_path'))
+        {
+            if(file_exists(PPM_INCLUDE_PATH))
+            {
+                $include_paths = explode(':', get_include_path());
+                if(in_array(PPM_INCLUDE_PATH, $include_paths) == false)
+                    $include_paths[] = PPM_INCLUDE_PATH;
+                set_include_path(implode(':', $include_paths));
+            }
+        }
+        else
+        {
+            trigger_error('PPM Cannot modify the include path during runtime because the functions \'get_include_path()\' and \'set_include_path()\' is not enabled, is the environment compiled correctly?', E_USER_WARNING);
+        }
 
         /** @noinspection PhpIncludeInspection */
         require_once($TargetInstall);

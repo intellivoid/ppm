@@ -29,4 +29,5 @@
         define('PPM', true);
         define('PPM_INSTALL', __DIR__);
         define('PPM_DATA', PathFinder::getMainPath(false));
+        define('PPM_INCLUDE_PATH', PathFinder::getIncludePath(false));
     }
