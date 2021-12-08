@@ -337,6 +337,27 @@
         }
 
         /**
+         * @var int
+         */
+        private static $largestTickLength = 0;
+
+        /**
+         * Prints the timestamp tick
+         */
+        private static function printTick()
+        {
+            $tick_time = (string)microtime(true);
+            if(strlen($tick_time) > self::$largestTickLength)
+                self::$largestTickLength = strlen($tick_time);
+            if(strlen($tick_time) < self::$largestTickLength)
+            {
+                $tick_time = str_pad($tick_time, (strlen($tick_time) + (self::$largestTickLength - strlen($tick_time))), ' ', STR_PAD_RIGHT);
+            }
+            $stamp = '[' . $tick_time . ' - ' . date('TH:i:sP') . ']';
+            print("\e[32m" . $stamp . "\e[37m ");
+        }
+
+        /**
          * Logs an event
          *
          * @param string $message
@@ -351,6 +372,7 @@
 
             if($newline)
             {
+                self::printTick();
                 print("\e[37m$message" . PHP_EOL);
             }
             else
@@ -379,6 +401,7 @@
 
             if($newline)
             {
+                self::printTick();
                 print("\e[37m$message" . PHP_EOL);
             }
             else
@@ -398,9 +421,11 @@
                 return;
             }
 
+            self::printTick();
             print("\e[91m" . $message . "\e[37m" . PHP_EOL);
             if(is_null($exception) == false)
             {
+                self::printTick();
                 print("\e[91m" . $exception->getMessage() . "\e[37m" . PHP_EOL);
             }
         }
@@ -415,6 +440,7 @@
                 return;
             }
 
+            self::printTick();
             print("\e[33mWARNING: \e[37m" . $message . "\e[37m" . PHP_EOL);
 
         }
