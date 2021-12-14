@@ -103,8 +103,21 @@
 
             $process = new Process([$php_path, $ExecutionPath, $arguments], $PackageLockItem->getPackagePath($version));
             $process->setTimeout(null);
-            $process->setTty(true);
-            $process->run();
+
+            if(isset(CLI::options()['no-tty']))
+            {
+                $process->setTty(false);
+                $process->start();
+                $process->wait(function ($type, $buffer) {
+                    print($buffer);
+                });
+            }
+            else
+            {
+                $process->setTty(true);
+                $process->run();
+            }
+
             exit($process->getExitCode());
         }
     }

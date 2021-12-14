@@ -52,6 +52,7 @@
             $long_opts = array(
                 "ppm",
                 "no-prompt",
+                "no-tty",
                 "github-add-pat",
                 "github-remove-pat",
                 "github-set-default",
