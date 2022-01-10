@@ -132,7 +132,7 @@
 
                     if(self::optionIsSet($options, "no_exit") == false)
                     {
-                        exit(1);
+                        exit(0);
                     }
                     else
                     {
@@ -165,7 +165,7 @@
 
                     if(self::optionIsSet($options, "no_exit") == false)
                     {
-                        exit(1);
+                        exit(0);
                     }
                     else
                     {
