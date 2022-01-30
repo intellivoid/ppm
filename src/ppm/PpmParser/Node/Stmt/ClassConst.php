@@ -64,6 +64,15 @@ class ClassConst extends Node\Stmt
     public function isPrivate() : bool {
         return (bool) ($this->flags & Class_::MODIFIER_PRIVATE);
     }
+    
+    /**
+     * Whether constant is final.
+     *
+     * @return bool
+     */
+    public function isFinal() : bool {
+        return (bool) ($this->flags & Class_::MODIFIER_FINAL);
+    }
 
     public function getType() : string {
         return 'Stmt_ClassConst';
