@@ -19,7 +19,10 @@
         define('T_NAME_QUALIFIED', -1);
     }
 
-    
+    // PHP 8.1 forward compat
+    if (!defined('T_ENUM')) {
+        define('T_ENUM', -1);
+    }
 
     /**
      * Namespace aware parser to find and extract defined classes within php source files
@@ -31,6 +34,8 @@
             T_TRAIT      => 'processClass',
             T_TRAIT_53   => 'processClass',
             T_CLASS      => 'processClass',
+            T_ENUM       => 'processEnum',
+            //T_CASE       => 'processEnumCase',
             T_INTERFACE  => 'processInterface',
             T_NAMESPACE  => 'processNamespace',
             T_USE        => 'processUse',
@@ -43,6 +48,7 @@
         private $typeMap = array(
             T_INTERFACE => 'interface',
             T_CLASS => 'class',
+            T_ENUM => 'enum',
             T_TRAIT => 'trait',
             T_TRAIT_53 => 'trait'
         );
@@ -233,6 +239,85 @@
             }
             $this->inUnit = $classname;
             $this->classBracket = $this->bracketLevel + 1;
+            return $pos + $stackSize - 1;
+        }
+        
+        /**
+         * @param $pos
+         * @return int
+         * @throws ParserException
+         */
+        private function processEnum($pos) {
+            $list = array('{');
+            $stack = $this->getTokensTill($pos, $list);
+            $stackSize = count($stack);
+            $enumName = $this->inNamespace !== '' ? $this->inNamespace . '\\' : '';
+            $implementsFound = false;
+            $implementsList = array();
+            $implements = '';
+            $backType = '';
+            $mode = 'enumName';
+            foreach(array_slice($stack, 1, -1) as $tok) {
+                switch ($tok[0]) {
+                    case T_COMMENT:
+                    case T_DOC_COMMENT:
+                    case T_WHITESPACE: {
+                        break;
+                    }
+
+                    case T_NAME_FULLY_QUALIFIED:
+                    case T_NAME_QUALIFIED:
+                    case T_STRING: {
+                        $$mode .= $tok[1];
+                        break;
+                    }
+                    case T_NS_SEPARATOR: {
+                        $$mode .= '\\';
+                        break;
+                    }
+                    case T_IMPLEMENTS: {
+                        $implementsFound = true;
+                        $mode = 'implements';
+                        break;
+                    }
+
+                    case ':': {
+                        $isBacked = true;
+                        $mode = 'backType';
+                        break;
+                    }
+
+                    case ',': {
+                        if ($mode === 'implements') {
+                            $implementsList[] = $this->resolveDependencyName($implements);
+                            $implements = '';
+                        }
+                        break;
+                    }
+
+                    default: {
+                        throw new ParserException(sprintf(
+                            'Parse error while trying to process class definition (unexpected token "%s" in name).',
+                            is_int($tok[0]) ? \token_name($tok[0]) : $tok[0]
+                        ), ParserException::ParseError
+                        );
+                    }
+                }
+            }
+
+            if ($implements != '') {
+                $implementsList[] = $this->resolveDependencyName($implements);
+            }
+            if ($implementsFound && count($implementsList)==0) {
+                throw new ParserException(sprintf(
+                    'Parse error while trying to process enum definition (implements).'
+                ), ParserException::ParseError
+                );
+            }
+
+            $enumName                      = $this->registerUnit($enumName, $stack[0][0]);
+            $this->dependencies[$enumName] = $implementsList;
+
             return $pos + $stackSize - 1;
         }
 
