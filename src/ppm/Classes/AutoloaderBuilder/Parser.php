@@ -7,11 +7,18 @@
     // PHP 5.3 compat
     use ppm\Exceptions\ParserException;
 
-    // PHP 5.3 compat
+     // PHP 5.3 compat
     define('T_TRAIT_53', 10355);
     if (!defined('T_TRAIT')) {
         define('T_TRAIT', -1);
     }
+
+    // PHP 8.0 forward compat
+    if (!defined('T_NAME_FULLY_QUALIFIED')) {
+        define('T_NAME_FULLY_QUALIFIED', -1);
+        define('T_NAME_QUALIFIED', -1);
+    }
+
     
 
     /**
@@ -167,10 +174,8 @@
                         break;
 
 
-                    /** @noinspection PhpElementIsNotAvailableInCurrentPhpVersionInspection */
-                    case 312: // T_NAME_FULLY_QUALIFIED
-                    /** @noinspection PhpElementIsNotAvailableInCurrentPhpVersionInspection */
-                    case 314: // T_NAME_QUALIFIED
+                    case T_NAME_FULLY_QUALIFIED:
+                    case T_NAME_QUALIFIED:
                     case T_STRING:
                         $$mode .= $tok[1];
                         break;
