@@ -1,0 +1,1 @@
+This update adds complete support to PHP 8.0 and PHP 8.1, including support for the new 'enum' types, and 'readonly' modifiers on both the lexing and autoloading layer.
