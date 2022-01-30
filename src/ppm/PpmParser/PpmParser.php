@@ -45,6 +45,7 @@
     require(__DIR__ . DIRECTORY_SEPARATOR . "Lexer" . DIRECTORY_SEPARATOR . "TokenEmulator" . DIRECTORY_SEPARATOR . "MatchTokenEmulator.php");
     require(__DIR__ . DIRECTORY_SEPARATOR . "Lexer" . DIRECTORY_SEPARATOR . "TokenEmulator" . DIRECTORY_SEPARATOR . "NullsafeTokenEmulator.php");
     require(__DIR__ . DIRECTORY_SEPARATOR . "Lexer" . DIRECTORY_SEPARATOR . "TokenEmulator" . DIRECTORY_SEPARATOR . "NumericLiteralSeparatorEmulator.php");
+    require(__DIR__ . DIRECTORY_SEPARATOR . "Lexer" . DIRECTORY_SEPARATOR . "TokenEmulator" . DIRECTORY_SEPARATOR . "ReadonlyTokenEmulator.php");
     require(__DIR__ . DIRECTORY_SEPARATOR . "Lexer" . DIRECTORY_SEPARATOR . "TokenEmulator" . DIRECTORY_SEPARATOR . "ReverseEmulator.php");
     require(__DIR__ . DIRECTORY_SEPARATOR . "NameContext.php");
     require(__DIR__ . DIRECTORY_SEPARATOR . "Node" . DIRECTORY_SEPARATOR . "Arg.php");
