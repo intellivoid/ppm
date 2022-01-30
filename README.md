@@ -6,6 +6,9 @@ files and install multiple versions of the same code onto the system
 instead of locally unlike composer.
 
 
+## Compatibility
+**Note:** From [v1.1.3.6](changelog/v1.1.3.6.txt), PPM only supports PHP 8.0 and 8.1+ due to several changes which make it difficult and inefficient to develop a compatibility layer for inferior versions, making PHP 7.4 or older to be marked as deprecated.
+
 ## Documentation
 
  - [Introduction](docs/introduction.md) (Installing, uninstalling, fixing package lock)
