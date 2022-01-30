@@ -80,6 +80,15 @@
                             $this->addDirectory($baseDir);
                             continue;
                         }
+                        if (is_array($dir)) 
+                        {
+                            foreach($dir as $d) 
+                            {
+                                $this->addDirectory($baseDir . '/' . $d);
+                            }
+
+                            continue;
+                        }
                         $this->addDirectory($baseDir . '/' . $dir);
                     }
                 }
